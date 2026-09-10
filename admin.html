@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel Admin · Blog SCVP</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+<style>
+  :root{
+    --paper:#FFFFFF; --paper-alt:#F5F7FA; --ink:#14181F; --ink-soft:#5C6672;
+    --accent:#1D4FA3; --accent-soft:#E9F0FB; --amber:#B8791A; --amber-soft:#FBF1E1;
+    --line:#E6E9EE; --danger:#B8341A; --danger-soft:#FBEAE6; --ok:#1A8C4B; --ok-soft:#E7F6ED;
+    --shadow: 0 1px 2px rgba(20,24,31,.04), 0 10px 26px -14px rgba(20,24,31,.14);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#10141C; --paper-alt:#181D28; --ink:#ECF0F6; --ink-soft:#9AA5B6;
+      --accent:#6C9BEA; --accent-soft:#1D2A42; --amber:#E7B366; --amber-soft:#332612;
+      --line:#262D3C; --danger:#E7876C; --danger-soft:#3A2018; --ok:#6BCB94; --ok-soft:#153524;
+      --shadow: 0 1px 2px rgba(0,0,0,.35), 0 10px 26px -14px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#10141C; --paper-alt:#181D28; --ink:#ECF0F6; --ink-soft:#9AA5B6;
+    --accent:#6C9BEA; --accent-soft:#1D2A42; --amber:#E7B366; --amber-soft:#332612;
+    --line:#262D3C; --danger:#E7876C; --danger-soft:#3A2018; --ok:#6BCB94; --ok-soft:#153524;
+    --shadow: 0 1px 2px rgba(0,0,0,.35), 0 10px 26px -14px rgba(0,0,0,.6);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper-alt);color:var(--ink);font-family:"Inter",system-ui,-apple-system,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  .mono{font-variant-numeric:tabular-nums;}
+  h1,h2,h3{font-family:"Inter",system-ui,sans-serif;font-weight:800;letter-spacing:-.01em;margin:0;}
+  .wrap{max-width:880px;margin:0 auto;padding:0 20px;}
+  a{color:inherit;}
+
+  .topline{background:var(--paper);border-bottom:1px solid var(--line);}
+  .masthead{display:flex;align-items:center;justify-content:space-between;gap:12px 14px;padding:16px 0;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;}
+  .brand-logo{height:34px;width:auto;border-radius:5px;flex:0 0 auto;}
+  .brand .tag{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:4px 9px;border-radius:999px;white-space:nowrap;}
+  .topline-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  @media (max-width:480px){ .brand .tag{display:none;} }
+  .theme-toggle{display:flex;align-items:center;gap:6px;background:var(--paper-alt);border:1px solid var(--line);color:var(--ink-soft);border-radius:999px;padding:7px 13px;font-size:12px;font-weight:600;}
+  .theme-toggle:hover{border-color:var(--accent);color:var(--accent);}
+
+  button{font-family:inherit;cursor:pointer;}
+  .btn{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:13px;border-radius:9px;padding:10px 16px;border:1px solid var(--line);background:var(--paper);color:var(--ink);transition:border-color .15s,background .15s;}
+  .btn:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .btn-primary:hover{opacity:.92;color:#fff;}
+  .btn-danger{color:var(--danger);}
+  .btn-danger:hover{border-color:var(--danger);color:var(--danger);}
+  .btn-ghost{border-color:transparent;background:none;}
+  .btn-sm{padding:7px 12px;font-size:12px;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+
+  main{padding:32px 0 80px;}
+
+  /* ---- login ---- */
+  .login-shell{min-height:calc(100vh - 68px);display:flex;align-items:center;justify-content:center;padding:20px;}
+  .login-card{width:100%;max-width:360px;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:32px 28px;box-shadow:var(--shadow);}
+  .login-card h1{font-size:19px;margin-bottom:6px;}
+  .login-card p.sub{font-size:13px;color:var(--ink-soft);margin:0 0 22px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.03em;}
+  .field input[type=text], .field input[type=password], .field input[type=date], .field input[type=time], .field select, .field textarea{
+    width:100%;font-family:inherit;font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:10px 12px;outline:none;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{border-color:var(--accent);}
+  .field textarea{resize:vertical;}
+  .field .hint{font-size:11.5px;color:var(--ink-soft);margin-top:5px;}
+  .error-msg{font-size:12.5px;color:var(--danger);background:var(--danger-soft);border-radius:8px;padding:9px 12px;margin-bottom:14px;display:none;}
+  .error-msg.show{display:block;}
+
+  /* ---- list ---- */
+  .toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+  .toolbar h1{font-size:20px;}
+  .list-search{flex:1;min-width:200px;max-width:320px;}
+  .post-row{display:flex;align-items:center;gap:14px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+  .post-thumb{flex:0 0 auto;width:52px;height:52px;border-radius:9px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;overflow:hidden;border:1px solid var(--line);}
+  .post-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .post-body{flex:1;min-width:0;}
+  .post-title{font-weight:700;font-size:14.5px;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .post-meta{font-size:11.5px;color:var(--ink-soft);display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .badge{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.03em;}
+  .badge-pub{background:var(--ok-soft);color:var(--ok);}
+  .badge-draft{background:var(--amber-soft);color:var(--amber);}
+  .post-actions{flex:0 0 auto;display:flex;gap:8px;}
+  .empty{padding:50px 10px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+
+  /* ---- form ---- */
+  .form-card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:18px;}
+  .form-card h3{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--line);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  @media (max-width:640px){ .row2,.row3{grid-template-columns:1fr;} }
+
+  .img-upload{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;}
+  .img-preview{flex:0 0 auto;width:140px;height:90px;border-radius:10px;border:1px solid var(--line);background:var(--paper-alt);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);font-size:11px;text-align:center;}
+  .img-preview img{width:100%;height:100%;object-fit:cover;display:block;}
+  .img-upload-controls{flex:1;min-width:200px;}
+
+  .rel-editor .rel-row{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--paper-alt);}
+  .rel-row .rel-fields{flex:1;display:flex;flex-direction:column;gap:8px;}
+  .rel-row input, .rel-row textarea{width:100%;font-family:inherit;font-size:13px;border:1px solid var(--line);border-radius:7px;padding:8px 10px;background:var(--paper);color:var(--ink);}
+  .rel-row textarea{min-height:52px;resize:vertical;}
+  .rel-remove{flex:0 0 auto;background:none;border:1px solid var(--line);border-radius:7px;width:28px;height:28px;color:var(--ink-soft);font-size:14px;line-height:1;}
+  .rel-remove:hover{border-color:var(--danger);color:var(--danger);}
+  .legacy-note{font-size:11.5px;color:var(--amber);background:var(--amber-soft);border-radius:7px;padding:7px 10px;margin-bottom:10px;}
+
+  .form-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:4px;}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);font-size:13px;font-weight:600;padding:12px 20px;border-radius:10px;box-shadow:var(--shadow);z-index:50;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
+  .toast.err{background:var(--danger);}
+
+  [hidden]{display:none!important;}
+</style>
+</head>
+<body>
+<script>
+  try {
+    var savedTheme = localStorage.getItem("scvp-theme");
+    if (savedTheme === "dark") document.documentElement.setAttribute("data-theme", "dark");
+    else if (savedTheme === "light") document.documentElement.setAttribute("data-theme", "light");
+  } catch (e) {}
+</script>
+
+<div class="topline">
+  <div class="wrap masthead">
+    <div class="brand">
+      <img class="brand-logo" src="https://www.souconcurseiroevoupassar.com/files/logos/2026080511565100000016_ANOS_SCVP_LOGO_03.png" alt="Sou Concurseiro e Vou Passar">
+      <span class="tag">Painel Admin do Blog</span>
+    </div>
+    <div class="topline-actions">
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Alternar modo claro ou escuro">
+        <span id="theme-icon">☾</span><span id="theme-label">Escuro</span>
+      </button>
+      <span id="logged-in-actions" hidden>
+        <a class="btn btn-sm" href="index.html" target="_blank" rel="noopener">Ver blog ↗</a>
+        <button class="btn btn-sm" id="btn-logout" type="button">Sair</button>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div id="login-screen" class="login-shell">
+  <div class="login-card">
+    <h1>Entrar no painel</h1>
+    <p class="sub">Acesso restrito à equipe do blog Sou Concurseiro e Vou Passar.</p>
+    <div class="error-msg" id="login-error"></div>
+    <div class="field">
+      <label for="login-password">Senha</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary" id="btn-login" type="button" style="width:100%;justify-content:center;">Entrar</button>
+  </div>
+</div>
+
+<main id="main-app" class="wrap" hidden></main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  const SUPABASE_URL = "https://dqpxugdhlgafvddavzzp.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxcHh1Z2RobGdhZnZkZGF2enpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxODQ1NTMsImV4cCI6MjA5Nzc2MDU1M30.nUhYPO3oLUZEXgQCDlRtL-Jawi0nr0l1Z7_z5ecEXvc";
+  const ADMIN_EMAIL = "admin@blog.souconcurseiro.internal";
+  const SESSION_KEY = "scvp_admin_session";
+
+  const UF_NAMES = {
+    "AM":"Amazonas","DF":"Distrito Federal","CE":"Ceará","AL":"Alagoas","BA":"Bahia",
+    "RR":"Roraima","MA":"Maranhão","RJ":"Rio de Janeiro","Nacionais/Federais":"Nacional"
+  };
+
+  const $ = s => document.querySelector(s);
+  let session = null;   // { access_token, refresh_token, expires_at }
+  let POSTS = [];
+  let editingId = null; // null = lista; "__new__" = criando; senão = id em edição
+
+  // ---------------------------------------------------------------- sessão
+  function loadSession(){
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch(e){ return null; }
+  }
+  function saveSession(s){
+    session = s;
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); } catch(e){}
+  }
+  function clearSession(){
+    session = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch(e){}
+  }
+
+  async function doLogin(password){
+    const res = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=password", {
+      method: "POST",
+      headers: { "apikey": SUPABASE_ANON_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ email: ADMIN_EMAIL, password: password })
+    });
+    if (!res.ok) throw new Error(res.status === 400 ? "Senha incorreta." : "Não foi possível entrar agora.");
+    const data = await res.json();
+    saveSession({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      expires_at: Date.now() + (data.expires_in * 1000) - 30000
+    });
+  }
+
+  async function refreshSession(){
+    if (!session || !session.refresh_token) return false;
+    try {
+      const res = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=refresh_token", {
+        method: "POST",
+        headers: { "apikey": SUPABASE_ANON_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: session.refresh_token })
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      saveSession({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+        expires_at: Date.now() + (data.expires_in * 1000) - 30000
+      });
+      return true;
+    } catch(e){ return false; }
+  }
+
+  async function ensureFreshSession(){
+    if (!session) return false;
+    if (Date.now() >= session.expires_at) return await refreshSession();
+    return true;
+  }
+
+  // Fetch autenticado contra a API do Supabase (REST ou Storage), com uma
+  // tentativa de refresh automático se o token tiver expirado no meio do caminho.
+  async function authFetch(path, opts){
+    opts = opts || {};
+    if (!(await ensureFreshSession())){ logout(); throw new Error("Sessão expirada."); }
+    const headers = Object.assign({
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": "Bearer " + session.access_token
+    }, opts.headers || {});
+    let res = await fetch(SUPABASE_URL + path, Object.assign({}, opts, { headers }));
+    if (res.status === 401){
+      if (await refreshSession()){
+        headers.Authorization = "Bearer " + session.access_token;
+        res = await fetch(SUPABASE_URL + path, Object.assign({}, opts, { headers }));
+      } else {
+        logout();
+        throw new Error("Sessão expirada.");
+      }
+    }
+    return res;
+  }
+
+  function logout(){
+    clearSession();
+    editingId = null;
+    render();
+  }
+
+  // ------------------------------------------------------------------ util
+  function toast(msg, isErr){
+    const t = $("#toast");
+    t.textContent = msg;
+    t.className = "toast show" + (isErr ? " err" : "");
+    setTimeout(() => { t.className = "toast"; }, 3200);
+  }
+  function esc(s){
+    return (s == null ? "" : String(s)).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  }
+  function slugify(s){
+    return (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
+      .replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+  }
+  function normRelacionados(rel){
+    if (!Array.isArray(rel)) return [];
+    return rel.map(r => typeof r === "string" ? { titulo: r, resumo: "" } : { titulo: r.titulo || "", resumo: r.resumo || "" });
+  }
+
+  // -------------------------------------------------------------- carregar
+  async function loadPosts(){
+    const res = await authFetch("/rest/v1/blog_posts?select=*&order=data_publicacao.desc");
+    if (!res.ok) throw new Error("Não foi possível carregar as matérias.");
+    POSTS = await res.json();
+  }
+
+  // ------------------------------------------------------------- renderers
+  function render(){
+    const loggedIn = !!session;
+    $("#login-screen").hidden = loggedIn;
+    $("#main-app").hidden = !loggedIn;
+    $("#logged-in-actions").hidden = !loggedIn;
+    if (!loggedIn) return;
+    if (editingId) renderForm(editingId);
+    else renderList();
+  }
+
+  let listQuery = "";
+
+  function renderList(){
+    let posts = POSTS.slice();
+    if (listQuery){
+      const q = listQuery.toLowerCase();
+      posts = posts.filter(p => (p.titulo+" "+p.id+" "+p.categoria+" "+(p.concurso||"")).toLowerCase().includes(q));
+    }
+    let html = '<div class="toolbar"><h1>Matérias (' + POSTS.length + ')</h1>' +
+      '<input class="list-search" type="text" id="list-search" placeholder="Buscar por título, id, categoria..." value="'+esc(listQuery)+'">' +
+      '<button class="btn btn-primary" id="btn-new">+ Nova matéria</button></div>';
+
+    if (!posts.length){
+      html += '<div class="empty">Nenhuma matéria encontrada.</div>';
+    } else {
+      posts.forEach(p => {
+        const isPub = p.status === "publicado";
+        html += '<div class="post-row">' +
+          '<div class="post-thumb">' + (p.imagem_capa ? '<img src="'+esc(p.imagem_capa)+'" alt="">' : esc((p.categoria||"").slice(0,4).toUpperCase())) + '</div>' +
+          '<div class="post-body">' +
+            '<div class="post-title">'+esc(p.titulo)+'</div>' +
+            '<div class="post-meta">' +
+              '<span class="badge '+(isPub?"badge-pub":"badge-draft")+'">'+esc(p.status||"—")+'</span>' +
+              '<span>'+esc(p.categoria)+' · '+esc(UF_NAMES[p.uf]||p.uf||"—")+'</span>' +
+              '<span class="mono">'+esc(p.data_publicacao||"")+'</span>' +
+              '<span class="mono" style="opacity:.6">'+esc(p.id)+'</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="post-actions">' +
+            '<button class="btn btn-sm" data-edit="'+esc(p.id)+'">Editar</button>' +
+            '<button class="btn btn-sm btn-danger" data-del="'+esc(p.id)+'">Excluir</button>' +
+          '</div>' +
+        '</div>';
+      });
+    }
+    $("#main-app").innerHTML = html;
+
+    $("#btn-new").addEventListener("click", () => { editingId = "__new__"; render(); });
+    const search = $("#list-search");
+    search.addEventListener("input", () => {
+      listQuery = search.value;
+      renderList();
+      const el = $("#list-search");
+      el.focus(); el.setSelectionRange(el.value.length, el.value.length);
+    });
+    document.querySelectorAll("[data-edit]").forEach(el => {
+      el.addEventListener("click", () => { editingId = el.dataset.edit; render(); });
+    });
+    document.querySelectorAll("[data-del]").forEach(el => {
+      el.addEventListener("click", () => deletePost(el.dataset.del));
+    });
+  }
+
+  async function deletePost(id){
+    const p = POSTS.find(x => x.id === id);
+    if (!confirm('Excluir de vez a matéria "'+(p?p.titulo:id)+'"? Essa ação não pode ser desfeita.')) return;
+    try {
+      const res = await authFetch("/rest/v1/blog_posts?id=eq." + encodeURIComponent(id), { method: "DELETE" });
+      if (!res.ok) throw new Error("Falha ao excluir (HTTP " + res.status + ")");
+      await loadPosts();
+      toast("Matéria excluída.");
+      render();
+    } catch(e){ toast(e.message, true); }
+  }
+
+  function blankPost(){
+    return { id:"", titulo:"", categoria:"", uf:"", concurso:"", resumo:"", conteudo:"",
+      highlight_num:"", highlight_label:"", imagem_capa:"", link_original:"",
+      relacionados: [], data_publicacao: new Date().toISOString().slice(0,10),
+      hora_publicacao:"", status:"rascunho" };
+  }
+
+  function renderForm(id){
+    const isNew = id === "__new__";
+    const post = isNew ? blankPost() : Object.assign({}, POSTS.find(x => x.id === id));
+    if (!post){ editingId = null; render(); return; }
+    post.relacionados = normRelacionados(post.relacionados);
+
+    let html = '<div class="toolbar"><h1>'+(isNew ? "Nova matéria" : "Editar matéria")+'</h1>' +
+      '<button class="btn" id="btn-cancel">← Voltar pra lista</button></div>';
+
+    html += '<div class="form-card"><h3>Identificação</h3><div class="row2">';
+    html += field_text("id", "ID / slug (único, sem espaços)", post.id, isNew ? "" : "readonly", "ex: am-tj-am");
+    html += field_select("status", "Status", post.status, [["publicado","Publicado"],["rascunho","Rascunho"]]);
+    html += '</div><div class="row3" style="margin-top:14px;">';
+    html += field_text("categoria", "Categoria", post.categoria, "", "ex: Tribunais, Policial, Fiscal...");
+    html += field_text("uf", "UF (sigla)", post.uf, "", "ex: AM, DF, BA...");
+    html += field_text("concurso", "Concurso (nome oficial)", post.concurso, "", "ex: TJ-AM");
+    html += '</div></div>';
+
+    html += '<div class="form-card"><h3>Conteúdo</h3>';
+    html += field_text("titulo", "Título", post.titulo, "", "");
+    html += field_textarea("resumo", "Resumo (aparece nos cards e na home)", post.resumo, 3);
+    html += field_textarea("conteudo", "Corpo da matéria", post.conteudo, 14, "mono");
+    html += '<div class="hint">Formato: linha começando com "## " vira subtítulo · linha começando com "&lt;" é colada como HTML puro (ex: tabela) · qualquer outra linha não-vazia vira um parágrafo. Deixe uma linha em branco entre blocos.</div>';
+    html += '<div class="row2" style="margin-top:14px;">';
+    html += field_text("highlight_num", "Número de destaque (opcional)", post.highlight_num, "", "ex: 400");
+    html += field_text("highlight_label", "Legenda do destaque", post.highlight_label, "", "ex: vagas previstas");
+    html += '</div></div>';
+
+    html += '<div class="form-card"><h3>Publicação</h3><div class="row3">';
+    html += field_date("data_publicacao", "Data de publicação", post.data_publicacao);
+    html += field_text("hora_publicacao", "Hora (opcional)", post.hora_publicacao, "", "ex: 09:40");
+    html += field_text("link_original", "Link original (opcional)", post.link_original, "", "");
+    html += '</div></div>';
+
+    html += '<div class="form-card"><h3>Imagem de capa</h3>';
+    html += '<div class="img-upload">' +
+      '<div class="img-preview" id="img-preview">' + (post.imagem_capa ? '<img src="'+esc(post.imagem_capa)+'" alt="">' : "Sem imagem") + '</div>' +
+      '<div class="img-upload-controls">' +
+        field_text("imagem_capa", "URL da imagem", post.imagem_capa, "", "cole uma URL ou envie um arquivo abaixo") +
+        '<input type="file" id="img-file" accept="image/*" style="margin-top:6px;font-size:12.5px;">' +
+        '<div class="hint" id="img-upload-status"></div>' +
+      '</div>' +
+    '</div></div>';
+
+    html += '<div class="form-card"><h3>Também nessa cobertura (relacionados)</h3>';
+    html += '<div class="rel-editor" id="rel-editor">' + relRowsHtml(post.relacionados) + '</div>';
+    html += '<button class="btn btn-sm" id="rel-add">+ Adicionar item</button></div>';
+
+    html += '<div class="form-footer">' +
+      '<button class="btn btn-primary" id="btn-save">'+(isNew?"Criar matéria":"Salvar alterações")+'</button>' +
+      '<span class="hint" id="save-status"></span>' +
+    '</div>';
+
+    $("#main-app").innerHTML = html;
+    $("#btn-cancel").addEventListener("click", () => { editingId = null; render(); });
+    $("#rel-add").addEventListener("click", () => { addRelRow(); });
+    document.querySelectorAll("#rel-editor .rel-remove").forEach(bindRelRemove);
+    $("#imagem_capa").addEventListener("input", () => {
+      $("#img-preview").innerHTML = $("#imagem_capa").value ? '<img src="'+esc($("#imagem_capa").value)+'" alt="">' : "Sem imagem";
+    });
+    $("#img-file").addEventListener("change", (e) => uploadImage(e.target.files[0], isNew ? $("#id").value : post.id));
+    $("#btn-save").addEventListener("click", () => savePost(isNew, post.id));
+    if (isNew) $("#id").addEventListener("input", () => { $("#id").value = slugify($("#id").value); });
+  }
+
+  function field_text(id,label,val,extra,ph){
+    return '<div class="field"><label for="'+id+'">'+label+'</label>' +
+      '<input type="text" id="'+id+'" value="'+esc(val)+'" placeholder="'+esc(ph||"")+'" '+(extra||"")+'></div>';
+  }
+  function field_date(id,label,val){
+    return '<div class="field"><label for="'+id+'">'+label+'</label><input type="date" id="'+id+'" value="'+esc(val||"")+'"></div>';
+  }
+  function field_textarea(id,label,val,rows,cls){
+    return '<div class="field"><label for="'+id+'">'+label+'</label><textarea id="'+id+'" rows="'+rows+'" style="'+(cls==="mono"?"font-family:ui-monospace,Menlo,monospace;font-size:13px;":"")+'">'+esc(val)+'</textarea></div>';
+  }
+  function field_select(id,label,val,opts){
+    let h = '<div class="field"><label for="'+id+'">'+label+'</label><select id="'+id+'">';
+    opts.forEach(o => { h += '<option value="'+o[0]+'"'+(val===o[0]?" selected":"")+'>'+o[1]+'</option>'; });
+    return h + '</select></div>';
+  }
+
+  function relRowsHtml(rows){
+    if (!rows.length) return '<p class="hint" style="margin:0 0 10px;">Nenhum item ainda. Use "+ Adicionar item" abaixo.</p>';
+    return rows.map((r,i) =>
+      '<div class="rel-row" data-idx="'+i+'"><div class="rel-fields">' +
+        '<input type="text" class="rel-titulo" value="'+esc(r.titulo)+'" placeholder="Título do item">' +
+        '<textarea class="rel-resumo" placeholder="Resumo (1-3 frases)">'+esc(r.resumo)+'</textarea>' +
+      '</div><button class="rel-remove" type="button" title="Remover">×</button></div>'
+    ).join("");
+  }
+  function addRelRow(){
+    const wrap = $("#rel-editor");
+    const empty = wrap.querySelector(".hint");
+    if (empty) empty.remove();
+    const div = document.createElement("div");
+    div.className = "rel-row";
+    div.innerHTML = '<div class="rel-fields">' +
+      '<input type="text" class="rel-titulo" placeholder="Título do item">' +
+      '<textarea class="rel-resumo" placeholder="Resumo (1-3 frases)"></textarea>' +
+      '</div><button class="rel-remove" type="button" title="Remover">×</button>';
+    wrap.appendChild(div);
+    bindRelRemove(div.querySelector(".rel-remove"));
+  }
+  function bindRelRemove(btn){
+    btn.addEventListener("click", () => {
+      const row = btn.closest(".rel-row");
+      row.remove();
+      if (!$("#rel-editor").querySelector(".rel-row")) $("#rel-editor").innerHTML = '<p class="hint" style="margin:0 0 10px;">Nenhum item ainda. Use "+ Adicionar item" abaixo.</p>';
+    });
+  }
+  function collectRel(){
+    return Array.from(document.querySelectorAll("#rel-editor .rel-row")).map(row => ({
+      titulo: row.querySelector(".rel-titulo").value.trim(),
+      resumo: row.querySelector(".rel-resumo").value.trim()
+    })).filter(r => r.titulo);
+  }
+
+  async function uploadImage(file, idHint){
+    if (!file) return;
+    const statusEl = $("#img-upload-status");
+    statusEl.textContent = "Enviando imagem...";
+    try {
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g,"");
+      const path = "capas/" + (slugify(idHint) || "materia") + "-" + Date.now() + "." + ext;
+      const buf = await file.arrayBuffer();
+      const res = await authFetch("/storage/v1/object/blog-imagens/" + path, {
+        method: "POST",
+        headers: { "Content-Type": file.type || "application/octet-stream" },
+        body: buf
+      });
+      if (!res.ok) throw new Error("Falha no envio (HTTP " + res.status + ")");
+      const publicUrl = SUPABASE_URL + "/storage/v1/object/public/blog-imagens/" + path;
+      $("#imagem_capa").value = publicUrl;
+      $("#img-preview").innerHTML = '<img src="'+esc(publicUrl)+'" alt="">';
+      statusEl.textContent = "Imagem enviada ✓";
+      toast("Imagem enviada.");
+    } catch(e){
+      statusEl.textContent = "";
+      toast(e.message, true);
+    }
+  }
+
+  async function savePost(isNew, originalId){
+    const statusEl = $("#save-status");
+    const id = isNew ? $("#id").value.trim() : originalId;
+    if (!id){ toast("Preencha o ID/slug da matéria.", true); return; }
+    const titulo = $("#titulo").value.trim();
+    const categoria = $("#categoria").value.trim();
+    if (!titulo || !categoria){ toast("Título e categoria são obrigatórios.", true); return; }
+
+    const payload = {
+      titulo: titulo,
+      categoria: categoria,
+      uf: $("#uf").value.trim(),
+      concurso: $("#concurso").value.trim(),
+      resumo: $("#resumo").value.trim(),
+      conteudo: $("#conteudo").value,
+      highlight_num: $("#highlight_num").value.trim(),
+      highlight_label: $("#highlight_label").value.trim(),
+      imagem_capa: $("#imagem_capa").value.trim(),
+      link_original: $("#link_original").value.trim(),
+      relacionados: collectRel(),
+      data_publicacao: $("#data_publicacao").value || null,
+      hora_publicacao: $("#hora_publicacao").value.trim(),
+      status: $("#status").value
+    };
+
+    $("#btn-save").disabled = true;
+    statusEl.textContent = "Salvando...";
+    try {
+      let res;
+      if (isNew){
+        payload.id = id;
+        res = await authFetch("/rest/v1/blog_posts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Prefer": "return=minimal" },
+          body: JSON.stringify(payload)
+        });
+      } else {
+        res = await authFetch("/rest/v1/blog_posts?id=eq." + encodeURIComponent(id), {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", "Prefer": "return=minimal" },
+          body: JSON.stringify(payload)
+        });
+      }
+      if (!res.ok){
+        const errBody = await res.text();
+        throw new Error(res.status === 409 || errBody.indexOf("duplicate") > -1 ? "Já existe uma matéria com esse ID." : "Falha ao salvar (HTTP " + res.status + ")");
+      }
+      await loadPosts();
+      toast(isNew ? "Matéria criada." : "Alterações salvas.");
+      editingId = null;
+      render();
+    } catch(e){
+      statusEl.textContent = "";
+      toast(e.message, true);
+    } finally {
+      $("#btn-save").disabled = false;
+    }
+  }
+
+  // ------------------------------------------------------------------ boot
+  $("#btn-login").addEventListener("click", async () => {
+    const pass = $("#login-password").value;
+    const errEl = $("#login-error");
+    errEl.className = "error-msg";
+    if (!pass){ errEl.textContent = "Digite a senha."; errEl.className = "error-msg show"; return; }
+    $("#btn-login").disabled = true;
+    try {
+      await doLogin(pass);
+      await loadPosts();
+      render();
+    } catch(e){
+      errEl.textContent = e.message;
+      errEl.className = "error-msg show";
+    } finally {
+      $("#btn-login").disabled = false;
+    }
+  });
+  $("#login-password").addEventListener("keydown", (e) => { if (e.key === "Enter") $("#btn-login").click(); });
+  $("#btn-logout").addEventListener("click", logout);
+
+  function applyThemeLabel(){
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark" ||
+      (!document.documentElement.hasAttribute("data-theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    $("#theme-icon").textContent = isDark ? "☀" : "☾";
+    $("#theme-label").textContent = isDark ? "Claro" : "Escuro";
+  }
+  $("#theme-toggle").addEventListener("click", () => {
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark" ||
+      (!document.documentElement.hasAttribute("data-theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    if (isDark){
+      document.documentElement.setAttribute("data-theme", "light");
+      try { localStorage.setItem("scvp-theme", "light"); } catch(e){}
+    } else {
+      document.documentElement.setAttribute("data-theme", "dark");
+      try { localStorage.setItem("scvp-theme", "dark"); } catch(e){}
+    }
+    applyThemeLabel();
+  });
+  applyThemeLabel();
+
+  (async function init(){
+    session = loadSession();
+    if (session){
+      try {
+        if (await ensureFreshSession()){
+          await loadPosts();
+        } else {
+          session = null;
+        }
+      } catch(e){ session = null; }
+    }
+    render();
+  })();
+})();
+</script>
+</body>
+</html>
