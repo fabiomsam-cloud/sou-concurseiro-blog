@@ -41,6 +41,9 @@
   /* ---- masthead ---- */
   .topline{background:var(--paper);border-bottom:1px solid var(--line);}
   .masthead{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;padding:22px 0 16px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:12px;cursor:pointer;text-decoration:none;}
+  .brand-logo{height:44px;width:auto;display:block;border-radius:6px;}
+  .brand-sep{width:1px;align-self:stretch;background:var(--line);}
   .wordmark{display:flex;flex-direction:column;gap:3px;}
   .wordmark .kicker{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);font-weight:700;}
   .wordmark .name{font-weight:800;font-size:clamp(20px,3.4vw,28px);letter-spacing:-.01em;}
@@ -125,21 +128,17 @@
 
   .empty{padding:50px 10px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
 
-  /* ---- calendário por estado ---- */
+  /* ---- concursos por estado ---- */
   .cal-page{padding:34px 0 64px;}
   .cal-intro{max-width:60ch;}
-  .cal-state{margin-top:32px;}
-  .cal-state-header{display:flex;align-items:baseline;gap:10px;margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid var(--line);}
-  .cal-state-header h2{font-size:19px;font-weight:800;margin:0;letter-spacing:-.005em;}
-  .cal-count{font-size:11px;color:var(--ink-soft);font-weight:700;background:var(--paper-alt);border:1px solid var(--line);border-radius:999px;padding:3px 11px;white-space:nowrap;}
-  .cal-row{display:flex;align-items:center;gap:16px;padding:13px 4px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:8px;transition:background .15s ease;}
-  .cal-row:hover{background:var(--paper-alt);}
-  .cal-row:last-child{border-bottom:none;}
-  .cal-date{flex:0 0 auto;width:70px;font-size:11px;color:var(--ink-soft);font-weight:700;text-transform:uppercase;}
-  .cal-row-body{flex:1;min-width:0;}
-  .cal-row-body .cat{font-size:10.5px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
-  .cal-row-body h4{font-size:14.5px;font-weight:700;margin:0;line-height:1.32;}
-  .cal-row .num{font-size:12.5px;color:var(--amber);font-weight:700;flex:0 0 auto;}
+  .pill .pill-count{opacity:.65;font-weight:700;margin-left:3px;}
+  .cal-toolbar{background:var(--paper-alt);border:1px solid var(--line);border-radius:18px;padding:22px 24px 20px;margin:20px 0 28px;}
+  .cal-toolbar .filterbar{padding:0;}
+  .cal-toolbar .searchbox{background:var(--paper);}
+
+  /* ---- rodapé "navegue por carreira" (home) ---- */
+  .topics-foot{border-top:1px solid var(--line);margin-top:12px;padding:28px 0 6px;}
+  .topics-foot .searchbox{max-width:360px;margin:0 0 16px;}
 
   /* ---- detail / article ---- */
   .article{padding:36px 0 64px;max-width:680px;margin:0 auto;}
@@ -202,15 +201,19 @@
 
 <div class="topline">
   <div class="wrap masthead">
-    <div class="wordmark">
-      <span class="kicker">Blog</span>
-      <span class="name">Sou Concurseiro e Vou Passar</span>
-    </div>
+    <a class="brand" id="brand-home" href="#/">
+      <img class="brand-logo" src="https://www.souconcurseiroevoupassar.com/files/logos/2026080511565100000016_ANOS_SCVP_LOGO_03.png" alt="Sou Concurseiro e Vou Passar">
+      <span class="brand-sep"></span>
+      <div class="wordmark">
+        <span class="kicker">Blog oficial</span>
+        <span class="name">Sou Concurseiro e Vou Passar</span>
+      </div>
+    </a>
     <div class="dateline" id="dateline"></div>
   </div>
   <div class="wrap navrow">
     <a class="home-link" id="nav-home">Início</a>
-    <a class="home-link" id="nav-calendario">Calendário por Estado</a>
+    <a class="home-link" id="nav-calendario">Concursos por Estado</a>
     <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Alternar modo claro ou escuro">
       <span class="icon" id="theme-icon">☾</span><span id="theme-label">Modo escuro</span>
     </button>
@@ -479,6 +482,8 @@
   let filterCat = "";
   let filterUf = "";
   let query = "";
+  let calUf = "";
+  let calQuery = "";
 
   function catAbbr(cat){
     return CAT_ABBR[cat] || (cat || "").slice(0,4).toUpperCase();
@@ -501,6 +506,12 @@
       if (!hay.includes(q)) return false;
     }
     return true;
+  }
+
+  function pillsHtml(cats){
+    let h = '<button class="pill'+(filterCat===""?" active":"")+'" data-cat="">Todas</button>';
+    cats.forEach(c => { h += '<button class="pill'+(filterCat===c?" active":"")+'" data-cat="'+c+'">'+c+'</button>'; });
+    return h;
   }
 
   function cardHtml(p){
@@ -541,8 +552,7 @@
 
     html += '<div class="wrap">';
     html += '<div class="filterbar">';
-    html += '<button class="pill'+(filterCat===""?" active":"")+'" data-cat="">Todas</button>';
-    cats.forEach(c => { html += '<button class="pill'+(filterCat===c?" active":"")+'" data-cat="'+c+'">'+c+'</button>'; });
+    html += pillsHtml(cats);
     html += '<select class="uf-select" id="uf-select"><option value="">Todos os estados</option>';
     ufs.forEach(u => { html += '<option value="'+u+'"'+(filterUf===u?" selected":"")+'>'+(UF_NAMES[u]||u)+'</option>'; });
     html += '</select>';
@@ -558,6 +568,15 @@
     html += '</div>';
     html += sidebarHtml(sorted);
     html += '</div>';
+
+    // Rodapé "navegue por carreira": repete busca e tópicos lá embaixo, pra
+    // quem rolou a página inteira não precisar voltar ao topo pra filtrar.
+    html += '<div class="topics-foot">';
+    html += '<div class="section-label">Navegue por carreira</div>';
+    html += '<div class="searchbox" id="foot-searchbox"><span class="u" style="font-size:12px;color:var(--ink-soft)">🔍</span><input type="text" id="foot-search" placeholder="Buscar concurso, banca, estado..." value="'+query.replace(/"/g,"&quot;")+'"></div>';
+    html += '<div class="filterbar" style="padding:0;">' + pillsHtml(cats) + '</div>';
+    html += '</div>';
+
     html += '</div>';
 
     app.innerHTML = html;
@@ -576,6 +595,17 @@
     });
     const sideCal = $("#side-cal");
     if (sideCal) sideCal.addEventListener("click", () => { location.hash = "#/calendario"; });
+    const footSearch = $("#foot-search");
+    if (footSearch){
+      footSearch.addEventListener("input", () => {
+        query = footSearch.value;
+        const topSearch = $("#search");
+        if (topSearch) topSearch.value = query;
+        renderHome();
+        const el2 = $("#foot-search");
+        if (el2){ el2.focus(); el2.setSelectionRange(el2.value.length, el2.value.length); }
+      });
+    }
   }
 
   // Barra lateral da home: aproveita o espaço que sobra ao lado da grade de
@@ -606,7 +636,7 @@
       '</div>';
     }
 
-    html += '<div class="side-cal" id="side-cal"><div class="ico">🗓️</div><h4>Calendário por Estado</h4><p>Veja os concursos organizados por UF</p></div>';
+    html += '<div class="side-cal" id="side-cal"><div class="ico">📍</div><h4>Concursos por Estado</h4><p>Filtre rapidinho pela sua região</p></div>';
 
     html += '</aside>';
     return html;
@@ -694,34 +724,68 @@
     return sameCat.concat(rest).slice(0,4);
   }
 
-  function renderCalendario(){
+  // "Concursos por Estado" — navegação dinâmica: chips de UF (com contagem)
+  // + busca, filtrando um grid de cards (mesma linguagem visual da home) em
+  // vez da lista corrida por estado que ficava cansativa de ler.
+  function renderConcursosPorEstado(scrollTop){
     const byUf = {};
     POSTS.forEach(p => { (byUf[p.uf] = byUf[p.uf] || []).push(p); });
-    const ufsSorted = Object.keys(byUf).sort((a,b) => (UF_NAMES[a]||a).localeCompare(UF_NAMES[b]||b, "pt-BR"));
+    // Ordena por volume de concursos (mais ativos primeiro) — mais dinâmico
+    // do que a ordem alfabética, e mostra de cara onde a coisa está pegando.
+    const ufsSorted = Object.keys(byUf).sort((a,b) => {
+      const diff = byUf[b].length - byUf[a].length;
+      return diff !== 0 ? diff : (UF_NAMES[a]||a).localeCompare(UF_NAMES[b]||b, "pt-BR");
+    });
 
     let html = '<div class="wrap cal-page">';
     html += '<div class="hero-eyebrow">Organização geográfica</div>';
-    html += '<h1 style="font-size:clamp(24px,3.6vw,34px);margin:0 0 10px;">Calendário por Estado</h1>';
-    html += '<p class="lede cal-intro">Todas as matérias do blog organizadas por estado, da mais recente para a mais antiga. Use pra acompanhar de uma vez só o que está rolando na sua região.</p>';
+    html += '<h1 style="font-size:clamp(24px,3.6vw,34px);margin:0 0 10px;">Concursos por Estado</h1>';
+    html += '<div class="hero-meta" style="margin-bottom:4px;"><p class="lede cal-intro" style="margin:0;">Filtre por estado pra ver rapidinho os concursos que estão rolando na sua região.</p>' +
+      '<div class="stat-pill"><span class="num">'+POSTS.length+'</span><span class="lbl">concursos em '+ufsSorted.length+' estados</span></div></div>';
+
+    html += '<div class="cal-toolbar">';
+    html += '<div class="searchbox" style="max-width:360px;margin:0 0 18px;"><span class="u" style="font-size:12px;color:var(--ink-soft)">🔍</span><input type="text" id="cal-search" placeholder="Buscar concurso, banca, estado..." value="'+calQuery.replace(/"/g,"&quot;")+'"></div>';
+
+    html += '<div class="filterbar">';
+    html += '<button class="pill'+(calUf===""?" active":"")+'" data-uf="">Todos os estados<span class="pill-count">'+POSTS.length+'</span></button>';
     ufsSorted.forEach(uf => {
-      const posts = byUf[uf].slice().sort((a,b) => (b.data_publicacao > a.data_publicacao ? 1 : -1));
-      html += '<div class="cal-state"><div class="cal-state-header"><h2>'+(UF_NAMES[uf]||uf)+'</h2><span class="cal-count">'+posts.length+(posts.length===1?' concurso':' concursos')+'</span></div>';
-      posts.forEach(p => {
-        html += '<div class="cal-row" data-id="'+p.id+'">' +
-          '<div class="cal-date mono">'+fmtDate(p.data_publicacao)+'</div>' +
-          '<div class="cal-row-body"><div class="cat">'+p.categoria+' · '+p.concurso+'</div><h4>'+p.titulo+'</h4></div>' +
-          (p.highlight_num && p.highlight_num !== "—" ? '<div class="num mono">'+p.highlight_num+'</div>' : '') +
-        '</div>';
-      });
-      html += '</div>';
+      html += '<button class="pill'+(calUf===uf?" active":"")+'" data-uf="'+uf+'">'+(UF_NAMES[uf]||uf)+'<span class="pill-count">'+byUf[uf].length+'</span></button>';
     });
+    html += '</div>';
+    html += '</div>';
+
+    let filtered = POSTS.filter(p => !calUf || p.uf === calUf);
+    if (calQuery){
+      const q = calQuery.toLowerCase();
+      filtered = filtered.filter(p => (p.titulo+" "+p.concurso+" "+p.categoria+" "+(UF_NAMES[p.uf]||p.uf)).toLowerCase().includes(q));
+    }
+    filtered = filtered.slice().sort((a,b) => (b.data_publicacao > a.data_publicacao ? 1 : -1));
+
+    html += '<div class="section-label">'+(calUf ? (UF_NAMES[calUf]||calUf) : "Todos os concursos")+' · '+filtered.length+(filtered.length===1?" concurso":" concursos")+'</div>';
+    if (!filtered.length){
+      html += '<div class="empty">Nada encontrado com esse filtro.</div>';
+    } else {
+      html += '<div class="grid">' + filtered.map(cardHtml).join("") + '</div>';
+    }
     html += '</div>';
 
     app.innerHTML = html;
-    document.querySelectorAll(".cal-row").forEach(el => {
+    document.querySelectorAll(".cal-page .card").forEach(el => {
       el.addEventListener("click", () => { location.hash = "#/materia/" + el.dataset.id; });
     });
-    window.scrollTo(0,0);
+    document.querySelectorAll(".cal-page .pill").forEach(el => {
+      el.addEventListener("click", () => { calUf = el.dataset.uf; renderConcursosPorEstado(); });
+    });
+    const calSearch = $("#cal-search");
+    if (calSearch){
+      calSearch.addEventListener("input", () => {
+        calQuery = calSearch.value;
+        renderConcursosPorEstado();
+        const el2 = $("#cal-search");
+        if (el2){ el2.focus(); el2.setSelectionRange(el2.value.length, el2.value.length); }
+      });
+    }
+    if (scrollTop) window.scrollTo(0,0);
   }
 
   function route(){
@@ -729,7 +793,7 @@
     const h = location.hash || "#/";
     const m = /^#\/materia\/(.+)$/.exec(h);
     if (m) renderArticle(decodeURIComponent(m[1]));
-    else if (h === "#/calendario") renderCalendario();
+    else if (h === "#/calendario") renderConcursosPorEstado(true);
     else renderHome();
   }
 
