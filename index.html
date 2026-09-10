@@ -153,6 +153,19 @@
   .product-cta a.btn{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--accent);font-weight:800;font-size:14px;padding:13px 24px;border-radius:10px;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.18);transition:transform .15s ease,box-shadow .15s ease;}
   .product-cta a.btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.22);}
 
+  .author-byline{display:flex;align-items:center;gap:14px;margin:34px 0 8px;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);flex-wrap:wrap;}
+  .author-avatar{flex:0 0 auto;width:42px;height:42px;border-radius:999px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;letter-spacing:.02em;}
+  .author-info{flex:1;min-width:170px;}
+  .author-info .name{font-size:13.5px;font-weight:700;}
+  .author-info .role{font-size:12px;color:var(--ink-soft);margin-top:1px;}
+  .share-row{display:flex;align-items:center;gap:8px;margin-left:auto;}
+  .share-row .lbl{font-size:11px;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-right:2px;}
+  .share-btn{width:32px;height:32px;border-radius:999px;background:var(--paper-alt);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink-soft);text-decoration:none;font-size:12.5px;font-weight:700;transition:border-color .15s,color .15s;}
+  .share-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+  .similar-posts{margin:38px 0 0;}
+  .similar-posts h3{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin:0 0 16px;}
+
   footer{border-top:1px solid var(--line);padding:24px 0 50px;margin-top:24px;}
   footer p{font-size:11.5px;color:var(--ink-soft);margin:0;}
 
@@ -385,6 +398,22 @@
       {
         "titulo": "TJ-AM 2027: como começar do zero a preparação hoje",
         "resumo": "Sem edital publicado, o caminho é montar um cronograma com as disciplinas de base (Português, Raciocínio Lógico, Informática e Direito Constitucional/Administrativo), revisar a legislação específica do Judiciário amazonense e acompanhar de perto os próximos passos: formação da comissão e escolha da banca."
+      },
+      {
+        "titulo": "TJ-AM: como foi o último concurso e o que ele revela para 2027",
+        "resumo": "Em 2019, o TJ-AM foi organizado pela banca Cebraspe e ofereceu 640 vagas — 160 imediatas e 480 em cadastro de reserva — para os cargos de Analista e Assistente Judiciário, com prova no modelo certo-ou-errado (120 itens para Analista, 100 para Assistente). O histórico ajuda a dimensionar o tamanho do próximo certame."
+      },
+      {
+        "titulo": "Concurso TJ-AM: perguntas frequentes de quem vai prestar a prova",
+        "resumo": "Dúvidas comuns incluem se o concurso permite acúmulo com outro cargo público, qual o prazo de validade do certame após a homologação (geralmente até dois anos, prorrogável por igual período) e se o cadastro de reserva garante nomeação — que depende da necessidade do tribunal ao longo da validade do edital."
+      },
+      {
+        "titulo": "Como costuma funcionar a inscrição em concursos de tribunais",
+        "resumo": "Embora o edital do TJ-AM 2027 ainda não tenha sido publicado, concursos de tribunais costumam abrir inscrições online por cerca de um mês, cobrar taxa que varia por cargo (maior para nível superior) e prever isenção para candidatos de baixa renda ou doadores de sangue e medula, conforme a legislação de cada edital."
+      },
+      {
+        "titulo": "TJ-AM: como acompanhar as notícias oficiais do concurso",
+        "resumo": "As atualizações oficiais saem no site do TJAM (tjam.jus.br) e, quando o edital for publicado, no Diário da Justiça Eletrônico. Acompanhar esses canais — e não só notícias de terceiros — é a forma mais segura de não perder prazos de inscrição, recursos e datas de prova."
       }
     ],
     "imagem_capa": "https://live.staticflickr.com/65535/51947297009_33cf9ce9c0_b.jpg",
@@ -416,6 +445,9 @@
       link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-tribunal-de-justica-do-amazonas"
     }
   };
+
+  // Autoria fixa das matérias do blog (crédito de fechamento + compartilhamento).
+  const AUTHOR = { nome: "Vanessa Silva", cargo: "Jornalista", iniciais: "VS" };
 
   const CAT_ABBR = {
     "Tribunais":"TRIB","Policial":"POL","Fiscal":"FISC","Educação":"EDUC",
@@ -564,6 +596,26 @@
           p.relacionados.map(r => '<li>'+r+'</li>').join("") + '</ul></div>';
       }
     }
+
+    const shareUrl = encodeURIComponent(location.href);
+    const shareText = encodeURIComponent(p.titulo);
+    html += '<div class="author-byline">' +
+      '<div class="author-avatar">'+AUTHOR.iniciais+'</div>' +
+      '<div class="author-info"><div class="name">Por '+AUTHOR.nome+'</div><div class="role">'+AUTHOR.cargo+' · atualizado em '+fmtDate(p.data_publicacao)+'</div></div>' +
+      '<div class="share-row"><span class="lbl">Compartilhe</span>' +
+        '<a class="share-btn" href="https://www.facebook.com/sharer/sharer.php?u='+shareUrl+'" target="_blank" rel="noopener" aria-label="Compartilhar no Facebook">f</a>' +
+        '<a class="share-btn" href="https://twitter.com/intent/tweet?url='+shareUrl+'&text='+shareText+'" target="_blank" rel="noopener" aria-label="Compartilhar no X">X</a>' +
+        '<a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url='+shareUrl+'" target="_blank" rel="noopener" aria-label="Compartilhar no LinkedIn">in</a>' +
+        '<a class="share-btn" href="https://wa.me/?text='+shareText+'%20'+shareUrl+'" target="_blank" rel="noopener" aria-label="Compartilhar no WhatsApp">W</a>' +
+      '</div>' +
+    '</div>';
+
+    const similar = similarPosts(p);
+    if (similar.length){
+      html += '<div class="similar-posts"><h3>Leia também</h3><div class="grid">' +
+        similar.map(cardHtml).join("") + '</div></div>';
+    }
+
     html += '</div>';
     app.innerHTML = html;
     $("#back-link").addEventListener("click", () => { location.hash = "#/"; });
@@ -574,7 +626,20 @@
         a.style.maxHeight = open ? (a.scrollHeight + "px") : "0px";
       });
     });
+    document.querySelectorAll(".similar-posts .card").forEach(el => {
+      el.addEventListener("click", () => { location.hash = "#/materia/" + el.dataset.id; window.scrollTo(0,0); });
+    });
     window.scrollTo(0,0);
+  }
+
+  // Sugestão de matérias parecidas pra continuar a leitura: prioriza mesma
+  // categoria, completa com as mais recentes das demais, até 4 posts.
+  function similarPosts(current){
+    const others = POSTS.filter(x => x.id !== current.id);
+    const sameCat = others.filter(x => x.categoria === current.categoria);
+    const rest = others.filter(x => x.categoria !== current.categoria)
+      .sort((a,b) => (b.data_publicacao > a.data_publicacao ? 1 : -1));
+    return sameCat.concat(rest).slice(0,4);
   }
 
   function renderCalendario(){
