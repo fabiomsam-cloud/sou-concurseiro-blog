@@ -36,7 +36,7 @@
   .u{font-family:"Inter",system-ui,sans-serif;}
   .mono{font-variant-numeric:tabular-nums;}
   h1,h2,h3,.display{font-family:"Inter",system-ui,sans-serif;font-weight:800;text-wrap:balance;letter-spacing:-.01em;}
-  .wrap{max-width:1080px;margin:0 auto;padding:0 22px;}
+  .wrap{max-width:1240px;margin:0 auto;padding:0 22px;}
 
   /* ---- masthead ---- */
   .topline{background:var(--paper);border-bottom:1px solid var(--line);}
@@ -75,18 +75,45 @@
   .pill.active{background:var(--accent);border-color:var(--accent);color:#fff;}
   .uf-select{margin-left:auto;font-size:12px;font-weight:600;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;}
 
+  /* ---- home layout: main content + sidebar ---- */
+  .home-main{display:grid;grid-template-columns:1fr 300px;gap:32px;align-items:start;}
+  @media (max-width:900px){ .home-main{grid-template-columns:1fr;} }
+
   /* ---- grid / seal cards ---- */
   .section-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;border-bottom:1px solid var(--line);padding-bottom:9px;margin-bottom:18px;}
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:40px;}
   @media (max-width:720px){ .grid{grid-template-columns:1fr;} }
-  .card{padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--paper);display:flex;gap:14px;cursor:pointer;transition:box-shadow .15s ease,border-color .15s ease,transform .15s ease;}
+  .card{padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--paper);display:flex;gap:16px;cursor:pointer;transition:box-shadow .15s ease,border-color .15s ease,transform .15s ease;}
   .card:hover{box-shadow:var(--shadow);border-color:#CBD5E1;transform:translateY(-1px);}
-  .seal{flex:0 0 auto;width:88px;height:88px;}
+  .seal{flex:0 0 auto;width:128px;height:128px;}
   .seal-img{border-radius:12px;overflow:hidden;border:1px solid var(--line);}
   .seal-img img{width:100%;height:100%;object-fit:cover;display:block;}
-  .seal-fallback{width:100%;height:100%;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;letter-spacing:.03em;border:1px solid var(--line);}
-  .hero-img{margin:0 0 20px;border-radius:16px;overflow:hidden;border:1px solid var(--line);max-height:340px;}
-  .hero-img img{width:100%;height:100%;object-fit:cover;display:block;max-height:340px;}
+  .seal-fallback{width:100%;height:100%;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;letter-spacing:.03em;border:1px solid var(--line);}
+
+  /* ---- sidebar ---- */
+  .sidebar{display:flex;flex-direction:column;gap:20px;padding-top:5px;}
+  .side-card{border:1px solid var(--line);border-radius:14px;padding:18px 18px 6px;background:var(--paper);}
+  .side-card h4{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin:0 0 14px;}
+  .side-item{display:flex;gap:11px;align-items:flex-start;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--line);cursor:pointer;}
+  .side-item:last-child{border-bottom:none;margin-bottom:4px;padding-bottom:4px;}
+  .side-rank{flex:0 0 auto;font-weight:800;font-size:16px;color:var(--line);font-family:"Inter",sans-serif;line-height:1.3;}
+  .side-item:hover .side-rank{color:var(--accent);}
+  .side-item-body{min-width:0;}
+  .side-item-title{font-size:13px;font-weight:700;line-height:1.32;margin:0 0 4px;}
+  .side-item:hover .side-item-title{color:var(--accent);}
+  .side-item-meta{font-size:11px;color:var(--amber);font-weight:700;}
+  .side-promo{border-radius:14px;padding:20px;background:var(--accent);color:#fff;}
+  .side-promo .eyebrow{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.75);font-weight:700;margin-bottom:8px;}
+  .side-promo h4{margin:0 0 8px;font-size:16.5px;font-weight:800;color:#fff;letter-spacing:-.005em;}
+  .side-promo p{margin:0 0 16px;font-size:12.5px;color:rgba(255,255,255,.85);line-height:1.5;}
+  .side-promo a.btn{display:inline-flex;align-items:center;gap:6px;background:#fff;color:var(--accent);font-weight:800;font-size:12.5px;padding:10px 16px;border-radius:9px;text-decoration:none;}
+  .side-cal{display:block;border:1px dashed var(--line);border-radius:14px;padding:18px;text-align:center;cursor:pointer;transition:border-color .15s ease;}
+  .side-cal:hover{border-color:var(--accent);}
+  .side-cal .ico{font-size:20px;margin-bottom:8px;}
+  .side-cal h4{margin:0 0 4px;font-size:13.5px;font-weight:800;letter-spacing:0;text-transform:none;color:var(--ink);}
+  .side-cal p{margin:0;font-size:12px;color:var(--ink-soft);}
+  .hero-img{margin:0 0 20px;border-radius:16px;overflow:hidden;border:1px solid var(--line);max-height:400px;}
+  .hero-img img{width:100%;height:100%;object-fit:cover;display:block;max-height:400px;}
   .article-img{margin:0 0 24px;border-radius:16px;overflow:hidden;border:1px solid var(--line);}
   .article-img img{width:100%;height:auto;display:block;}
   .card-body{flex:1;min-width:0;}
@@ -211,7 +238,7 @@
     "highlight_label": "vagas de Cadete Oficial",
     "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/107/concurso-bombeiro-ma-2026-vagas-salario-e-etapas",
     "relacionados": [],
-    "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/2291177afa7e00f23347367619b4b6cc.jpg",
+    "imagem_capa": "https://cbm.ssp.ma.gov.br/wp-content/uploads/2026/05/18-viaturas-Governo-do-maranhao-e-cbmma.jpg",
     "data_publicacao": "2026-09-09"
   },
   {
@@ -226,7 +253,7 @@
     "highlight_label": "vagas autorizadas",
     "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/219/sedf-autoriza-10-6-mil-vagas-veja-cargos-e-salarios-de-ate-r-14-4-mil",
     "relacionados": [],
-    "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/a17be2c70518e8fdb464764fa5eb6a9c.jpg",
+    "imagem_capa": "https://midias.correiobraziliense.com.br/_midias/jpg/2025/05/06/675x450/1_whatsapp_image_2025_05_05_at_19_50_38-51403062.jpeg?20250506154709",
     "data_publicacao": "2026-09-07"
   },
   {
@@ -241,7 +268,7 @@
     "highlight_label": "vagas projetadas",
     "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/220/pmdf-projeta-2-mil-vagas-de-soldado-com-entrada-prevista-para-2027",
     "relacionados": [],
-    "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/5729858fd39feb702f48c905f77d37a3.jpg",
+    "imagem_capa": "https://portal.pm.df.gov.br/wp-content/uploads/2025/05/WhatsApp-Image-2025-05-14-at-09.43.13-768x512.jpeg",
     "data_publicacao": "2026-09-06"
   },
   {
@@ -256,7 +283,7 @@
     "highlight_label": "vagas de professor",
     "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/218/seduc-ce-abre-2-mil-vagas-de-professor-com-salario-de-r-7-1-mil",
     "relacionados": [],
-    "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/0549c05e494842df05b19a5e6c1daeda.jpg",
+    "imagem_capa": "https://diariodonordeste.verdesmares.com.br/image/contentid/policy:1.3434220:1698329340/Img.webp?f=16x9&h=720&w=1280&$p$f$h$w=6480e39",
     "data_publicacao": "2026-09-06"
   },
   {
@@ -271,7 +298,7 @@
     "highlight_label": "salário de Defensor",
     "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/216/concurso-dpe-al-2026-defensor-com-salario-de-r-35-8-mil",
     "relacionados": [],
-    "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/25e1455a378b01dbc3b76acbd878191e.jpg",
+    "imagem_capa": "https://defensoria.al.def.br/images/Noticias%20-%20Imagens%20Ascom/Fabricio%20Leao.jpg",
     "data_publicacao": "2026-09-05"
   },
   {
@@ -286,7 +313,7 @@
     "highlight_label": "salário no topo",
     "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/217/concurso-sefaz-ba-2026-200-vagas-e-salario-de-r-33-mil",
     "relacionados": [],
-    "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/c68828d293e36fd14d35bdd57be5d93e.jpg",
+    "imagem_capa": "https://jornalgrandebahia.com.br/wp-content/uploads/2024/08/Sede-da-SEfaz-Bahia-no-CAB-em-Salvador.jpg",
     "data_publicacao": "2026-09-05"
   },
   {
@@ -301,7 +328,7 @@
     "highlight_label": "salário no topo",
     "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/213/concurso-pc-pr-2026-provas-em-outubro-ate-r-26-8-mil",
     "relacionados": [],
-    "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/44ce87285967b38313ef2214a1c35d04.jpg",
+    "imagem_capa": "https://policiacivil.rr.gov.br/wp-content/uploads/2025/06/policiacivilderoraima_505431379_18387314758184806_7050807651069834833_n-819x1024.jpg",
     "data_publicacao": "2026-09-04"
   },
   {
@@ -316,7 +343,7 @@
     "highlight_label": "vagas temporárias",
     "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/214/concurso-bombeiro-rj-2026-1-500-vagas-banca-definida",
     "relacionados": [],
-    "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/0b9b404b8dbb1d62f0b523e1df80a593.jpg",
+    "imagem_capa": "https://www.cbmerj.rj.gov.br/wp-content/uploads/2026/09/WhatsApp-Image-2026-09-01-at-12.27.59-13-768x512.jpeg",
     "data_publicacao": "2026-09-04"
   },
   {
@@ -331,7 +358,7 @@
     "highlight_label": "vagas autorizadas",
     "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/215/concurso-pcdf-2026-315-vagas-autorizadas-ate-r-21-4-mil",
     "relacionados": [],
-    "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/dfeb9117a10210c38232bd79167d2378.jpg",
+    "imagem_capa": "https://images.metroimg.com/2024/08/20100117/pcdf-sede.jpg",
     "data_publicacao": "2026-09-04"
   },
   {
@@ -346,7 +373,7 @@
     "highlight_label": "salário projetado com benefícios",
     "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/187/concurso-banco-do-brasil-2026-vagas-edital-e-salario",
     "relacionados": [],
-    "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/67722280f38ee6d7b0213e348fa69f86.jpg",
+    "imagem_capa": "https://imagens.ebc.com.br/fP-rjZHYSpsB8QGJ2SGQq0Ual40=/770x0/https://agenciabrasil.ebc.com.br/sites/default/files/thumbnails/image/banco-do-brasil_mcamgo_abr_280620211818-7.jpg?itok=L98s6Sg8",
     "data_publicacao": "2026-09-01"
   },
   {
@@ -521,12 +548,16 @@
     html += '</select>';
     html += '</div>';
 
+    html += '<div class="home-main"><div>';
     html += '<div class="section-label">Publicações recentes</div>';
     if (!rest.length){
       html += '<div class="empty">Nada encontrado com esse filtro.</div>';
     } else {
       html += '<div class="grid">' + rest.map(cardHtml).join("") + '</div>';
     }
+    html += '</div>';
+    html += sidebarHtml(sorted);
+    html += '</div>';
     html += '</div>';
 
     app.innerHTML = html;
@@ -540,6 +571,45 @@
     });
     const ufSel = $("#uf-select");
     if (ufSel) ufSel.addEventListener("change", () => { filterUf = ufSel.value; renderHome(); });
+    document.querySelectorAll(".side-item").forEach(el => {
+      el.addEventListener("click", () => { location.hash = "#/materia/" + el.dataset.id; });
+    });
+    const sideCal = $("#side-cal");
+    if (sideCal) sideCal.addEventListener("click", () => { location.hash = "#/calendario"; });
+  }
+
+  // Barra lateral da home: aproveita o espaço que sobra ao lado da grade de
+  // publicações em telas largas. Destaques (ranking simples pelas mais
+  // recentes), um cartão de produto (só concursos com vitrine confirmada,
+  // mesma regra do CTA dentro da matéria) e um atalho pro calendário.
+  function sidebarHtml(sortedPosts){
+    let html = '<aside class="sidebar">';
+
+    html += '<div class="side-card"><h4>Concursos em destaque</h4>';
+    sortedPosts.slice(0, 5).forEach((p, i) => {
+      html += '<div class="side-item" data-id="'+p.id+'">' +
+        '<span class="side-rank mono">'+(i+1)+'</span>' +
+        '<div class="side-item-body">' +
+          '<div class="side-item-title">'+p.titulo+'</div>' +
+          (p.highlight_num && p.highlight_num !== "—" ? '<div class="side-item-meta mono">'+p.highlight_num+' · '+p.highlight_label+'</div>' : '') +
+        '</div>' +
+      '</div>';
+    });
+    html += '</div>';
+
+    const prod = PRODUCTS["am-tj-am"];
+    if (prod){
+      html += '<div class="side-promo"><div class="eyebrow">Preparação</div>' +
+        '<h4>'+prod.nome+'</h4>' +
+        '<p>'+prod.linha+'</p>' +
+        '<a class="btn" href="'+prod.link+'" target="_blank" rel="noopener">Conhecer →</a>' +
+      '</div>';
+    }
+
+    html += '<div class="side-cal" id="side-cal"><div class="ico">🗓️</div><h4>Calendário por Estado</h4><p>Veja os concursos organizados por UF</p></div>';
+
+    html += '</aside>';
+    return html;
   }
 
   function renderArticle(id){
