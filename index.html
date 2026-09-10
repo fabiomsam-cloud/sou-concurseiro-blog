@@ -1,3 +1,8 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sou Concurseiro</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
 <style>
@@ -121,19 +126,32 @@
   .pullstat .lbl{font-size:11.5px;color:var(--amber);text-transform:uppercase;letter-spacing:.03em;margin-top:2px;font-weight:600;}
   .article-body{font-size:16px;color:var(--ink);white-space:pre-wrap;font-weight:400;}
   .article-body p{margin:0 0 16px;}
+  .article-body .article-h2{font-size:20.5px;font-weight:800;margin:32px 0 13px;letter-spacing:-.008em;line-height:1.25;}
+  .article-body table{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14px;white-space:normal;}
+  .article-body th{background:var(--paper-alt);text-align:left;padding:10px 12px;font-weight:700;border-bottom:2px solid var(--line);}
+  .article-body td{padding:10px 12px;border-bottom:1px solid var(--line);}
+  .article-body tr:last-child td{border-bottom:none;}
   .no-body{font-size:13.5px;color:var(--ink-soft);background:var(--paper-alt);border-radius:10px;padding:16px 18px;}
   .related{margin-top:34px;padding-top:22px;border-top:1px solid var(--line);}
-  .related h3{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin:0 0 12px;}
+  .related h3{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin:0 0 4px;}
   .related ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;}
   .related li{font-size:14px;padding-left:16px;position:relative;font-weight:400;}
   .related li::before{content:"—";position:absolute;left:0;color:var(--accent);}
+  .rel-item{border-bottom:1px solid var(--line);}
+  .rel-item:last-child{border-bottom:none;}
+  .rel-q{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 2px;cursor:pointer;font-size:14.5px;font-weight:600;}
+  .rel-q:hover{color:var(--accent);}
+  .rel-q .chevron{flex:0 0 auto;font-size:11px;color:var(--ink-soft);transition:transform .18s ease;}
+  .rel-item.open .rel-q .chevron{transform:rotate(180deg);color:var(--accent);}
+  .rel-a{max-height:0;overflow:hidden;transition:max-height .22s ease;}
+  .rel-a p{margin:0 0 14px;padding:0 2px;font-size:13.5px;color:var(--ink-soft);}
 
-  .product-cta{margin:28px 0;border:1px solid var(--accent);background:var(--accent-soft);border-radius:16px;padding:22px;}
-  .product-cta .eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:8px;}
-  .product-cta h4{margin:0 0 8px;font-size:19px;font-weight:800;color:var(--ink);letter-spacing:-.01em;}
-  .product-cta p{margin:0 0 16px;font-size:14px;color:var(--ink-soft);}
-  .product-cta a.btn{display:inline-flex;align-items:center;gap:7px;background:var(--accent);color:#fff;font-weight:700;font-size:13.5px;padding:11px 20px;border-radius:10px;text-decoration:none;}
-  .product-cta a.btn:hover{opacity:.9;}
+  .product-cta{margin:32px 0;border-radius:18px;padding:28px;background:var(--accent);color:#fff;}
+  .product-cta .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.75);font-weight:700;margin-bottom:10px;}
+  .product-cta h4{margin:0 0 10px;font-size:22px;font-weight:800;color:#fff;letter-spacing:-.01em;}
+  .product-cta p{margin:0 0 20px;font-size:14.5px;color:rgba(255,255,255,.85);max-width:52ch;}
+  .product-cta a.btn{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--accent);font-weight:800;font-size:14px;padding:13px 24px;border-radius:10px;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.18);transition:transform .15s ease,box-shadow .15s ease;}
+  .product-cta a.btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.22);}
 
   footer{border-top:1px solid var(--line);padding:24px 0 50px;margin-top:24px;}
   footer p{font-size:11.5px;color:var(--ink-soft);margin:0;}
@@ -143,6 +161,8 @@
   .preview-badge{background:var(--amber);color:var(--paper);font-size:12px;font-weight:600;text-align:center;padding:9px 16px;}
 </style>
 
+</head>
+<body>
 <script>
   try {
     var savedTheme = localStorage.getItem("scvp-theme");
@@ -175,7 +195,202 @@
 
 <div id="app"></div>
 
-<script id="posts-snapshot" type="application/json">[{"id": "ma-bombeiro-ma", "titulo": "Concurso Bombeiro MA 2026: vagas, salário e etapas", "categoria": "Policial", "uf": "MA", "concurso": "Bombeiro MA", "resumo": "Curso de Formação de Oficiais do Corpo de Bombeiros do Maranhão com prova em novembro.", "conteudo": "O Concurso Bombeiro MA Oficial, para o Curso de Formação de Oficiais do Corpo de Bombeiros Militar do Maranhão (CFO/CBMMA), teve um novo edital publicado em junho de 2026, com 25 vagas para Cadete Bombeiro Militar e salário que pode chegar a R$ 12.394,21 como 2º Tenente. As inscrições, vinculadas ao PAES 2027 da UEMA, já se encerraram, e a prova única está marcada para 22 de novembro de 2026.", "highlight_num": "25", "highlight_label": "vagas de Cadete Oficial", "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/107/concurso-bombeiro-ma-2026-vagas-salario-e-etapas", "relacionados": [], "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/2291177afa7e00f23347367619b4b6cc.jpg", "data_publicacao": "2026-09-09"}, {"id": "df-sedf", "titulo": "SEDF autoriza 10,6 mil vagas: veja cargos e salários de até R$ 14,4 mil", "categoria": "Educação", "uf": "DF", "concurso": "SEDF", "resumo": "Secretaria de Educação do DF confirma o maior concurso de professores do país neste ciclo.", "conteudo": "O Concurso SEDF 2026, da Secretaria de Estado de Educação do Distrito Federal (SEDF), tem 10.604 vagas já autorizadas, sendo 2.650 imediatas e 7.954 para cadastro de reserva, distribuídas entre os cargos de Professor de Educação Básica, Pedagogo-orientador, Gestor, Analista e Analista Monitor. O salário de Professor e Pedagogo-orientador vai de R$ 6.749,10 a R$ 14.402,73.", "highlight_num": "10,6 mil", "highlight_label": "vagas autorizadas", "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/219/sedf-autoriza-10-6-mil-vagas-veja-cargos-e-salarios-de-ate-r-14-4-mil", "relacionados": [], "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/a17be2c70518e8fdb464764fa5eb6a9c.jpg", "data_publicacao": "2026-09-07"}, {"id": "df-pmdf", "titulo": "PMDF projeta 2 mil vagas de soldado com entrada prevista para 2027", "categoria": "Policial", "uf": "DF", "concurso": "PMDF", "resumo": "Nota Informativa nº 1/2026 confirma o certame; Cebraspe já é a banca oficial.", "conteudo": "O Concurso PMDF (Polícia Militar do Distrito Federal) para o cargo de Soldado ainda não tem edital publicado, mas já avança com sinais concretos: a Nota Informativa nº 1/2026, da Divisão de Recrutamento e Seleção, confirmou oficialmente a previsão do certame, o Cebraspe já foi contratado como banca oficial da corporação e o comandante-geral projeta, de forma informal, cerca de 2.000 vagas. Segundo a comandante da Divisão de Recrutamento, a entrada dos aprovados está prevista para 2027. No último concurso, em 2023, o salário de Soldado após o Curso de Formação de Praças foi de R$ 6.081,28, mais R$ 850,00 de auxílio-alimentação.", "highlight_num": "2 mil", "highlight_label": "vagas projetadas", "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/220/pmdf-projeta-2-mil-vagas-de-soldado-com-entrada-prevista-para-2027", "relacionados": [], "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/5729858fd39feb702f48c905f77d37a3.jpg", "data_publicacao": "2026-09-06"}, {"id": "ce-seduc-ce", "titulo": "SEDUC-CE abre 2 mil vagas de professor com salário de R$ 7,1 mil", "categoria": "Educação", "uf": "CE", "concurso": "SEDUC-CE", "resumo": "Edital publicado em agosto pela Secretaria da Educação do Estado do Ceará.", "conteudo": "O Concurso SEDUC-CE 2026, da Secretaria da Educação do Estado do Ceará (SEDUC-CE), teve o edital publicado em 14 de agosto, oferecendo cerca de 2.000 vagas para o cargo de Professor, com salário inicial de R$ 7,1 mil.", "highlight_num": "2 mil", "highlight_label": "vagas de professor", "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/218/seduc-ce-abre-2-mil-vagas-de-professor-com-salario-de-r-7-1-mil", "relacionados": [], "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/0549c05e494842df05b19a5e6c1daeda.jpg", "data_publicacao": "2026-09-06"}, {"id": "al-dpe-al", "titulo": "Concurso DPE-AL 2026: Defensor com salário de R$ 35,8 mil", "categoria": "Jurídico", "uf": "AL", "concurso": "DPE-AL", "resumo": "Defensoria Pública do Estado de Alagoas avança rumo a um novo edital.", "conteudo": "O Concurso DPE-AL 2026, da Defensoria Pública do Estado de Alagoas (DPE-AL), avança rumo a um novo edital para o cargo de Defensor Público, com remuneração que pode chegar a R$ 35,8 mil.", "highlight_num": "R$ 35,8 mil", "highlight_label": "salário de Defensor", "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/216/concurso-dpe-al-2026-defensor-com-salario-de-r-35-8-mil", "relacionados": [], "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/25e1455a378b01dbc3b76acbd878191e.jpg", "data_publicacao": "2026-09-05"}, {"id": "ba-sefaz-ba", "titulo": "Concurso SEFAZ-BA 2026: 200 vagas e salário de R$ 33 mil", "categoria": "Fiscal", "uf": "BA", "concurso": "SEFAZ-BA", "resumo": "200 vagas imediatas confirmadas para a Secretaria da Fazenda da Bahia.", "conteudo": "O Concurso SEFAZ-BA 2026, da Secretaria da Fazenda do Estado da Bahia, está com 200 vagas imediatas confirmadas, sendo uma das oportunidades fiscais mais aguardadas do Nordeste, com remuneração que pode chegar a R$ 33 mil.", "highlight_num": "R$ 33 mil", "highlight_label": "salário no topo", "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/217/concurso-sefaz-ba-2026-200-vagas-e-salario-de-r-33-mil", "relacionados": [], "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/c68828d293e36fd14d35bdd57be5d93e.jpg", "data_publicacao": "2026-09-05"}, {"id": "rr-pc-rr", "titulo": "Concurso PC-RR 2026: provas em outubro, salário de até R$ 26,8 mil", "categoria": "Policial", "uf": "RR", "concurso": "PC-RR", "resumo": "Polícia Civil de Roraima tem provas marcadas pela banca FGV.", "conteudo": "O concurso PC-RR (Polícia Civil do Estado de Roraima), organizado pela banca FGV, tem provas objetivas marcadas para outubro, com salários que podem chegar a R$ 26,8 mil para os cargos mais altos da carreira.", "highlight_num": "R$ 26,8 mil", "highlight_label": "salário no topo", "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/213/concurso-pc-pr-2026-provas-em-outubro-ate-r-26-8-mil", "relacionados": [], "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/44ce87285967b38313ef2214a1c35d04.jpg", "data_publicacao": "2026-09-04"}, {"id": "rj-bombeiro-rj", "titulo": "Concurso Bombeiro RJ 2026: 1.500 vagas, banca definida", "categoria": "Policial", "uf": "RJ", "concurso": "Bombeiro RJ", "resumo": "Instituto AOCP organiza o maior processo seletivo do CBMERJ em andamento.", "conteudo": "O concurso Bombeiro RJ (Corpo de Bombeiros Militar do Estado do Rio de Janeiro, CBMERJ) tem banca definida para o maior processo em andamento: o Instituto AOCP foi contratado para organizar o PSS CBMERJ SMTV, com 1.500 vagas temporárias distribuídas entre 1.122 para Soldado e 378 para Oficial, em oito regiões do estado.", "highlight_num": "1.500", "highlight_label": "vagas temporárias", "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/214/concurso-bombeiro-rj-2026-1-500-vagas-banca-definida", "relacionados": [], "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/0b9b404b8dbb1d62f0b523e1df80a593.jpg", "data_publicacao": "2026-09-04"}, {"id": "df-pcdf", "titulo": "Concurso PCDF 2026: 315 vagas autorizadas, até R$ 21,4 mil", "categoria": "Policial", "uf": "DF", "concurso": "PCDF", "resumo": "105 vagas imediatas e 210 em cadastro de reserva para a Polícia Civil do Distrito Federal.", "conteudo": "O concurso PCDF (Polícia Civil do Distrito Federal) tem 315 vagas autorizadas (105 imediatas e 210 em cadastro de reserva), com salários que podem chegar a R$ 21,4 mil para os cargos de maior nível na carreira policial civil.", "highlight_num": "315", "highlight_label": "vagas autorizadas", "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/215/concurso-pcdf-2026-315-vagas-autorizadas-ate-r-21-4-mil", "relacionados": [], "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/dfeb9117a10210c38232bd79167d2378.jpg", "data_publicacao": "2026-09-04"}, {"id": "bb-escriturario", "titulo": "Escriturário do Banco do Brasil: quanto ganha, funções e plano de carreira", "categoria": "Bancário", "uf": "Nacionais/Federais", "concurso": "Banco do Brasil", "resumo": "Panorama da carreira de Escriturário no maior concurso bancário do país.", "conteudo": "O certame do Banco do Brasil 2026 apresenta movimentação significativa: a instituição finalizou o contrato com a Cesgranrio e encaminhou sua documentação de referência às principais bancas para escolher a nova organizadora, indicando que o próximo edital está em fase avançada de preparação. O cargo de Escriturário, com atuação como Agente Comercial ou Agente de Tecnologia, seguirá provavelmente o modelo do último concurso, que disponibilizou 6.525 oportunidades (4.299 imediatas e 2.226 em reserva) e recebeu aproximadamente 1,6 milhão de candidaturas. A remuneração inicial projetada para 2026 é de R$ 6.286,78, considerando benefícios, exigindo apenas educação média completa e idade mínima de 18 anos.\nO status atual indica que o contrato anterior foi encerrado e o processo de seleção da banca está em andamento. Historicamente, esse procedimento precede a divulgação do edital. No último processo, entre dezembro de 2022 e março de 2023 (inscrições) com avaliações em abril, o banco ofereceu as 6.525 vagas mencionadas, gerando concorrência média acima de 245 candidatos por oportunidade.\nPara o próximo edital, espera-se manter o cargo de Escriturário com suas duas linhas de atuação: Agente Comercial, focado no atendimento direto, e Agente de Tecnologia, direcionado para áreas técnicas. A quantidade de vagas tende a permanecer similar ao último processo, considerando a renovação constante de pessoal e a procura recorde.\nQuanto à remuneração, o salário base anterior era R$ 3.662,23, evoluindo para a estimativa de R$ 6.286,78 com inclusão de benefícios. O pacote inclui plano de saúde, cobertura odontológica, programas educacionais e participação em lucros conforme convenção coletiva, com possibilidades de ascensão profissional ao longo da carreira.\nAs disciplinas cobradas no último edital incluíram Português, Matemática, Atualidades Financeiras, Conhecimentos Bancários, Informática e Vendas/Negociação, estruturadas em prova objetiva com foco em interpretação de textos, raciocínio lógico, cenário econômico e técnicas de atendimento.\nPara se preparar adequadamente, recomenda-se montar um plano de estudos baseado nas disciplinas do processo anterior, revisar constantemente Português e Matemática, e se familiarizar com Conhecimentos Bancários e Atualidades Financeiras, áreas que apresentam pouca variação entre editais.", "highlight_num": "R$ 6,3 mil", "highlight_label": "salário projetado com benefícios", "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/187/concurso-banco-do-brasil-2026-vagas-edital-e-salario", "relacionados": [], "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/67722280f38ee6d7b0213e348fa69f86.jpg", "data_publicacao": "2026-09-01"}, {"id": "am-tj-am", "titulo": "Concurso TJ-AM: salários podem passar de R$ 9 mil no Tribunal de Justiça do Amazonas", "categoria": "Tribunais", "uf": "AM", "concurso": "TJ-AM", "resumo": "O Tribunal de Justiça do Amazonas segue com expansão de quadro confirmada — o maior volume de conteúdo do blog está concentrado aqui, com sete matérias satélites cobrindo desde disciplinas até cronograma de estudo.", "conteudo": "O concurso TJ-AM 2027 apresenta 400 vagas anunciadas pelo presidente do tribunal em maio de 2026, destinadas a preencher um déficit de 356 cargos efetivos identificado em fevereiro. A remuneração inicial para Analista Judiciário alcança R$ 14.240,77, ultrapassando R$ 17 mil com adicionais ao longo da carreira.\nDesde março de 2025, o tribunal não realiza concursos para servidores, permitindo que o déficit de pessoal crescesse progressivamente. Conforme dados oficiais enviados ao Conselho Nacional de Justiça, existiam 113 vagas de Analista Judiciário, 100 de Assistente e 143 de Auxiliar Judiciário em fevereiro de 2026.\nA remuneração estruturada pela Lei nº 7.436/2025 oferece: Analista Judiciário com inicial de R$ 14.240,77 até R$ 17.156,77; Assistente Judiciário de R$ 7.311,37 até R$ 8.808,49; Auxiliar Judiciário de R$ 4.967,99 com teto a definir.\nA carreira judiciária oferece jornada de seis horas diárias, estabilidade característica do setor público, plano progressivo com qualificação profissional, auxílio-alimentação, auxílio-saúde e décimo terceiro salário como diferenciais significativos.\nApós o anúncio de maio de 2026, os próximos passos incluem formação do grupo de trabalho, contratação da banca organizadora e publicação do edital. Baseado no histórico institucional, espera-se participação de bancas especializadas, com posse dos aprovados prevista para 2027.", "highlight_num": "R$ 9 mil", "highlight_label": "salário no topo da carreira", "link_original": "https://souconcurseiroevoupassar.com/posts/ver/13/concurso-tjam-2026-edital-previsto-e-356-cargos-vagos", "relacionados": ["Concurso TJ-AM: por que é a melhor oportunidade do Amazonas", "Concurso TJ-AM: disciplinas que mais caem na prova", "Quanto tempo estudar para passar no concurso TJ-AM", "Cargos do TJ-AM: Auxiliar, Assistente e Analista Judiciário", "Etapas do concurso TJ-AM: o que esperar da seleção", "Tabela salarial e carreira do TJ-AM: veja quanto ganha", "TJ-AM 2027: como começar do zero a preparação hoje"], "imagem_capa": "https://souconcurseiroevoupassar.com/files/posts/9af92e4e84097f11c01c20ec5246daf1.jpg", "data_publicacao": "2026-06-26"}]</script>
+<script id="posts-snapshot" type="application/json">[
+  {
+    "id": "ma-bombeiro-ma",
+    "titulo": "Concurso Bombeiro MA 2026: vagas, salário e etapas",
+    "categoria": "Policial",
+    "uf": "MA",
+    "concurso": "Bombeiro MA",
+    "resumo": "Curso de Formação de Oficiais do Corpo de Bombeiros do Maranhão com prova em novembro.",
+    "conteudo": "O Concurso Bombeiro MA Oficial, para o Curso de Formação de Oficiais do Corpo de Bombeiros Militar do Maranhão (CFO/CBMMA), teve um novo edital publicado em junho de 2026, com 25 vagas para Cadete Bombeiro Militar e salário que pode chegar a R$ 12.394,21 como 2º Tenente. As inscrições, vinculadas ao PAES 2027 da UEMA, já se encerraram, e a prova única está marcada para 22 de novembro de 2026.",
+    "highlight_num": "25",
+    "highlight_label": "vagas de Cadete Oficial",
+    "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/107/concurso-bombeiro-ma-2026-vagas-salario-e-etapas",
+    "relacionados": [],
+    "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/2291177afa7e00f23347367619b4b6cc.jpg",
+    "data_publicacao": "2026-09-09"
+  },
+  {
+    "id": "df-sedf",
+    "titulo": "SEDF autoriza 10,6 mil vagas: veja cargos e salários de até R$ 14,4 mil",
+    "categoria": "Educação",
+    "uf": "DF",
+    "concurso": "SEDF",
+    "resumo": "Secretaria de Educação do DF confirma o maior concurso de professores do país neste ciclo.",
+    "conteudo": "O Concurso SEDF 2026, da Secretaria de Estado de Educação do Distrito Federal (SEDF), tem 10.604 vagas já autorizadas, sendo 2.650 imediatas e 7.954 para cadastro de reserva, distribuídas entre os cargos de Professor de Educação Básica, Pedagogo-orientador, Gestor, Analista e Analista Monitor. O salário de Professor e Pedagogo-orientador vai de R$ 6.749,10 a R$ 14.402,73.",
+    "highlight_num": "10,6 mil",
+    "highlight_label": "vagas autorizadas",
+    "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/219/sedf-autoriza-10-6-mil-vagas-veja-cargos-e-salarios-de-ate-r-14-4-mil",
+    "relacionados": [],
+    "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/a17be2c70518e8fdb464764fa5eb6a9c.jpg",
+    "data_publicacao": "2026-09-07"
+  },
+  {
+    "id": "df-pmdf",
+    "titulo": "PMDF projeta 2 mil vagas de soldado com entrada prevista para 2027",
+    "categoria": "Policial",
+    "uf": "DF",
+    "concurso": "PMDF",
+    "resumo": "Nota Informativa nº 1/2026 confirma o certame; Cebraspe já é a banca oficial.",
+    "conteudo": "O Concurso PMDF (Polícia Militar do Distrito Federal) para o cargo de Soldado ainda não tem edital publicado, mas já avança com sinais concretos: a Nota Informativa nº 1/2026, da Divisão de Recrutamento e Seleção, confirmou oficialmente a previsão do certame, o Cebraspe já foi contratado como banca oficial da corporação e o comandante-geral projeta, de forma informal, cerca de 2.000 vagas. Segundo a comandante da Divisão de Recrutamento, a entrada dos aprovados está prevista para 2027. No último concurso, em 2023, o salário de Soldado após o Curso de Formação de Praças foi de R$ 6.081,28, mais R$ 850,00 de auxílio-alimentação.",
+    "highlight_num": "2 mil",
+    "highlight_label": "vagas projetadas",
+    "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/220/pmdf-projeta-2-mil-vagas-de-soldado-com-entrada-prevista-para-2027",
+    "relacionados": [],
+    "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/5729858fd39feb702f48c905f77d37a3.jpg",
+    "data_publicacao": "2026-09-06"
+  },
+  {
+    "id": "ce-seduc-ce",
+    "titulo": "SEDUC-CE abre 2 mil vagas de professor com salário de R$ 7,1 mil",
+    "categoria": "Educação",
+    "uf": "CE",
+    "concurso": "SEDUC-CE",
+    "resumo": "Edital publicado em agosto pela Secretaria da Educação do Estado do Ceará.",
+    "conteudo": "O Concurso SEDUC-CE 2026, da Secretaria da Educação do Estado do Ceará (SEDUC-CE), teve o edital publicado em 14 de agosto, oferecendo cerca de 2.000 vagas para o cargo de Professor, com salário inicial de R$ 7,1 mil.",
+    "highlight_num": "2 mil",
+    "highlight_label": "vagas de professor",
+    "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/218/seduc-ce-abre-2-mil-vagas-de-professor-com-salario-de-r-7-1-mil",
+    "relacionados": [],
+    "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/0549c05e494842df05b19a5e6c1daeda.jpg",
+    "data_publicacao": "2026-09-06"
+  },
+  {
+    "id": "al-dpe-al",
+    "titulo": "Concurso DPE-AL 2026: Defensor com salário de R$ 35,8 mil",
+    "categoria": "Jurídico",
+    "uf": "AL",
+    "concurso": "DPE-AL",
+    "resumo": "Defensoria Pública do Estado de Alagoas avança rumo a um novo edital.",
+    "conteudo": "O Concurso DPE-AL 2026, da Defensoria Pública do Estado de Alagoas (DPE-AL), avança rumo a um novo edital para o cargo de Defensor Público, com remuneração que pode chegar a R$ 35,8 mil.",
+    "highlight_num": "R$ 35,8 mil",
+    "highlight_label": "salário de Defensor",
+    "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/216/concurso-dpe-al-2026-defensor-com-salario-de-r-35-8-mil",
+    "relacionados": [],
+    "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/25e1455a378b01dbc3b76acbd878191e.jpg",
+    "data_publicacao": "2026-09-05"
+  },
+  {
+    "id": "ba-sefaz-ba",
+    "titulo": "Concurso SEFAZ-BA 2026: 200 vagas e salário de R$ 33 mil",
+    "categoria": "Fiscal",
+    "uf": "BA",
+    "concurso": "SEFAZ-BA",
+    "resumo": "200 vagas imediatas confirmadas para a Secretaria da Fazenda da Bahia.",
+    "conteudo": "O Concurso SEFAZ-BA 2026, da Secretaria da Fazenda do Estado da Bahia, está com 200 vagas imediatas confirmadas, sendo uma das oportunidades fiscais mais aguardadas do Nordeste, com remuneração que pode chegar a R$ 33 mil.",
+    "highlight_num": "R$ 33 mil",
+    "highlight_label": "salário no topo",
+    "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/217/concurso-sefaz-ba-2026-200-vagas-e-salario-de-r-33-mil",
+    "relacionados": [],
+    "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/c68828d293e36fd14d35bdd57be5d93e.jpg",
+    "data_publicacao": "2026-09-05"
+  },
+  {
+    "id": "rr-pc-rr",
+    "titulo": "Concurso PC-RR 2026: provas em outubro, salário de até R$ 26,8 mil",
+    "categoria": "Policial",
+    "uf": "RR",
+    "concurso": "PC-RR",
+    "resumo": "Polícia Civil de Roraima tem provas marcadas pela banca FGV.",
+    "conteudo": "O concurso PC-RR (Polícia Civil do Estado de Roraima), organizado pela banca FGV, tem provas objetivas marcadas para outubro, com salários que podem chegar a R$ 26,8 mil para os cargos mais altos da carreira.",
+    "highlight_num": "R$ 26,8 mil",
+    "highlight_label": "salário no topo",
+    "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/213/concurso-pc-pr-2026-provas-em-outubro-ate-r-26-8-mil",
+    "relacionados": [],
+    "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/44ce87285967b38313ef2214a1c35d04.jpg",
+    "data_publicacao": "2026-09-04"
+  },
+  {
+    "id": "rj-bombeiro-rj",
+    "titulo": "Concurso Bombeiro RJ 2026: 1.500 vagas, banca definida",
+    "categoria": "Policial",
+    "uf": "RJ",
+    "concurso": "Bombeiro RJ",
+    "resumo": "Instituto AOCP organiza o maior processo seletivo do CBMERJ em andamento.",
+    "conteudo": "O concurso Bombeiro RJ (Corpo de Bombeiros Militar do Estado do Rio de Janeiro, CBMERJ) tem banca definida para o maior processo em andamento: o Instituto AOCP foi contratado para organizar o PSS CBMERJ SMTV, com 1.500 vagas temporárias distribuídas entre 1.122 para Soldado e 378 para Oficial, em oito regiões do estado.",
+    "highlight_num": "1.500",
+    "highlight_label": "vagas temporárias",
+    "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/214/concurso-bombeiro-rj-2026-1-500-vagas-banca-definida",
+    "relacionados": [],
+    "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/0b9b404b8dbb1d62f0b523e1df80a593.jpg",
+    "data_publicacao": "2026-09-04"
+  },
+  {
+    "id": "df-pcdf",
+    "titulo": "Concurso PCDF 2026: 315 vagas autorizadas, até R$ 21,4 mil",
+    "categoria": "Policial",
+    "uf": "DF",
+    "concurso": "PCDF",
+    "resumo": "105 vagas imediatas e 210 em cadastro de reserva para a Polícia Civil do Distrito Federal.",
+    "conteudo": "O concurso PCDF (Polícia Civil do Distrito Federal) tem 315 vagas autorizadas (105 imediatas e 210 em cadastro de reserva), com salários que podem chegar a R$ 21,4 mil para os cargos de maior nível na carreira policial civil.",
+    "highlight_num": "315",
+    "highlight_label": "vagas autorizadas",
+    "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/215/concurso-pcdf-2026-315-vagas-autorizadas-ate-r-21-4-mil",
+    "relacionados": [],
+    "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/dfeb9117a10210c38232bd79167d2378.jpg",
+    "data_publicacao": "2026-09-04"
+  },
+  {
+    "id": "bb-escriturario",
+    "titulo": "Escriturário do Banco do Brasil: quanto ganha, funções e plano de carreira",
+    "categoria": "Bancário",
+    "uf": "Nacionais/Federais",
+    "concurso": "Banco do Brasil",
+    "resumo": "Panorama da carreira de Escriturário no maior concurso bancário do país.",
+    "conteudo": "O certame do Banco do Brasil 2026 apresenta movimentação significativa: a instituição finalizou o contrato com a Cesgranrio e encaminhou sua documentação de referência às principais bancas para escolher a nova organizadora, indicando que o próximo edital está em fase avançada de preparação. O cargo de Escriturário, com atuação como Agente Comercial ou Agente de Tecnologia, seguirá provavelmente o modelo do último concurso, que disponibilizou 6.525 oportunidades (4.299 imediatas e 2.226 em reserva) e recebeu aproximadamente 1,6 milhão de candidaturas. A remuneração inicial projetada para 2026 é de R$ 6.286,78, considerando benefícios, exigindo apenas educação média completa e idade mínima de 18 anos.\nO status atual indica que o contrato anterior foi encerrado e o processo de seleção da banca está em andamento. Historicamente, esse procedimento precede a divulgação do edital. No último processo, entre dezembro de 2022 e março de 2023 (inscrições) com avaliações em abril, o banco ofereceu as 6.525 vagas mencionadas, gerando concorrência média acima de 245 candidatos por oportunidade.\nPara o próximo edital, espera-se manter o cargo de Escriturário com suas duas linhas de atuação: Agente Comercial, focado no atendimento direto, e Agente de Tecnologia, direcionado para áreas técnicas. A quantidade de vagas tende a permanecer similar ao último processo, considerando a renovação constante de pessoal e a procura recorde.\nQuanto à remuneração, o salário base anterior era R$ 3.662,23, evoluindo para a estimativa de R$ 6.286,78 com inclusão de benefícios. O pacote inclui plano de saúde, cobertura odontológica, programas educacionais e participação em lucros conforme convenção coletiva, com possibilidades de ascensão profissional ao longo da carreira.\nAs disciplinas cobradas no último edital incluíram Português, Matemática, Atualidades Financeiras, Conhecimentos Bancários, Informática e Vendas/Negociação, estruturadas em prova objetiva com foco em interpretação de textos, raciocínio lógico, cenário econômico e técnicas de atendimento.\nPara se preparar adequadamente, recomenda-se montar um plano de estudos baseado nas disciplinas do processo anterior, revisar constantemente Português e Matemática, e se familiarizar com Conhecimentos Bancários e Atualidades Financeiras, áreas que apresentam pouca variação entre editais.",
+    "highlight_num": "R$ 6,3 mil",
+    "highlight_label": "salário projetado com benefícios",
+    "link_original": "https://www.souconcurseiroevoupassar.com/posts/ver/187/concurso-banco-do-brasil-2026-vagas-edital-e-salario",
+    "relacionados": [],
+    "imagem_capa": "https://www.souconcurseiroevoupassar.com/files/posts/67722280f38ee6d7b0213e348fa69f86.jpg",
+    "data_publicacao": "2026-09-01"
+  },
+  {
+    "id": "am-tj-am",
+    "titulo": "Concurso TJ-AM: salários podem passar de R$ 9 mil no Tribunal de Justiça do Amazonas",
+    "categoria": "Tribunais",
+    "uf": "AM",
+    "concurso": "TJ-AM",
+    "resumo": "O Tribunal de Justiça do Amazonas segue com expansão de quadro confirmada — o maior volume de conteúdo do blog está concentrado aqui, com sete matérias satélites cobrindo desde disciplinas até cronograma de estudo.",
+    "conteudo": "## O que já se sabe sobre o concurso TJ-AM 2027\nO concurso TJ-AM 2027 foi anunciado pelo presidente do Tribunal de Justiça do Amazonas em maio de 2026, com 400 vagas previstas para preencher um déficit de 356 cargos efetivos identificado em fevereiro daquele ano. O tribunal não realiza concurso para servidores desde março de 2025, o que permitiu que o quadro de pessoal se esvaziasse progressivamente ano após ano.\nConforme dados oficiais enviados pelo próprio tribunal ao Conselho Nacional de Justiça, o déficit em fevereiro de 2026 já somava 113 vagas de Analista Judiciário, 100 de Assistente Judiciário e 143 de Auxiliar Judiciário — números que sustentam a expectativa de um edital robusto nos três cargos.\n\n## Quanto vou ganhar como servidor do TJ-AM\nA remuneração da carreira judiciária do TJ-AM foi estruturada pela Lei nº 7.436/2025 e varia por cargo e tempo de carreira. Veja como fica a remuneração inicial e no topo da carreira em cada função:\n<table><tr><th>Cargo</th><th>Salário inicial</th><th>Salário no topo</th></tr><tr><td>Analista Judiciário</td><td>R$ 14.240,77</td><td>R$ 17.156,77</td></tr><tr><td>Assistente Judiciário</td><td>R$ 7.311,37</td><td>R$ 8.808,49</td></tr><tr><td>Auxiliar Judiciário</td><td>R$ 4.967,99</td><td>Teto a definir</td></tr></table>\nAnalista Judiciário é o cargo de nível superior e o mais concorrido historicamente nos concursos do Judiciário amazonense, enquanto Assistente e Auxiliar exigem nível médio.\n\n## Benefícios da carreira judiciária no TJ-AM\nAlém do salário-base, quem ingressa no TJ-AM tem jornada de seis horas diárias, estabilidade típica do funcionalismo público após o estágio probatório, plano de carreira com progressão por qualificação profissional, auxílio-alimentação, auxílio-saúde e décimo terceiro salário. São diferenciais que, somados, tornam a remuneração efetiva bem superior ao salário-base informado no edital.\n\n## Quais os próximos passos até o edital do TJ-AM\nDepois do anúncio de maio de 2026, os próximos passos naturais do processo são a formação do grupo de trabalho responsável pelo concurso, a contratação da banca organizadora por meio de licitação ou dispensa, e só então a publicação do edital oficial. Com base no histórico institucional do tribunal, a expectativa é de que a banca seja uma organizadora com tradição em concursos de tribunais, com posse dos aprovados prevista para 2027.",
+    "highlight_num": "R$ 9 mil",
+    "highlight_label": "salário no topo da carreira",
+    "link_original": "https://souconcurseiroevoupassar.com/posts/ver/13/concurso-tjam-2026-edital-previsto-e-356-cargos-vagos",
+    "relacionados": [
+      {
+        "titulo": "Concurso TJ-AM: por que é a melhor oportunidade do Amazonas",
+        "resumo": "O déficit de 356 cargos efetivos, somado a quase um ano sem concurso para servidores, criou o cenário mais favorável para candidatos em anos: mais vagas disputadas por um número de concorrentes historicamente represado. Some a isso salários que chegam a R$ 17 mil no topo da carreira de Analista Judiciário."
+      },
+      {
+        "titulo": "Concurso TJ-AM: disciplinas que mais caem na prova",
+        "resumo": "Nos últimos concursos de tribunais no Amazonas, a base comum de disciplinas reuniu Português, Raciocínio Lógico-Matemático, Informática e Direito Constitucional e Administrativo. Cargos de nível superior como Analista somam ainda disciplinas específicas, como Direito Processual Civil e Processual Penal."
+      },
+      {
+        "titulo": "Quanto tempo estudar para passar no concurso TJ-AM",
+        "resumo": "Candidatos aprovados em concursos de tribunais estaduais costumam relatar entre 8 e 14 meses de preparação intensa antes da data da prova. Como o edital do TJ-AM ainda não saiu, quem começa agora — enquanto a maioria espera a publicação — larga na frente na revisão das disciplinas de base."
+      },
+      {
+        "titulo": "Cargos do TJ-AM: Auxiliar, Assistente e Analista Judiciário",
+        "resumo": "O déficit atual se distribui em três cargos: 143 vagas de Auxiliar Judiciário (nível médio, salário inicial de R$ 4.967,99), 100 de Assistente Judiciário (nível médio, R$ 7.311,37) e 113 de Analista Judiciário (nível superior, R$ 14.240,77), o mais concorrido e mais bem remunerado dos três."
+      },
+      {
+        "titulo": "Etapas do concurso TJ-AM: o que esperar da seleção",
+        "resumo": "O histórico de concursos de tribunais no Amazonas aponta para uma prova objetiva no modelo certo-ou-errado, comum entre bancas como o Cebraspe, seguida de avaliação de títulos para os cargos de nível superior. A confirmação do formato definitivo só vem com a publicação do edital."
+      },
+      {
+        "titulo": "Tabela salarial e carreira do TJ-AM: veja quanto ganha",
+        "resumo": "A Lei nº 7.436/2025 fixa a remuneração inicial e no topo de carreira de cada cargo: R$ 14.240,77 a R$ 17.156,77 para Analista Judiciário, R$ 7.311,37 a R$ 8.808,49 para Assistente Judiciário e R$ 4.967,99 (teto ainda a definir) para Auxiliar Judiciário."
+      },
+      {
+        "titulo": "TJ-AM 2027: como começar do zero a preparação hoje",
+        "resumo": "Sem edital publicado, o caminho é montar um cronograma com as disciplinas de base (Português, Raciocínio Lógico, Informática e Direito Constitucional/Administrativo), revisar a legislação específica do Judiciário amazonense e acompanhar de perto os próximos passos: formação da comissão e escolha da banca."
+      }
+    ],
+    "imagem_capa": "https://live.staticflickr.com/65535/51947297009_33cf9ce9c0_b.jpg",
+    "data_publicacao": "2026-06-26"
+  }
+]</script>
 
 <footer>
   <div class="wrap">
@@ -319,7 +534,13 @@
       html += '<div class="pullstat"><div class="num mono">'+p.highlight_num+'</div><div class="lbl">'+p.highlight_label+'</div></div>';
     }
     if (p.conteudo && p.conteudo.trim()){
-      html += '<div class="article-body">' + p.conteudo.split("\n").map(par => par.trim() ? '<p>'+par+'</p>' : '').join("") + '</div>';
+      html += '<div class="article-body">' + p.conteudo.split("\n").map(par => {
+        const t = par.trim();
+        if (!t) return "";
+        if (t.indexOf("## ") === 0) return '<h2 class="article-h2">' + t.slice(3) + '</h2>';
+        if (t.indexOf("<") === 0) return t;
+        return '<p>' + t + '</p>';
+      }).join("") + '</div>';
     } else {
       html += '<div class="no-body">'+p.resumo+'</div>';
     }
@@ -328,12 +549,31 @@
       html += '<div class="product-cta"><div class="eyebrow">Preparação para esse concurso</div><h4>'+prod.nome+'</h4><p>'+prod.linha+'</p><a class="btn" href="'+prod.link+'" target="_blank" rel="noopener">Conhecer a '+prod.nome+' →</a></div>';
     }
     if (p.relacionados && p.relacionados.length){
-      html += '<div class="related"><h3>Também nessa cobertura</h3><ul>' +
-        p.relacionados.map(r => '<li>'+r+'</li>').join("") + '</ul></div>';
+      const first = p.relacionados[0];
+      const isRich = first && typeof first === "object" && "titulo" in first;
+      if (isRich){
+        html += '<div class="related"><h3>Também nessa cobertura</h3>' +
+          p.relacionados.map((r,i) =>
+            '<div class="rel-item" data-idx="'+i+'">' +
+              '<div class="rel-q"><span>'+r.titulo+'</span><span class="chevron">⌄</span></div>' +
+              '<div class="rel-a"><p>'+(r.resumo||"")+'</p></div>' +
+            '</div>'
+          ).join("") + '</div>';
+      } else {
+        html += '<div class="related"><h3>Também nessa cobertura</h3><ul>' +
+          p.relacionados.map(r => '<li>'+r+'</li>').join("") + '</ul></div>';
+      }
     }
     html += '</div>';
     app.innerHTML = html;
     $("#back-link").addEventListener("click", () => { location.hash = "#/"; });
+    document.querySelectorAll(".rel-item").forEach(item => {
+      item.querySelector(".rel-q").addEventListener("click", () => {
+        const open = item.classList.toggle("open");
+        const a = item.querySelector(".rel-a");
+        a.style.maxHeight = open ? (a.scrollHeight + "px") : "0px";
+      });
+    });
     window.scrollTo(0,0);
   }
 
@@ -443,3 +683,5 @@
   loadPosts();
 })();
 </script>
+</body>
+</html>
