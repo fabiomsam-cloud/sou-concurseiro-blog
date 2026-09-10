@@ -76,9 +76,10 @@
   @media (max-width:720px){ .grid{grid-template-columns:1fr;} }
   .card{padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--paper);display:flex;gap:14px;cursor:pointer;transition:box-shadow .15s ease,border-color .15s ease,transform .15s ease;}
   .card:hover{box-shadow:var(--shadow);border-color:#CBD5E1;transform:translateY(-1px);}
-  .seal{flex:0 0 auto;width:54px;height:54px;}
-  .seal-img{border-radius:50%;overflow:hidden;border:1px solid var(--line);}
+  .seal{flex:0 0 auto;width:88px;height:88px;}
+  .seal-img{border-radius:12px;overflow:hidden;border:1px solid var(--line);}
   .seal-img img{width:100%;height:100%;object-fit:cover;display:block;}
+  .seal-fallback{width:100%;height:100%;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;letter-spacing:.03em;border:1px solid var(--line);}
   .hero-img{margin:0 0 20px;border-radius:16px;overflow:hidden;border:1px solid var(--line);max-height:340px;}
   .hero-img img{width:100%;height:100%;object-fit:cover;display:block;max-height:340px;}
   .article-img{margin:0 0 24px;border-radius:16px;overflow:hidden;border:1px solid var(--line);}
@@ -91,6 +92,22 @@
   .card-meta .num{color:var(--amber);font-weight:700;}
 
   .empty{padding:50px 10px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+
+  /* ---- calendário por estado ---- */
+  .cal-page{padding:34px 0 64px;}
+  .cal-intro{max-width:60ch;}
+  .cal-state{margin-top:32px;}
+  .cal-state-header{display:flex;align-items:baseline;gap:10px;margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid var(--line);}
+  .cal-state-header h2{font-size:19px;font-weight:800;margin:0;letter-spacing:-.005em;}
+  .cal-count{font-size:11px;color:var(--ink-soft);font-weight:700;background:var(--paper-alt);border:1px solid var(--line);border-radius:999px;padding:3px 11px;white-space:nowrap;}
+  .cal-row{display:flex;align-items:center;gap:16px;padding:13px 4px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:8px;transition:background .15s ease;}
+  .cal-row:hover{background:var(--paper-alt);}
+  .cal-row:last-child{border-bottom:none;}
+  .cal-date{flex:0 0 auto;width:70px;font-size:11px;color:var(--ink-soft);font-weight:700;text-transform:uppercase;}
+  .cal-row-body{flex:1;min-width:0;}
+  .cal-row-body .cat{font-size:10.5px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+  .cal-row-body h4{font-size:14.5px;font-weight:700;margin:0;line-height:1.32;}
+  .cal-row .num{font-size:12.5px;color:var(--amber);font-weight:700;flex:0 0 auto;}
 
   /* ---- detail / article ---- */
   .article{padding:36px 0 64px;max-width:680px;margin:0 auto;}
@@ -143,6 +160,7 @@
   </div>
   <div class="wrap navrow">
     <a class="home-link" id="nav-home">Início</a>
+    <a class="home-link" id="nav-calendario">Calendário por Estado</a>
     <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Alternar modo claro ou escuro">
       <span class="icon" id="theme-icon">☾</span><span id="theme-label">Modo escuro</span>
     </button>
@@ -197,15 +215,8 @@
   let filterUf = "";
   let query = "";
 
-  function seal(cat, size){
-    size = size || 54;
-    const abbr = CAT_ABBR[cat] || cat.slice(0,4).toUpperCase();
-    const cx = size/2;
-    return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 54 54" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
-      '<circle cx="27" cy="27" r="25" fill="none" stroke="var(--accent)" stroke-width="1.4"/>' +
-      '<circle cx="27" cy="27" r="20.5" fill="none" stroke="var(--accent)" stroke-width="1" stroke-dasharray="1.5 3.2"/>' +
-      '<text x="27" y="31" text-anchor="middle" font-family="Inter, sans-serif" font-size="9.5" font-weight="700" letter-spacing="0.5" fill="var(--accent)">'+abbr+'</text>' +
-      '</svg>';
+  function catAbbr(cat){
+    return CAT_ABBR[cat] || (cat || "").slice(0,4).toUpperCase();
   }
 
   function fmtDate(d){
@@ -230,7 +241,7 @@
   function cardHtml(p){
     const thumb = p.imagem_capa
       ? '<div class="seal seal-img"><img src="'+p.imagem_capa+'" alt="" loading="lazy"></div>'
-      : '<div class="seal">'+seal(p.categoria)+'</div>';
+      : '<div class="seal"><div class="seal-fallback">'+catAbbr(p.categoria)+'</div></div>';
     return '<article class="card" data-id="'+p.id+'">' +
       thumb +
       '<div class="card-body">' +
@@ -326,11 +337,42 @@
     window.scrollTo(0,0);
   }
 
+  function renderCalendario(){
+    const byUf = {};
+    POSTS.forEach(p => { (byUf[p.uf] = byUf[p.uf] || []).push(p); });
+    const ufsSorted = Object.keys(byUf).sort((a,b) => (UF_NAMES[a]||a).localeCompare(UF_NAMES[b]||b, "pt-BR"));
+
+    let html = '<div class="wrap cal-page">';
+    html += '<div class="hero-eyebrow">Organização geográfica</div>';
+    html += '<h1 style="font-size:clamp(24px,3.6vw,34px);margin:0 0 10px;">Calendário por Estado</h1>';
+    html += '<p class="lede cal-intro">Todas as matérias do blog organizadas por estado, da mais recente para a mais antiga. Use pra acompanhar de uma vez só o que está rolando na sua região.</p>';
+    ufsSorted.forEach(uf => {
+      const posts = byUf[uf].slice().sort((a,b) => (b.data_publicacao > a.data_publicacao ? 1 : -1));
+      html += '<div class="cal-state"><div class="cal-state-header"><h2>'+(UF_NAMES[uf]||uf)+'</h2><span class="cal-count">'+posts.length+(posts.length===1?' concurso':' concursos')+'</span></div>';
+      posts.forEach(p => {
+        html += '<div class="cal-row" data-id="'+p.id+'">' +
+          '<div class="cal-date mono">'+fmtDate(p.data_publicacao)+'</div>' +
+          '<div class="cal-row-body"><div class="cat">'+p.categoria+' · '+p.concurso+'</div><h4>'+p.titulo+'</h4></div>' +
+          (p.highlight_num && p.highlight_num !== "—" ? '<div class="num mono">'+p.highlight_num+'</div>' : '') +
+        '</div>';
+      });
+      html += '</div>';
+    });
+    html += '</div>';
+
+    app.innerHTML = html;
+    document.querySelectorAll(".cal-row").forEach(el => {
+      el.addEventListener("click", () => { location.hash = "#/materia/" + el.dataset.id; });
+    });
+    window.scrollTo(0,0);
+  }
+
   function route(){
     if (!POSTS.length){ return; }
     const h = location.hash || "#/";
     const m = /^#\/materia\/(.+)$/.exec(h);
     if (m) renderArticle(decodeURIComponent(m[1]));
+    else if (h === "#/calendario") renderCalendario();
     else renderHome();
   }
 
@@ -375,6 +417,7 @@
   }
 
   $("#nav-home").addEventListener("click", () => { location.hash = "#/"; });
+  $("#nav-calendario").addEventListener("click", () => { location.hash = "#/calendario"; });
   $("#search").addEventListener("input", (e) => { query = e.target.value.trim(); renderHome(); });
 
   function applyThemeLabel(){
