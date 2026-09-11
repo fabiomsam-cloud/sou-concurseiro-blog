@@ -72,7 +72,12 @@
      transform evita esse bug e também facilita centralizar a seta na
      imagem e fazer o avanço automático. */
   .hero-viewport{position:relative;overflow:hidden;border-bottom:1px solid var(--line);}
-  .hero-track{display:flex;cursor:grab;touch-action:pan-y;padding:0 2px 32px;transition:transform .4s cubic-bezier(.22,.61,.36,1);}
+  /* Sem padding horizontal aqui: cada slide usa flex-basis:100% do
+     conteúdo do track, e o translateX() do carrossel usa 100% da caixa
+     inteira do track — com padding lateral os dois "100%" discordavam
+     por alguns pixels, erro que ia se acumulando a cada slide (por isso
+     o corte/vazamento piorava conforme avançava pelos banners). */
+  .hero-track{display:flex;cursor:grab;touch-action:pan-y;padding:0 0 32px;transition:transform .4s cubic-bezier(.22,.61,.36,1);}
   .hero-track.dragging{cursor:grabbing;transition:none;}
   .hero-slide{flex:0 0 100%;min-width:0;cursor:pointer;}
   .hero-nav{position:absolute;width:40px;height:40px;border-radius:999px;background:var(--paper);border:1px solid var(--line);color:var(--ink);font-size:19px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);z-index:2;}
