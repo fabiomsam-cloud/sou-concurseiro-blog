@@ -318,12 +318,14 @@
     } else {
       posts.forEach(p => {
         const isPub = p.status === "publicado";
+        const tipoLabel = {"noticia":"📰 Notícia","dica-de-estudo":"📘 Dica de estudo"}[p.tipo_conteudo];
         html += '<div class="post-row">' +
-          '<div class="post-thumb">' + (p.imagem_capa ? '<img src="'+esc(p.imagem_capa)+'" alt="">' : esc((p.categoria||"").slice(0,4).toUpperCase())) + '</div>' +
+          '<div class="post-thumb">' + ((p.imagem_miniatura||p.imagem_capa) ? '<img src="'+esc(p.imagem_miniatura||p.imagem_capa)+'" alt="">' : esc((p.categoria||"").slice(0,4).toUpperCase())) + '</div>' +
           '<div class="post-body">' +
             '<div class="post-title">'+esc(p.titulo)+'</div>' +
             '<div class="post-meta">' +
               '<span class="badge '+(isPub?"badge-pub":"badge-draft")+'">'+esc(p.status||"—")+'</span>' +
+              (tipoLabel ? '<span>'+tipoLabel+'</span>' : '') +
               '<span>'+esc(p.categoria)+' · '+esc(UF_NAMES[p.uf]||p.uf||"—")+'</span>' +
               '<span class="mono">'+esc(p.data_publicacao||"")+'</span>' +
               '<span class="mono" style="opacity:.6">'+esc(p.id)+'</span>' +
@@ -368,9 +370,9 @@
 
   function blankPost(){
     return { id:"", titulo:"", categoria:"", uf:"", concurso:"", resumo:"", conteudo:"",
-      highlight_num:"", highlight_label:"", imagem_capa:"", link_original:"",
+      highlight_num:"", highlight_label:"", imagem_capa:"", imagem_miniatura:"", link_original:"",
       relacionados: [], data_publicacao: new Date().toISOString().slice(0,10),
-      hora_publicacao:"", status:"rascunho" };
+      hora_publicacao:"", status:"rascunho", tipo_conteudo:"concurso", meta_descricao:"" };
   }
 
   function renderForm(id){
@@ -391,15 +393,30 @@
     html += field_text("concurso", "Concurso (nome oficial)", post.concurso, "", "ex: TJ-AM");
     html += '</div></div>';
 
+    html += '<div class="form-card"><h3>Onde aparece no blog</h3>';
+    html += field_select("tipo_conteudo", "Seção do portal", post.tipo_conteudo || "concurso", [
+      ["concurso","Matéria de concurso (guia completo)"],
+      ["noticia","Notícia"],
+      ["dica-de-estudo","Dica de estudo"]
+    ]);
+    html += '<div class="hint">Isso decide se a matéria entra na seção "Notícias" ou "Dicas de Estudo" do menu novo (as duas ainda em construção). "Categoria" acima já controla a página "Carreiras", e "UF" já controla a página do estado (ex: Amazonas) — não precisa duplicar essa informação aqui.</div>';
+    html += '</div>';
+
     html += '<div class="form-card"><h3>Conteúdo</h3>';
     html += field_text("titulo", "Título", post.titulo, "", "");
     html += field_textarea("resumo", "Resumo (aparece nos cards e na home)", post.resumo, 3);
     html += field_textarea("conteudo", "Corpo da matéria", post.conteudo, 14, "mono");
-    html += '<div class="hint">Formato: linha começando com "## " vira subtítulo · linha começando com "&lt;" é colada como HTML puro (ex: tabela) · qualquer outra linha não-vazia vira um parágrafo. Deixe uma linha em branco entre blocos.</div>';
+    html += '<button class="btn btn-sm" id="btn-insert-link" type="button" style="margin-top:8px;">🔗 Inserir link</button>';
+    html += '<div class="hint">Formato: linha começando com "## " vira subtítulo · linha começando com "&lt;" é colada como HTML puro (ex: tabela) · qualquer outra linha não-vazia vira um parágrafo. Deixe uma linha em branco entre blocos. Pra linkar um trecho, selecione o texto no corpo acima e clique em "Inserir link" (ou clique sem selecionar nada pra inserir um link novo no cursor).</div>';
     html += '<div class="row2" style="margin-top:14px;">';
     html += field_text("highlight_num", "Número de destaque (opcional)", post.highlight_num, "", "ex: 400");
     html += field_text("highlight_label", "Legenda do destaque", post.highlight_label, "", "ex: vagas previstas");
     html += '</div></div>';
+
+    html += '<div class="form-card"><h3>SEO (metadados)</h3>';
+    html += field_textarea("meta_descricao", "Descrição para buscadores (article:description)", post.meta_descricao, 2);
+    html += '<div class="hint">Aparece no resultado do Google e quando a matéria é compartilhada (WhatsApp, redes sociais). Se deixar em branco, usamos o "Resumo" acima. Ideal: até 155 caracteres.</div>';
+    html += '</div>';
 
     html += '<div class="form-card"><h3>Publicação</h3><div class="row3">';
     html += field_date("data_publicacao", "Data de publicação", post.data_publicacao);
@@ -407,13 +424,23 @@
     html += field_text("link_original", "Link original (opcional)", post.link_original, "", "");
     html += '</div></div>';
 
-    html += '<div class="form-card"><h3>Imagem de capa</h3>';
+    html += '<div class="form-card"><h3>Imagens</h3>';
     html += '<div class="img-upload">' +
       '<div class="img-preview" id="img-preview">' + (post.imagem_capa ? '<img src="'+esc(post.imagem_capa)+'" alt="">' : "Sem imagem") + '</div>' +
       '<div class="img-upload-controls">' +
-        field_text("imagem_capa", "URL da imagem", post.imagem_capa, "", "cole uma URL ou envie um arquivo abaixo") +
+        field_text("imagem_capa", "Imagem de capa (banner/manchete)", post.imagem_capa, "", "cole uma URL ou envie um arquivo abaixo") +
         '<input type="file" id="img-file" accept="image/*" style="margin-top:6px;font-size:12.5px;">' +
+        '<div class="hint">Usada em tamanho grande quando a matéria está em destaque na manchete. Ideal: horizontal, pelo menos 1600×580px (proporção aproximada 3:1) — a imagem é cortada automaticamente pra preencher o espaço, então não precisa ser exata.</div>' +
         '<div class="hint" id="img-upload-status"></div>' +
+      '</div>' +
+    '</div>';
+    html += '<div class="img-upload" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line);">' +
+      '<div class="img-preview" id="img-preview-thumb">' + (post.imagem_miniatura ? '<img src="'+esc(post.imagem_miniatura)+'" alt="">' : "Usa a de capa") + '</div>' +
+      '<div class="img-upload-controls">' +
+        field_text("imagem_miniatura", "Imagem miniatura (opcional)", post.imagem_miniatura, "", "se deixar em branco, usamos a imagem de capa") +
+        '<input type="file" id="img-file-thumb" accept="image/*" style="margin-top:6px;font-size:12.5px;">' +
+        '<div class="hint">Usada pequena, nos cards de "Publicações recentes" e nas listas. Ideal: quadrada, pelo menos 600×600px. Só preencha se quiser um enquadramento diferente do banner (ex: cortar mais de perto o rosto/logo).</div>' +
+        '<div class="hint" id="img-upload-status-thumb"></div>' +
       '</div>' +
     '</div></div>';
 
@@ -433,9 +460,37 @@
     $("#imagem_capa").addEventListener("input", () => {
       $("#img-preview").innerHTML = $("#imagem_capa").value ? '<img src="'+esc($("#imagem_capa").value)+'" alt="">' : "Sem imagem";
     });
-    $("#img-file").addEventListener("change", (e) => uploadImage(e.target.files[0], isNew ? $("#id").value : post.id));
+    $("#imagem_miniatura").addEventListener("input", () => {
+      $("#img-preview-thumb").innerHTML = $("#imagem_miniatura").value ? '<img src="'+esc($("#imagem_miniatura").value)+'" alt="">' : "Usa a de capa";
+    });
+    $("#img-file").addEventListener("change", (e) => uploadImage(e.target.files[0], isNew ? $("#id").value : post.id, {
+      inputId: "imagem_capa", previewId: "img-preview", statusId: "img-upload-status", emptyLabel: "Sem imagem"
+    }));
+    $("#img-file-thumb").addEventListener("change", (e) => uploadImage(e.target.files[0], isNew ? $("#id").value : post.id, {
+      inputId: "imagem_miniatura", previewId: "img-preview-thumb", statusId: "img-upload-status-thumb", emptyLabel: "Usa a de capa"
+    }));
+    $("#btn-insert-link").addEventListener("click", insertLinkIntoConteudo);
     $("#btn-save").addEventListener("click", () => savePost(isNew, post.id));
     if (isNew) $("#id").addEventListener("input", () => { $("#id").value = slugify($("#id").value); });
+  }
+
+  // Ajuda quem edita a colar um link sem precisar escrever a tag HTML à
+  // mão: se houver texto selecionado no corpo, vira o texto do link; senão,
+  // pede o texto também. Insere <a href="..." target="_blank" rel="noopener">
+  // na posição do cursor (o corpo já aceita HTML solto, então funciona
+  // direto sem precisar do modo "colar HTML puro").
+  function insertLinkIntoConteudo(){
+    const ta = $("#conteudo");
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    const selected = ta.value.slice(start, end);
+    const url = prompt("URL do link (ex: https://...):", "https://");
+    if (!url) return;
+    const texto = selected || prompt("Texto do link:", "") || url;
+    const tag = '<a href="' + url.trim() + '" target="_blank" rel="noopener">' + texto + '</a>';
+    ta.value = ta.value.slice(0, start) + tag + ta.value.slice(end);
+    ta.focus();
+    const newPos = start + tag.length;
+    ta.setSelectionRange(newPos, newPos);
   }
 
   function field_text(id,label,val,extra,ph){
@@ -490,13 +545,15 @@
     })).filter(r => r.titulo);
   }
 
-  async function uploadImage(file, idHint){
+  async function uploadImage(file, idHint, target){
     if (!file) return;
-    const statusEl = $("#img-upload-status");
+    target = target || { inputId: "imagem_capa", previewId: "img-preview", statusId: "img-upload-status", emptyLabel: "Sem imagem" };
+    const statusEl = $("#" + target.statusId);
     statusEl.textContent = "Enviando imagem...";
     try {
       const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g,"");
-      const path = "capas/" + (slugify(idHint) || "materia") + "-" + Date.now() + "." + ext;
+      const suffix = target.inputId === "imagem_miniatura" ? "-mini" : "";
+      const path = "capas/" + (slugify(idHint) || "materia") + suffix + "-" + Date.now() + "." + ext;
       const buf = await file.arrayBuffer();
       const res = await authFetch("/storage/v1/object/blog-imagens/" + path, {
         method: "POST",
@@ -505,8 +562,8 @@
       });
       if (!res.ok) throw new Error("Falha no envio (HTTP " + res.status + ")");
       const publicUrl = SUPABASE_URL + "/storage/v1/object/public/blog-imagens/" + path;
-      $("#imagem_capa").value = publicUrl;
-      $("#img-preview").innerHTML = '<img src="'+esc(publicUrl)+'" alt="">';
+      $("#" + target.inputId).value = publicUrl;
+      $("#" + target.previewId).innerHTML = '<img src="'+esc(publicUrl)+'" alt="">';
       statusEl.textContent = "Imagem enviada ✓";
       toast("Imagem enviada.");
     } catch(e){
@@ -533,11 +590,14 @@
       highlight_num: $("#highlight_num").value.trim(),
       highlight_label: $("#highlight_label").value.trim(),
       imagem_capa: $("#imagem_capa").value.trim(),
+      imagem_miniatura: $("#imagem_miniatura").value.trim(),
       link_original: $("#link_original").value.trim(),
       relacionados: collectRel(),
       data_publicacao: $("#data_publicacao").value || null,
       hora_publicacao: $("#hora_publicacao").value.trim(),
-      status: $("#status").value
+      status: $("#status").value,
+      tipo_conteudo: $("#tipo_conteudo").value,
+      meta_descricao: $("#meta_descricao").value.trim()
     };
 
     $("#btn-save").disabled = true;
