@@ -63,16 +63,34 @@
 
   /* ---- hero / manchete: carrossel de 5 destaques, arrastável ---- */
   .hero-carousel{position:relative;}
-  .hero-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;cursor:grab;padding:34px 2px 32px;border-bottom:1px solid var(--line);scrollbar-width:none;touch-action:pan-y;}
-  .hero-track::-webkit-scrollbar{display:none;}
-  .hero-track.dragging{cursor:grabbing;scroll-snap-type:none;}
-  .hero-slide{flex:0 0 100%;min-width:0;scroll-snap-align:start;cursor:pointer;}
-  .hero-nav{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:999px;background:var(--paper);border:1px solid var(--line);color:var(--ink);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);z-index:2;}
+  /* .hero-viewport recorta o conteúdo que ultrapassa a largura visível.
+     O carrossel move o .hero-track inteiro via transform (translateX)
+     em vez de usar rolagem nativa (overflow-x:auto + scroll-snap) — a
+     rolagem nativa causava um vazamento visual do próximo slide na
+     lateral direita em alguns navegadores (o slide ficava fora da área
+     clicável, mas ainda "pintava" pixels fora do recorte). Mover por
+     transform evita esse bug e também facilita centralizar a seta na
+     imagem e fazer o avanço automático. */
+  .hero-viewport{position:relative;overflow:hidden;border-bottom:1px solid var(--line);}
+  .hero-track{display:flex;cursor:grab;touch-action:pan-y;padding:0 2px 32px;transition:transform .4s cubic-bezier(.22,.61,.36,1);}
+  .hero-track.dragging{cursor:grabbing;transition:none;}
+  .hero-slide{flex:0 0 100%;min-width:0;cursor:pointer;}
+  .hero-nav{position:absolute;width:40px;height:40px;border-radius:999px;background:var(--paper);border:1px solid var(--line);color:var(--ink);font-size:19px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);z-index:2;}
   .hero-nav:hover{border-color:var(--accent);color:var(--accent);}
-  .hero-nav.prev{left:-6px;}
-  .hero-nav.next{right:-6px;}
-  @media (max-width:640px){ .hero-nav{display:none;} }
-  .hero-dots{display:flex;gap:6px;justify-content:center;padding:10px 0 0;}
+  .hero-nav.prev{left:14px;}
+  .hero-nav.next{right:14px;}
+  /* Aceno sutil e contínuo na seta de avançar, para deixar claro que o
+     banner pode ser arrastado/navegado — pausa se o usuário preferir
+     menos movimento na tela. */
+  @keyframes heroNavNudge{
+    0%,18%,100%{ transform:translateX(0); }
+    9%{ transform:translateX(4px); }
+  }
+  .hero-nav.next{animation:heroNavNudge 2.6s ease-in-out infinite;}
+  .hero-nav.next:hover{animation-play-state:paused;}
+  @media (prefers-reduced-motion:reduce){ .hero-nav.next{animation:none;} }
+  @media (max-width:640px){ .hero-nav{display:none;} .hero-img{height:220px;} }
+  .hero-dots{display:flex;gap:6px;justify-content:center;padding:16px 0 12px;}
   .hero-dot{width:7px;height:7px;border-radius:999px;background:var(--line);border:none;padding:0;cursor:pointer;}
   .hero-dot.active{background:var(--accent);width:20px;border-radius:4px;transition:width .2s;}
   .hero-eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:10px;}
@@ -541,22 +559,70 @@
     '</div>';
   }
 
+  // Avanço automático do carrossel de manchetes: troca sozinho a cada
+  // ~5s e é sempre reiniciado quando o usuário interage (arrasta, clica
+  // na seta ou na bolinha), para não competir com a ação da pessoa.
+  // Precisa ser limpo sempre que a home sai de tela (senão empilha
+  // vários timers a cada re-render).
+  let heroAutoTimer = null;
+  let heroResizeHandler = null;
+  function clearHeroAutoTimer(){
+    if (heroAutoTimer){ clearInterval(heroAutoTimer); heroAutoTimer = null; }
+    if (heroResizeHandler){ window.removeEventListener("resize", heroResizeHandler); heroResizeHandler = null; }
+  }
+
   // Carrossel de manchetes: arrastável (mouse/touch), com setas e bolinhas.
+  // Em vez de rolagem nativa, o track inteiro é posicionado por
+  // translateX — isso evita o vazamento visual do slide seguinte na
+  // lateral (ver comentário na CSS) e deixa o avanço automático e o
+  // "snap" do arraste mais previsíveis.
   // Um clique só navega se não houve arraste (distância mínima de 5px).
   function wireHeroCarousel(slideCount){
+    clearHeroAutoTimer();
     const track = $("#hero-track");
-    if (!track) return;
-    let isDown = false, startX = 0, scrollStart = 0, moved = false;
+    const carousel = $(".hero-carousel");
+    if (!track || !carousel) return;
+    let isDown = false, startX = 0, dragDx = 0, moved = false, idx = 0;
 
-    function slideWidth(){ return track.clientWidth; }
-    function currentIndex(){ return Math.round(track.scrollLeft / slideWidth()); }
+    function setTransform(px){
+      track.style.transform = "translateX(calc(-" + (idx * 100) + "% + " + px + "px))";
+    }
     function goTo(i){
-      i = Math.max(0, Math.min(slideCount - 1, i));
-      track.scrollTo({ left: i * slideWidth(), behavior: "smooth" });
+      idx = ((i % slideCount) + slideCount) % slideCount;
+      track.classList.remove("dragging");
+      track.style.transform = "translateX(-" + (idx * 100) + "%)";
+      updateDots();
+      positionNav();
     }
     function updateDots(){
-      const idx = currentIndex();
       document.querySelectorAll(".hero-dot").forEach((d, i) => d.classList.toggle("active", i === idx));
+    }
+    // Mantém as setas sempre centralizadas sobre a imagem do slide atual
+    // (e não no meio da área inteira, que inclui título e texto), para
+    // ficar claro que o banner pode ser arrastado para o lado.
+    function positionNav(){
+      const prevBtn = $("#hero-prev"), nextBtn = $("#hero-next");
+      if (!prevBtn && !nextBtn) return;
+      const slide = track.querySelectorAll(".hero-slide")[idx];
+      const img = slide && slide.querySelector(".hero-img");
+      const carouselRect = carousel.getBoundingClientRect();
+      const navHeight = (prevBtn || nextBtn).offsetHeight;
+      let top;
+      if (img){
+        const r = img.getBoundingClientRect();
+        top = (r.top - carouselRect.top) + (r.height / 2) - (navHeight / 2);
+      } else {
+        top = 96;
+      }
+      top = Math.max(8, top);
+      if (prevBtn) prevBtn.style.top = top + "px";
+      if (nextBtn) nextBtn.style.top = top + "px";
+    }
+    function resetAutoTimer(){
+      clearHeroAutoTimer();
+      if (slideCount > 1){
+        heroAutoTimer = setInterval(() => { if (!isDown) goTo(idx + 1); }, 5000);
+      }
     }
 
     // Ouve pointermove/pointerup na window (não com setPointerCapture no
@@ -565,25 +631,27 @@
     // elemento que capturou o ponteiro.
     function onMove(e){
       if (!isDown) return;
-      const dx = e.clientX - startX;
-      if (Math.abs(dx) > 5) moved = true;
-      track.scrollLeft = scrollStart - dx;
+      dragDx = e.clientX - startX;
+      if (Math.abs(dragDx) > 5) moved = true;
+      setTransform(dragDx);
     }
     function onUp(){
       if (!isDown) return;
       isDown = false;
-      track.classList.remove("dragging");
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
-      goTo(currentIndex());
+      const threshold = track.clientWidth * 0.15;
+      if (dragDx <= -threshold) goTo(idx + 1);
+      else if (dragDx >= threshold) goTo(idx - 1);
+      else goTo(idx);
+      resetAutoTimer();
     }
     track.addEventListener("pointerdown", (e) => {
-      isDown = true; moved = false; startX = e.clientX; scrollStart = track.scrollLeft;
+      isDown = true; moved = false; startX = e.clientX; dragDx = 0;
       track.classList.add("dragging");
       window.addEventListener("pointermove", onMove);
       window.addEventListener("pointerup", onUp);
     });
-    track.addEventListener("scroll", () => { window.requestAnimationFrame(updateDots); });
 
     track.querySelectorAll(".hero-slide").forEach(slide => {
       slide.addEventListener("click", () => {
@@ -591,12 +659,24 @@
         location.hash = "#/materia/" + slide.dataset.id;
       });
     });
-    const prevBtn = $("#hero-prev"), nextBtn = $("#hero-next");
-    if (prevBtn) prevBtn.addEventListener("click", () => goTo(currentIndex() - 1));
-    if (nextBtn) nextBtn.addEventListener("click", () => goTo(currentIndex() + 1));
-    document.querySelectorAll(".hero-dot").forEach(dot => {
-      dot.addEventListener("click", () => goTo(parseInt(dot.dataset.i, 10)));
+    // As imagens carregam depois do primeiro cálculo de posição (rede),
+    // então a seta é reposicionada assim que cada imagem termina de
+    // carregar — senão ela fica alinhada com a altura "vazia" de antes.
+    track.querySelectorAll(".hero-img img").forEach(img => {
+      if (img.complete) positionNav();
+      else img.addEventListener("load", positionNav);
     });
+    const prevBtn = $("#hero-prev"), nextBtn = $("#hero-next");
+    if (prevBtn) prevBtn.addEventListener("click", () => { goTo(idx - 1); resetAutoTimer(); });
+    if (nextBtn) nextBtn.addEventListener("click", () => { goTo(idx + 1); resetAutoTimer(); });
+    document.querySelectorAll(".hero-dot").forEach(dot => {
+      dot.addEventListener("click", () => { goTo(parseInt(dot.dataset.i, 10)); resetAutoTimer(); });
+    });
+
+    goTo(0);
+    heroResizeHandler = positionNav;
+    window.addEventListener("resize", heroResizeHandler);
+    resetAutoTimer();
   }
 
   function cardHtml(p){
@@ -627,13 +707,20 @@
 
     let html = "";
     html += '<div class="wrap"><div class="hero-carousel">';
-    html += '<div class="hero-track" id="hero-track">' + heroSlides.map(heroSlideHtml).join("") + '</div>';
+    // As bolinhas ficam ACIMA do banner (sinalização de que há mais
+    // destaques), e o carrossel em si vive dentro de .hero-viewport, que
+    // é o elemento que recorta a lateral — .hero-track só cuida da rolagem.
     if (heroSlides.length > 1){
-      html += '<button class="hero-nav prev" id="hero-prev" type="button" aria-label="Destaque anterior">‹</button>';
-      html += '<button class="hero-nav next" id="hero-next" type="button" aria-label="Próximo destaque">›</button>';
       html += '<div class="hero-dots" id="hero-dots">' +
         heroSlides.map((p,i) => '<button class="hero-dot'+(i===0?" active":"")+'" data-i="'+i+'" type="button" aria-label="Ir para destaque '+(i+1)+'"></button>').join("") +
       '</div>';
+    }
+    html += '<div class="hero-viewport">';
+    html += '<div class="hero-track" id="hero-track">' + heroSlides.map(heroSlideHtml).join("") + '</div>';
+    html += '</div>';
+    if (heroSlides.length > 1){
+      html += '<button class="hero-nav prev" id="hero-prev" type="button" aria-label="Destaque anterior">‹</button>';
+      html += '<button class="hero-nav next" id="hero-next" type="button" aria-label="Próximo destaque">›</button>';
     }
     html += '</div></div>';
 
@@ -724,6 +811,7 @@
   }
 
   function renderArticle(id){
+    clearHeroAutoTimer();
     const p = POSTS.find(x => x.id === id);
     if (!p){ location.hash = "#/"; return; }
     let html = '<div class="wrap article">';
@@ -809,6 +897,7 @@
   // + busca, filtrando um grid de cards (mesma linguagem visual da home) em
   // vez da lista corrida por estado que ficava cansativa de ler.
   function renderConcursosPorEstado(scrollTop){
+    clearHeroAutoTimer();
     const byUf = {};
     POSTS.forEach(p => { (byUf[p.uf] = byUf[p.uf] || []).push(p); });
     // Ordena por volume de concursos (mais ativos primeiro) — mais dinâmico
