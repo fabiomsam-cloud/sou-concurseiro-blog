@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sou Concurseiro</title>
+<meta name="description" id="meta-description" content="Sou Concurseiro e Vou Passar — notícias, editais e guias completos de concursos públicos no Brasil.">
+<meta property="og:description" id="og-description" content="Sou Concurseiro e Vou Passar — notícias, editais e guias completos de concursos públicos no Brasil.">
+<meta property="og:title" id="og-title" content="Sou Concurseiro">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
 <style>
   :root{
@@ -258,10 +261,6 @@
 <div class="topline">
   <div class="wrap navrow">
     <a class="home-link" id="nav-home">Início</a>
-    <a class="home-link" id="nav-concursos">Concursos</a>
-    <a class="home-link" id="nav-amazonas">Amazonas</a>
-    <a class="home-link" id="nav-carreiras">Carreiras</a>
-    <a class="home-link" id="nav-noticias">Notícias</a>
     <a class="home-link" id="nav-dicas">Dicas de Estudo</a>
     <a class="home-link" id="nav-calendario">Concursos por Estado</a>
     <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Alternar modo claro ou escuro">
@@ -547,6 +546,22 @@
     return parseInt(parts[2],10) + " " + meses[parseInt(parts[1],10)-1] + " " + parts[0];
   }
 
+  // Título e meta description mudam por página/matéria (SEO + preview ao
+  // compartilhar no WhatsApp/redes). Site é uma SPA de rota por hash então
+  // isso não substitui pré-renderização de verdade, mas já ajuda o Google
+  // (que executa JS) e qualquer compartilhamento feito depois da página
+  // carregar. Sem argumentos, volta pro título/descrição padrão do blog.
+  const DEFAULT_TITLE = "Sou Concurseiro";
+  const DEFAULT_DESCRIPTION = "Sou Concurseiro e Vou Passar — notícias, editais e guias completos de concursos públicos no Brasil.";
+  function setPageMeta(title, description){
+    const t = title || DEFAULT_TITLE;
+    const d = description || DEFAULT_DESCRIPTION;
+    document.title = t;
+    const desc = $("#meta-description"); if (desc) desc.setAttribute("content", d);
+    const ogDesc = $("#og-description"); if (ogDesc) ogDesc.setAttribute("content", d);
+    const ogTitle = $("#og-title"); if (ogTitle) ogTitle.setAttribute("content", t);
+  }
+
   function matchesFilters(p){
     if (filterCat && p.categoria !== filterCat) return false;
     if (filterUf && p.uf !== filterUf) return false;
@@ -698,8 +713,11 @@
   }
 
   function cardHtml(p){
-    const thumb = p.imagem_capa
-      ? '<div class="seal seal-img"><img src="'+p.imagem_capa+'" alt="" loading="lazy"></div>'
+    // Miniatura dedicada (opcional, definida no admin) tem prioridade;
+    // sem ela, cai de volta pra imagem de capa — como sempre funcionou.
+    const thumbImg = p.imagem_miniatura || p.imagem_capa;
+    const thumb = thumbImg
+      ? '<div class="seal seal-img"><img src="'+thumbImg+'" alt="" loading="lazy"></div>'
       : '<div class="seal"><div class="seal-fallback">'+catAbbr(p.categoria)+'</div></div>';
     return '<article class="card" data-id="'+p.id+'">' +
       thumb +
@@ -715,6 +733,7 @@
   }
 
   function renderHome(){
+    setPageMeta();
     const cats = Array.from(new Set(POSTS.map(p => p.categoria))).sort();
     const ufs = Array.from(new Set(POSTS.map(p => p.uf))).sort();
     const sorted = POSTS.slice().sort((a,b) => (b.data_publicacao > a.data_publicacao ? 1 : -1));
@@ -832,6 +851,7 @@
     clearHeroAutoTimer();
     const p = POSTS.find(x => x.id === id);
     if (!p){ location.hash = "#/"; return; }
+    setPageMeta(p.titulo, p.meta_descricao || p.resumo);
     let html = '<div class="wrap article">';
     html += '<a class="back-link" id="back-link">← Voltar pro blog</a>';
     html += '<div class="article-eyebrow">'+p.categoria+' · '+(UF_NAMES[p.uf]||p.uf)+'</div>';
@@ -916,6 +936,7 @@
   // vez da lista corrida por estado que ficava cansativa de ler.
   function renderConcursosPorEstado(scrollTop){
     clearHeroAutoTimer();
+    setPageMeta("Concursos por Estado | Sou Concurseiro", "Filtre concursos públicos abertos por estado e encontre oportunidades na sua região.");
     const byUf = {};
     POSTS.forEach(p => { (byUf[p.uf] = byUf[p.uf] || []).push(p); });
     // Ordena por volume de concursos (mais ativos primeiro) — mais dinâmico
@@ -978,18 +999,16 @@
 
   // Seções novas da arquitetura do portal (etapa 1: menu + rotas esqueleto).
   // Cada uma ganha sua própria página assim que tiver conteúdo definido —
-  // por enquanto mostram um estado "em construção" pra não ficar quebrado
-  // nem em branco. Amazonas é a primeira a virar um hub completo (etapa 2).
+  // por enquanto mostra um estado "em construção" pra não ficar quebrada
+  // nem em branco. Concursos/Amazonas/Carreiras/Notícias foram removidas do
+  // menu por pedido dela (menu mais enxuto, sem seções vazias por enquanto).
   const COMING_SOON_PAGES = {
-    concursos: { eyebrow: "Portal de concursos", titulo: "Concursos", texto: "Em breve: todos os concursos públicos em aberto reunidos numa página só, com filtros por carreira, banca e estado." },
-    amazonas: { eyebrow: "Força regional SCVP", titulo: "Amazonas", texto: "Em breve: a página completa de concursos no Amazonas, o estado onde a Sou Concurseiro e Vou Passar nasceu." },
-    carreiras: { eyebrow: "Portal de concursos", titulo: "Carreiras", texto: "Em breve: concursos organizados por carreira (Educação, Policial, Tribunais, Saúde, Fiscal, Administrativa)." },
-    noticias: { eyebrow: "Portal de concursos", titulo: "Notícias", texto: "Em breve: as últimas notícias sobre concursos públicos, sempre atualizadas." },
     dicas: { eyebrow: "Portal de concursos", titulo: "Dicas de Estudo", texto: "Em breve: técnicas de estudo, planos e materiais pra turbinar sua preparação." }
   };
   function renderComingSoon(key){
     clearHeroAutoTimer();
     const p = COMING_SOON_PAGES[key];
+    setPageMeta(p.titulo + " | Sou Concurseiro", p.texto);
     let html = '<div class="wrap cal-page">';
     html += '<div class="hero-eyebrow">'+p.eyebrow+'</div>';
     html += '<h1 style="font-size:clamp(24px,3.6vw,34px);margin:0 0 18px;">'+p.titulo+'</h1>';
@@ -1004,13 +1023,9 @@
     if (!POSTS.length){ return; }
     const h = location.hash || "#/";
     const m = /^#\/materia\/(.+)$/.exec(h);
-    const comingSoonMatch = /^#\/(concursos|amazonas|carreiras|noticias|dicas)$/.exec(h);
+    const comingSoonMatch = /^#\/(dicas)$/.exec(h);
     $("#nav-home").classList.toggle("active", !m && h !== "#/calendario" && !comingSoonMatch);
     $("#nav-calendario").classList.toggle("active", h === "#/calendario");
-    $("#nav-concursos").classList.toggle("active", h === "#/concursos");
-    $("#nav-amazonas").classList.toggle("active", h === "#/amazonas");
-    $("#nav-carreiras").classList.toggle("active", h === "#/carreiras");
-    $("#nav-noticias").classList.toggle("active", h === "#/noticias");
     $("#nav-dicas").classList.toggle("active", h === "#/dicas");
     if (m) renderArticle(decodeURIComponent(m[1]));
     else if (h === "#/calendario") renderConcursosPorEstado(true);
@@ -1060,10 +1075,6 @@
 
   $("#nav-home").addEventListener("click", () => { location.hash = "#/"; });
   $("#nav-calendario").addEventListener("click", () => { location.hash = "#/calendario"; });
-  $("#nav-concursos").addEventListener("click", () => { location.hash = "#/concursos"; });
-  $("#nav-amazonas").addEventListener("click", () => { location.hash = "#/amazonas"; });
-  $("#nav-carreiras").addEventListener("click", () => { location.hash = "#/carreiras"; });
-  $("#nav-noticias").addEventListener("click", () => { location.hash = "#/noticias"; });
   $("#nav-dicas").addEventListener("click", () => { location.hash = "#/dicas"; });
   $("#search").addEventListener("input", (e) => { query = e.target.value.trim(); renderHome(); });
 
