@@ -619,43 +619,94 @@
       }
     }
 
-    // Ouve pointermove/pointerup na window (não com setPointerCapture no
-    // track) — assim o clique continua disparando normalmente no slide
-    // certo quando não houve arraste, em vez de ser redirecionado pro
-    // elemento que capturou o ponteiro.
-    function onMove(e){
+    // Duas tentativas anteriores usando Pointer Events (unificando
+    // mouse/touch num só código) travaram em celular real depois de 1-2
+    // arrastes — Pointer Events + touch-action têm comportamento
+    // inconsistente entre navegadores de celular nesse tipo de gesto.
+    // Trocado por dois caminhos SEPARADOS e bem estabelecidos: toque usa
+    // Touch Events "cru" (o que praticamente todo carrossel usa há anos,
+    // suporte universal e previsível) com trava de eixo manual (só
+    // assume que é arraste horizontal depois de ver a direção real do
+    // dedo — se for vertical, solta o gesto pro scroll nativo da página
+    // sem nunca chamar preventDefault); mouse usa o fluxo separado de
+    // sempre (mousedown/mousemove/mouseup na window).
+    function endDrag(commit){
+      track.classList.remove("dragging");
+      if (commit){
+        const threshold = track.clientWidth * 0.15;
+        if (dragDx <= -threshold) goTo(idx + 1);
+        else if (dragDx >= threshold) goTo(idx - 1);
+        else goTo(idx);
+      } else {
+        goTo(idx);
+      }
+      resetAutoTimer();
+    }
+
+    // ---- Mouse (desktop) ----
+    function onMouseMove(e){
       if (!isDown) return;
       dragDx = e.clientX - startX;
       if (Math.abs(dragDx) > 5) moved = true;
       setTransform(dragDx);
     }
-    // onUp cuida tanto do fim normal do arraste (pointerup) quanto de um
-    // cancelamento (pointercancel) — o celular pode cancelar o gesto no
-    // meio (ex: o sistema decide que era um scroll, uma notificação
-    // desceu, etc.), e sem tratar esse caso o carrossel ficava "travado":
-    // isDown nunca voltava a false, e o próximo arraste começava com o
-    // estado sujo do anterior (foi o que causava funcionar só até o
-    // segundo banner e depois parar). Sempre que up ou cancel dispara,
-    // limpamos o estado e "assentamos" o slide na posição mais próxima.
-    function onUp(){
+    function onMouseUp(){
       if (!isDown) return;
       isDown = false;
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-      window.removeEventListener("pointercancel", onUp);
-      const threshold = track.clientWidth * 0.15;
-      if (dragDx <= -threshold) goTo(idx + 1);
-      else if (dragDx >= threshold) goTo(idx - 1);
-      else goTo(idx);
-      resetAutoTimer();
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+      endDrag(true);
     }
-    track.addEventListener("pointerdown", (e) => {
+    track.addEventListener("mousedown", (e) => {
       isDown = true; moved = false; startX = e.clientX; dragDx = 0;
       track.classList.add("dragging");
-      window.addEventListener("pointermove", onMove);
-      window.addEventListener("pointerup", onUp);
-      window.addEventListener("pointercancel", onUp);
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("mouseup", onMouseUp);
     });
+
+    // ---- Touch (celular) ----
+    let touchStartY = 0, touchAxis = null; // touchAxis: null (ainda não decidido) | "x" | "y"
+    track.addEventListener("touchstart", (e) => {
+      if (e.touches.length !== 1) return;
+      isDown = true; moved = false; touchAxis = null;
+      startX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      dragDx = 0;
+    }, {passive:true});
+
+    track.addEventListener("touchmove", (e) => {
+      if (!isDown) return;
+      const t = e.touches[0];
+      const dx = t.clientX - startX;
+      const dy = t.clientY - touchStartY;
+      if (touchAxis === null){
+        // Só decide a direção depois de um mínimo de movimento — um
+        // toque quase parado não deve "travar" o gesto num eixo ainda.
+        if (Math.abs(dx) > 6 || Math.abs(dy) > 6){
+          touchAxis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+          if (touchAxis === "x") track.classList.add("dragging");
+        }
+      }
+      if (touchAxis === "x"){
+        // É arraste horizontal de verdade: impede a página de rolar
+        // verticalmente enquanto o dedo move o banner.
+        if (e.cancelable) e.preventDefault();
+        dragDx = dx;
+        moved = true;
+        setTransform(dragDx);
+      }
+      // touchAxis === "y": não faz nada — deixa o navegador rolar a
+      // página normalmente, sem interferir.
+    }, {passive:false});
+
+    function onTouchEnd(){
+      if (!isDown) return;
+      isDown = false;
+      if (touchAxis === "x") endDrag(true);
+      touchAxis = null;
+    }
+    track.addEventListener("touchend", onTouchEnd);
+    track.addEventListener("touchcancel", onTouchEnd);
 
     track.querySelectorAll(".hero-slide").forEach(slide => {
       slide.addEventListener("click", () => {
