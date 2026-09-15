@@ -109,7 +109,13 @@
      inteira do track — com padding lateral os dois "100%" discordavam
      por alguns pixels, erro que ia se acumulando a cada slide (por isso
      o corte/vazamento piorava conforme avançava pelos banners). */
-  .hero-track{display:flex;cursor:grab;touch-action:pan-y;padding:0 0 32px;transition:transform .4s cubic-bezier(.22,.61,.36,1);}
+  /* user-select:none + -webkit-touch-callout:none evitam que o dedo, ao
+     tentar arrastar o banner sobre o título/texto do slide, dispare a
+     seleção de texto do celular (ou o menu de "copiar") em vez do
+     arraste — é a causa mais comum de "não consigo arrastar" em
+     carrosséis no touch (o arraste começa quase sempre em cima de texto,
+     não da imagem, e o navegador interpreta como seleção). */
+  .hero-track{display:flex;cursor:grab;touch-action:pan-y;padding:0 0 32px;transition:transform .4s cubic-bezier(.22,.61,.36,1);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
   .hero-track.dragging{cursor:grabbing;transition:none;}
   .hero-slide{flex:0 0 100%;min-width:0;cursor:pointer;}
   .hero-nav{position:absolute;width:40px;height:40px;border-radius:999px;background:var(--paper);border:1px solid var(--line);color:var(--ink);font-size:19px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);z-index:2;}
@@ -620,7 +626,13 @@
     function onMove(e){
       if (!isDown) return;
       dragDx = e.clientX - startX;
-      if (Math.abs(dragDx) > 5) moved = true;
+      if (Math.abs(dragDx) > 5){
+        moved = true;
+        // Uma vez que já deu pra ver que é um arraste (não um toque), trava
+        // o gesto por completo — impede o navegador de, no meio do arraste,
+        // ainda tentar selecionar texto ou rolar a página no celular.
+        if (e.cancelable) e.preventDefault();
+      }
       setTransform(dragDx);
     }
     function onUp(){
