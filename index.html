@@ -322,7 +322,7 @@
     </button>
     <div class="searchbox">
       <span class="u" style="font-size:12px;color:var(--ink-soft)">🔍</span>
-      <input type="text" id="search" placeholder="Buscar concurso, banca, estado...">
+      <input type="text" id="search" placeholder="Buscar concurso, órgão, banca, estado, assunto...">
     </div>
   </div>
 </div>
@@ -381,6 +381,36 @@
     return CAT_ABBR[cat] || (cat || "").slice(0,4).toUpperCase();
   }
 
+  // Rótulo de tipo de conteúdo (mesma convenção usada no painel admin) — só
+  // aparece nos cards quando a matéria não é do tipo padrão "concurso", pra
+  // distinguir concurso/notícia/dica de estudo nos resultados de busca e nas
+  // grades (item da lista: "a busca deve localizar diferentes tipos de
+  // conteúdo — Concurso X, Notícias sobre X, Conteúdos de preparação pra X").
+  const TIPO_LABEL = { "noticia": "📰 Notícia", "dica-de-estudo": "📘 Dica de estudo" };
+
+  // Remove tags HTML pra transformar o corpo bruto da matéria (que tem
+  // <span style="..."> etc.) em texto puro, só pra fins de busca — evita
+  // que a busca "ache" fragmentos de atributo/estilo por engano.
+  function stripHtml(html){
+    return (html || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ");
+  }
+
+  // Texto pesquisável de uma matéria: cobre concurso, categoria (proxy de
+  // carreira), estado e — como o banco não tem campos separados de
+  // banca/órgão/assunto — também o resumo e o corpo inteiro (sem tags), já
+  // que esses nomes (banca organizadora, órgão, tema) aparecem no texto da
+  // matéria mesmo sem um campo dedicado.
+  function searchableText(p){
+    return (
+      p.titulo + " " + p.concurso + " " + p.categoria + " " + (UF_NAMES[p.uf]||p.uf) + " " +
+      (p.resumo||"") + " " + stripHtml(p.conteudo||"")
+    ).toLowerCase();
+  }
+  function matchesQuery(p, q){
+    if (!q) return true;
+    return searchableText(p).includes(q.trim().toLowerCase());
+  }
+
   function fmtDate(d){
     // d = "YYYY-MM-DD" (formato retornado pelo Supabase)
     const parts = (d||"").split("-");
@@ -408,11 +438,7 @@
   function matchesFilters(p){
     if (filterCat && p.categoria !== filterCat) return false;
     if (filterUf && p.uf !== filterUf) return false;
-    if (query){
-      const q = query.toLowerCase();
-      const hay = (p.titulo+" "+p.concurso+" "+p.categoria+" "+(UF_NAMES[p.uf]||p.uf)).toLowerCase();
-      if (!hay.includes(q)) return false;
-    }
+    if (!matchesQuery(p, query)) return false;
     return true;
   }
 
@@ -573,10 +599,11 @@
     const thumb = thumbImg
       ? '<div class="seal seal-img"><img src="'+thumbImg+'" alt="" loading="lazy"></div>'
       : '<div class="seal"><div class="seal-fallback">'+catAbbr(p.categoria)+'</div></div>';
+    const tipoLabel = TIPO_LABEL[p.tipo_conteudo];
     return '<article class="card" data-id="'+p.id+'">' +
       thumb +
       '<div class="card-body">' +
-        '<div class="card-kicker">'+p.categoria+' · '+(UF_NAMES[p.uf]||p.uf)+'</div>' +
+        '<div class="card-kicker">'+(tipoLabel ? tipoLabel+' · ' : '')+p.categoria+' · '+(UF_NAMES[p.uf]||p.uf)+'</div>' +
         '<h3>'+p.titulo+'</h3>' +
         '<p class="excerpt">'+p.resumo+'</p>' +
         '<div class="card-meta"><span class="mono">'+fmtDate(p.data_publicacao)+'</span>' +
@@ -593,27 +620,34 @@
     const sorted = POSTS.slice().sort((a,b) => (b.data_publicacao > a.data_publicacao ? 1 : -1));
     // Manchete vira um carrossel com os 5 concursos/notícias mais recentes
     // (sempre os mais novos do dia, sem número fixo inventado), arrastável.
-    const heroSlides = sorted.slice(0, 5);
-    const rest = sorted.slice(heroSlides.length).filter(matchesFilters);
+    // Com busca/filtro ativo, some com a manchete e mostra só resultados —
+    // do contrário, uma matéria que só batesse com os 5 posts do carrossel
+    // "sumia" da busca (ficava de fora tanto da manchete quanto da grade,
+    // que sempre excluía esses 5 antes de filtrar).
+    const hasActiveFilter = !!(query || filterCat || filterUf);
+    const heroSlides = hasActiveFilter ? [] : sorted.slice(0, 5);
+    const rest = hasActiveFilter ? sorted.filter(matchesFilters) : sorted.slice(heroSlides.length).filter(matchesFilters);
 
     let html = "";
-    html += '<div class="wrap"><div class="hero-carousel">';
-    // As bolinhas ficam ACIMA do banner (sinalização de que há mais
-    // destaques), e o carrossel em si vive dentro de .hero-viewport, que
-    // é o elemento que recorta a lateral — .hero-track só cuida da rolagem.
-    if (heroSlides.length > 1){
-      html += '<div class="hero-dots" id="hero-dots">' +
-        heroSlides.map((p,i) => '<button class="hero-dot'+(i===0?" active":"")+'" data-i="'+i+'" type="button" aria-label="Ir para destaque '+(i+1)+'"></button>').join("") +
-      '</div>';
+    if (heroSlides.length){
+      html += '<div class="wrap"><div class="hero-carousel">';
+      // As bolinhas ficam ACIMA do banner (sinalização de que há mais
+      // destaques), e o carrossel em si vive dentro de .hero-viewport, que
+      // é o elemento que recorta a lateral — .hero-track só cuida da rolagem.
+      if (heroSlides.length > 1){
+        html += '<div class="hero-dots" id="hero-dots">' +
+          heroSlides.map((p,i) => '<button class="hero-dot'+(i===0?" active":"")+'" data-i="'+i+'" type="button" aria-label="Ir para destaque '+(i+1)+'"></button>').join("") +
+        '</div>';
+      }
+      html += '<div class="hero-viewport">';
+      html += '<div class="hero-track" id="hero-track">' + heroSlides.map(heroSlideHtml).join("") + '</div>';
+      html += '</div>';
+      if (heroSlides.length > 1){
+        html += '<button class="hero-nav prev" id="hero-prev" type="button" aria-label="Destaque anterior">‹</button>';
+        html += '<button class="hero-nav next" id="hero-next" type="button" aria-label="Próximo destaque">›</button>';
+      }
+      html += '</div></div>';
     }
-    html += '<div class="hero-viewport">';
-    html += '<div class="hero-track" id="hero-track">' + heroSlides.map(heroSlideHtml).join("") + '</div>';
-    html += '</div>';
-    if (heroSlides.length > 1){
-      html += '<button class="hero-nav prev" id="hero-prev" type="button" aria-label="Destaque anterior">‹</button>';
-      html += '<button class="hero-nav next" id="hero-next" type="button" aria-label="Próximo destaque">›</button>';
-    }
-    html += '</div></div>';
 
     html += '<div class="wrap">';
     html += '<div class="filterbar">';
@@ -624,7 +658,7 @@
     html += '</div>';
 
     html += '<div class="home-main" id="pub-recentes"><div>';
-    html += '<div class="section-label">Publicações recentes</div>';
+    html += '<div class="section-label">'+(hasActiveFilter ? 'Resultados · '+rest.length+(rest.length===1?' matéria':' matérias') : 'Publicações recentes')+'</div>';
     if (!rest.length){
       html += '<div class="empty">Nada encontrado com esse filtro.</div>';
     } else {
@@ -638,7 +672,7 @@
     // quem rolou a página inteira não precisar voltar ao topo pra filtrar.
     html += '<div class="topics-foot">';
     html += '<div class="section-label">Navegue por carreira</div>';
-    html += '<div class="searchbox" id="foot-searchbox"><span class="u" style="font-size:12px;color:var(--ink-soft)">🔍</span><input type="text" id="foot-search" placeholder="Buscar concurso, banca, estado..." value="'+query.replace(/"/g,"&quot;")+'"></div>';
+    html += '<div class="searchbox" id="foot-searchbox"><span class="u" style="font-size:12px;color:var(--ink-soft)">🔍</span><input type="text" id="foot-search" placeholder="Buscar concurso, órgão, banca, estado, assunto..." value="'+query.replace(/"/g,"&quot;")+'"></div>';
     html += '<div class="filterbar" style="padding:0;">' + pillsHtml(cats) + '</div>';
     html += '</div>';
 
@@ -721,7 +755,8 @@
     setPageMeta(p.titulo, p.meta_descricao || p.resumo);
     let html = '<div class="wrap article">';
     html += '<a class="back-link" id="back-link">← Voltar pro blog</a>';
-    html += '<div class="article-eyebrow">'+p.categoria+' · '+(UF_NAMES[p.uf]||p.uf)+'</div>';
+    const articleTipoLabel = TIPO_LABEL[p.tipo_conteudo];
+    html += '<div class="article-eyebrow">'+(articleTipoLabel ? articleTipoLabel+' · ' : '')+p.categoria+' · '+(UF_NAMES[p.uf]||p.uf)+'</div>';
     html += '<h1>'+p.titulo+'</h1>';
     html += '<div class="article-dateline">' +
       '<span>Por <b>'+AUTHOR.nome+'</b> · '+AUTHOR.cargo+'</span>' +
@@ -788,14 +823,20 @@
     window.scrollTo(0,0);
   }
 
-  // Sugestão de matérias parecidas pra continuar a leitura: prioriza mesma
-  // categoria, completa com as mais recentes das demais, até 4 posts.
+  // Sugestão de matérias parecidas pra continuar a leitura: prioriza o MESMO
+  // concurso primeiro (assim, a matéria-guia, a notícia e a dica de estudo
+  // de um mesmo concurso se conectam automaticamente — item da lista:
+  // "melhorar navegação entre notícias, concursos e páginas relacionadas"),
+  // depois mesma categoria/carreira, completando com as mais recentes das
+  // demais, até 4 posts.
   function similarPosts(current){
     const others = POSTS.filter(x => x.id !== current.id);
-    const sameCat = others.filter(x => x.categoria === current.categoria);
-    const rest = others.filter(x => x.categoria !== current.categoria)
+    const sameConcurso = others.filter(x => x.concurso === current.concurso);
+    const sameCat = others.filter(x => x.concurso !== current.concurso && x.categoria === current.categoria)
       .sort((a,b) => (b.data_publicacao > a.data_publicacao ? 1 : -1));
-    return sameCat.concat(rest).slice(0,4);
+    const rest = others.filter(x => x.concurso !== current.concurso && x.categoria !== current.categoria)
+      .sort((a,b) => (b.data_publicacao > a.data_publicacao ? 1 : -1));
+    return sameConcurso.concat(sameCat, rest).slice(0,4);
   }
 
   // "Concursos por Estado" — navegação dinâmica: chips de UF (com contagem)
@@ -820,7 +861,7 @@
       '<div class="stat-pill"><span class="num">'+POSTS.length+'</span><span class="lbl">concursos em '+ufsSorted.length+' estados</span></div></div>';
 
     html += '<div class="cal-toolbar">';
-    html += '<div class="searchbox" style="max-width:360px;margin:0 0 18px;"><span class="u" style="font-size:12px;color:var(--ink-soft)">🔍</span><input type="text" id="cal-search" placeholder="Buscar concurso, banca, estado..." value="'+calQuery.replace(/"/g,"&quot;")+'"></div>';
+    html += '<div class="searchbox" style="max-width:360px;margin:0 0 18px;"><span class="u" style="font-size:12px;color:var(--ink-soft)">🔍</span><input type="text" id="cal-search" placeholder="Buscar concurso, órgão, banca, estado, assunto..." value="'+calQuery.replace(/"/g,"&quot;")+'"></div>';
 
     html += '<div class="filterbar">';
     html += '<button class="pill'+(calUf===""?" active":"")+'" data-uf="">Todos os estados<span class="pill-count">'+POSTS.length+'</span></button>';
@@ -831,10 +872,7 @@
     html += '</div>';
 
     let filtered = POSTS.filter(p => !calUf || p.uf === calUf);
-    if (calQuery){
-      const q = calQuery.toLowerCase();
-      filtered = filtered.filter(p => (p.titulo+" "+p.concurso+" "+p.categoria+" "+(UF_NAMES[p.uf]||p.uf)).toLowerCase().includes(q));
-    }
+    filtered = filtered.filter(p => matchesQuery(p, calQuery));
     filtered = filtered.slice().sort((a,b) => (b.data_publicacao > a.data_publicacao ? 1 : -1));
 
     html += '<div class="section-label">'+(calUf ? (UF_NAMES[calUf]||calUf) : "Todos os concursos")+' · '+filtered.length+(filtered.length===1?" concurso":" concursos")+'</div>';
