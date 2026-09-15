@@ -228,6 +228,52 @@
   .card-meta{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--ink-soft);}
   .card-meta .num{color:var(--amber);font-weight:700;}
 
+  /* ---- gancho de marca (faixa fixa acima do masthead) ---- */
+  .brand-hook{background:var(--amber);}
+  .brand-hook-inner{display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 22px;text-align:center;}
+  .brand-hook-badge{font-size:14px;line-height:1;}
+  .brand-hook-text{font-size:12.5px;font-weight:700;color:#fff;letter-spacing:.005em;}
+  .brand-hook.is-link{cursor:pointer;}
+  .brand-hook.is-link:hover .brand-hook-inner{opacity:.9;}
+
+  /* ---- destaque Concursos no Amazonas ---- */
+  .am-destaque-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:28px 0 16px;flex-wrap:wrap;}
+  .am-destaque-label{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent);font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:8px 15px;border-radius:999px;}
+  .am-destaque-all{background:none;border:none;color:var(--accent);font-weight:700;font-size:12.5px;cursor:pointer;padding:0;}
+  .am-destaque-all:hover{text-decoration:underline;}
+
+  /* ---- Concursos por Carreira (grade de ícones) ---- */
+  .carreira-section{margin:8px 0 8px;}
+  .carreira-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:16px;margin-bottom:8px;}
+  @media (max-width:900px){ .carreira-grid{grid-template-columns:repeat(3,1fr);} }
+  @media (max-width:560px){ .carreira-grid{grid-template-columns:repeat(2,1fr);} }
+  .carreira-tile{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;border:1px solid var(--line);border-radius:14px;padding:16px 10px;cursor:pointer;background:var(--paper);transition:border-color .15s,box-shadow .15s,transform .15s;}
+  .carreira-tile:hover{border-color:var(--accent);box-shadow:var(--shadow);transform:translateY(-1px);}
+  .carreira-tile .ico{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:var(--accent-soft);color:var(--accent);}
+  .carreira-tile .ico svg{width:18px;height:18px;}
+  .carreira-tile .nome{font-size:12px;font-weight:700;color:var(--ink);line-height:1.25;}
+  .carreira-tile .count{font-size:10.5px;color:var(--ink-soft);font-weight:600;}
+
+  /* ---- sidebar: Editorias (navegação por carreira, ref. Gran Cursos) ---- */
+  .side-editorias{border:1px solid var(--line);border-radius:14px;padding:16px 16px 4px;}
+  .side-editorias h4{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin:0 0 12px;}
+  .editoria-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);cursor:pointer;}
+  .editoria-item:last-child{border-bottom:none;}
+  .editoria-item .ico{width:26px;height:26px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;border-radius:8px;background:var(--paper-alt);color:var(--ink-soft);transition:background .15s,color .15s;}
+  .editoria-item .ico svg{width:14px;height:14px;}
+  .editoria-item:hover .ico{background:var(--accent-soft);color:var(--accent);}
+  .editoria-item .nome{flex:1;font-size:12.5px;font-weight:600;color:var(--ink);}
+  .editoria-item:hover .nome{color:var(--accent);}
+  .editoria-item .count{font-size:11px;color:var(--ink-soft);font-weight:700;}
+
+  /* ---- sidebar: Mais Lidas (contador real de visualizações) ---- */
+  .side-mais-lidas{border:1px solid var(--line);border-radius:14px;padding:18px 18px 6px;}
+  .side-mais-lidas h4{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin:0 0 12px;}
+  .ml-tabs{display:flex;gap:6px;margin-bottom:14px;}
+  .ml-tab{font-size:11px;font-weight:700;border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);border-radius:999px;padding:5px 12px;cursor:pointer;}
+  .ml-tab.active{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .ml-empty{font-size:12px;color:var(--ink-soft);padding:2px 0 16px;line-height:1.5;}
+
   .empty{padding:50px 10px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
   /* Páginas novas da arquitetura do portal (Concursos, Amazonas, Carreiras,
      Notícias, Dicas de Estudo) que ainda não têm conteúdo próprio — mostram
@@ -387,6 +433,13 @@
   } catch (e) {}
 </script>
 
+<div class="brand-hook" id="brand-hook">
+  <div class="wrap brand-hook-inner">
+    <span class="brand-hook-badge">🔥</span>
+    <span class="brand-hook-text" id="brand-hook-text">Sua aprovação começa aqui — confira os concursos que estão bombando</span>
+  </div>
+</div>
+
 <div class="masthead-band">
   <div class="wrap masthead">
     <a class="brand" id="brand-home" href="#/">
@@ -469,6 +522,27 @@
 
   function catAbbr(cat){
     return CAT_ABBR[cat] || (cat || "").slice(0,4).toUpperCase();
+  }
+
+  // Ícones por carreira (SVG inline, sem emoji) — usados na seção "Concursos
+  // por Carreira" da home e no menu lateral "Editorias" (referência: sidebar
+  // de editorias do Gran Cursos). Formas simples, sempre em stroke="currentColor"
+  // pra herdar a cor do card/tema automaticamente.
+  const CAT_ICON = {
+    "Policial": '<path d="M12 3 5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6l-7-3z"/>',
+    "Fiscal": '<path d="M6 3h12v18l-2.5-1.5L13 21l-2.5-1.5L8 21l-2-1.5V3z"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="12" x2="15" y2="12"/>',
+    "Educação": '<path d="M12 4 2 9l10 5 10-5-10-5z"/><path d="M6 11.5V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-4.5"/><line x1="22" y1="9" x2="22" y2="15"/>',
+    "Previdenciário": '<path d="M3 12a9 9 0 0 1 18 0z"/><line x1="12" y1="12" x2="12" y2="19"/><path d="M9 19a3 3 0 0 0 6 0"/><line x1="12" y1="3" x2="12" y2="5"/>',
+    "Jurídico": '<line x1="12" y1="3" x2="12" y2="21"/><line x1="4" y1="7" x2="20" y2="7"/><path d="M4 7l-3 6a3 3 0 0 0 6 0L4 7z"/><path d="M20 7l-3 6a3 3 0 0 0 6 0L20 7z"/><line x1="8" y1="21" x2="16" y2="21"/>',
+    "Saúde": '<circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>',
+    "Ambiental": '<path d="M5 21c0-9.4 6.3-16 16-16 0 9.4-6.3 16-16 16z"/><path d="M5 21c2.7-4.3 6.3-7.6 11-9.8"/>',
+    "Bancário": '<path d="M3 10l9-6 9 6"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="4" y1="20" x2="20" y2="20"/><line x1="6" y1="10" x2="6" y2="20"/><line x1="10" y1="10" x2="10" y2="20"/><line x1="14" y1="10" x2="14" y2="20"/><line x1="18" y1="10" x2="18" y2="20"/>',
+    "Tribunais": '<rect x="3" y="3" width="6" height="10" rx="1.2" transform="rotate(-45 6 8)"/><line x1="13" y1="13" x2="20" y2="20"/><line x1="3" y1="21" x2="13" y2="21"/>',
+    "Assistência Social": '<path d="M12 20s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 5c-2.5 4.5-9.5 9-9.5 9z"/>'
+  };
+  const CAT_ICON_DEFAULT = '<circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12" y2="16.01"/>';
+  function catIconHtml(cat){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + (CAT_ICON[cat] || CAT_ICON_DEFAULT) + '</svg>';
   }
 
   // Capa ilustrada de marca — usada no lugar de uma foto real quando o post
@@ -838,6 +912,37 @@
       html += '</div></div>';
     }
 
+    // Concursos no Amazonas: mercado principal da SCVP, então ganha destaque
+    // próprio na home (some quando há busca/filtro ativo, igual à manchete).
+    const amPosts = hasActiveFilter ? [] : sorted.filter(p => p.uf === "AM").slice(0, 4);
+    if (amPosts.length){
+      html += '<div class="wrap">';
+      html += '<div class="am-destaque-head">';
+      html += '<div class="am-destaque-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"></path></svg>Concursos no Amazonas</div>';
+      html += '<button class="am-destaque-all" id="am-ver-todos" type="button">Ver todos do Amazonas →</button>';
+      html += '</div>';
+      html += '<div class="grid">' + amPosts.map(cardHtml).join("") + '</div>';
+      html += '</div>';
+    }
+
+    // Concursos por Carreira: grade de ícones que filtra a mesma grade de
+    // publicações abaixo (mesmo campo "categoria" já usado nos pills).
+    const catCountsHome = {};
+    POSTS.forEach(p => { catCountsHome[p.categoria] = (catCountsHome[p.categoria]||0) + 1; });
+    const catsSortedHome = Object.keys(catCountsHome).sort((a,b) => catCountsHome[b]-catCountsHome[a]);
+    if (!hasActiveFilter && catsSortedHome.length){
+      html += '<div class="wrap carreira-section">';
+      html += '<div class="section-label">Concursos por Carreira</div>';
+      html += '<div class="carreira-grid">' + catsSortedHome.map(c =>
+        '<div class="carreira-tile" data-cat="'+c+'">' +
+          '<div class="ico">'+catIconHtml(c)+'</div>' +
+          '<div class="nome">'+c+'</div>' +
+          '<div class="count">'+catCountsHome[c]+(catCountsHome[c]===1?' concurso':' concursos')+'</div>' +
+        '</div>'
+      ).join("") + '</div>';
+      html += '</div>';
+    }
+
     html += '<div class="wrap">';
     html += '<div class="filterbar">';
     html += pillsHtml(cats);
@@ -896,6 +1001,33 @@
     });
     const sideCal = $("#side-cal");
     if (sideCal) sideCal.addEventListener("click", () => { location.hash = "#/calendario"; });
+    const amVerTodos = $("#am-ver-todos");
+    if (amVerTodos){
+      amVerTodos.addEventListener("click", () => {
+        filterUf = "AM";
+        renderHome();
+        const results = $("#pub-recentes");
+        if (results) results.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+    document.querySelectorAll(".carreira-tile, .editoria-item").forEach(el => {
+      el.addEventListener("click", () => {
+        filterCat = el.dataset.cat;
+        renderHome();
+        const results = $("#pub-recentes");
+        if (results) results.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+    document.querySelectorAll(".ml-tab").forEach(btn => {
+      btn.addEventListener("click", () => { maisLidasTab = btn.dataset.tab; paintMaisLidas(); });
+    });
+    const mlList = $("#mais-lidas-list");
+    if (mlList){
+      mlList.addEventListener("click", (e) => {
+        const item = e.target.closest(".side-item");
+        if (item) location.hash = "#/materia/" + item.dataset.id;
+      });
+    }
     const footSearch = $("#foot-search");
     if (footSearch){
       footSearch.addEventListener("input", () => {
@@ -915,6 +1047,32 @@
   // mesma regra do CTA dentro da matéria) e um atalho pro calendário.
   function sidebarHtml(sortedPosts){
     let html = '<aside class="sidebar">';
+
+    // Mais Lidas: ranking real por contagem de visualizações (post_views no
+    // Supabase) — some vazio até existirem dados de verdade, nunca inventa
+    // número de leitura (ver trackPostView/loadMaisLidas mais abaixo).
+    html += '<div class="side-mais-lidas"><h4>Mais Lidas</h4>';
+    html += '<div class="ml-tabs">' +
+      '<button class="ml-tab'+(maisLidasTab==="hoje"?" active":"")+'" data-tab="hoje" type="button">Hoje</button>' +
+      '<button class="ml-tab'+(maisLidasTab==="semana"?" active":"")+'" data-tab="semana" type="button">Esta semana</button>' +
+    '</div>';
+    html += '<div id="mais-lidas-list">' + maisLidasListHtml(maisLidasCache[maisLidasTab]) + '</div>';
+    html += '</div>';
+
+    // Editorias: navegação por carreira com ícones, separada da lista de
+    // destaques abaixo (referência: sidebar "Editorias" do Gran Cursos).
+    const catCountsSide = {};
+    sortedPosts.forEach(p => { catCountsSide[p.categoria] = (catCountsSide[p.categoria]||0) + 1; });
+    const catsSortedSide = Object.keys(catCountsSide).sort((a,b) => catCountsSide[b]-catCountsSide[a]);
+    html += '<div class="side-editorias"><h4>Editorias</h4>';
+    catsSortedSide.forEach(c => {
+      html += '<div class="editoria-item" data-cat="'+c+'">' +
+        '<span class="ico">'+catIconHtml(c)+'</span>' +
+        '<span class="nome">'+c+'</span>' +
+        '<span class="count mono">'+catCountsSide[c]+'</span>' +
+      '</div>';
+    });
+    html += '</div>';
 
     html += '<div class="side-card"><h4>Concursos em destaque</h4>';
     sortedPosts.slice(0, 5).forEach((p, i) => {
@@ -941,6 +1099,7 @@
     clearHeroAutoTimer();
     const p = POSTS.find(x => x.id === id);
     if (!p){ location.hash = "#/"; return; }
+    trackPostView(p.id);
     setPageMeta(p.titulo, p.meta_descricao || p.resumo);
     let html = '<div class="wrap article">';
     html += '<a class="back-link" id="back-link">← Voltar pro blog</a>';
@@ -1156,6 +1315,112 @@
     try { return JSON.parse(el.textContent); } catch (e){ return []; }
   }
 
+  // ---- Contador real de visualizações (seção "Mais Lidas") ----
+  // Uma linha por leitura na tabela post_views (Supabase), gravada ao abrir
+  // cada matéria. O ranking em si vem de uma função RPC (get_top_viewed_posts)
+  // que só devolve post_id + contagem agregada — a tabela crua não é legível
+  // por chave anônima. Sem dado nenhum ainda, a seção mostra um aviso
+  // honesto em vez de inventar número de leitura.
+  function trackPostView(id){
+    try {
+      fetch(SUPABASE_URL + "/rest/v1/post_views", {
+        method: "POST",
+        headers: {
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+          "Content-Type": "application/json",
+          "Prefer": "return=minimal"
+        },
+        body: JSON.stringify([{ post_id: id }])
+      }).catch(function(){ /* silencioso — não bloqueia a leitura da matéria */ });
+    } catch (e){ /* silencioso */ }
+  }
+
+  async function fetchTopViewed(sinceIso, limitN){
+    try {
+      const ctrl = new AbortController();
+      const timeout = setTimeout(() => ctrl.abort(), 4000);
+      const res = await fetch(SUPABASE_URL + "/rest/v1/rpc/get_top_viewed_posts", {
+        method: "POST",
+        headers: {
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ since: sinceIso, limit_n: limitN }),
+        signal: ctrl.signal
+      });
+      clearTimeout(timeout);
+      if (!res.ok) return [];
+      return await res.json();
+    } catch (e){ return []; }
+  }
+
+  function startOfTodayIso(){
+    const d = new Date();
+    d.setHours(0,0,0,0);
+    return d.toISOString();
+  }
+  function sevenDaysAgoIso(){
+    const d = new Date();
+    d.setDate(d.getDate() - 7);
+    return d.toISOString();
+  }
+
+  let maisLidasCache = { hoje: null, semana: null };
+  let maisLidasTab = "hoje";
+
+  function maisLidasListHtml(rows){
+    if (!rows || !rows.length){
+      return '<div class="ml-empty">'+(rows === null ? 'Carregando...' : 'Ainda estamos coletando dados de leitura. Volte em breve pra ver o ranking real.')+'</div>';
+    }
+    let html = "";
+    rows.forEach((r, i) => {
+      const p = POSTS.find(x => x.id === r.post_id);
+      if (!p) return;
+      html += '<div class="side-item" data-id="'+p.id+'">' +
+        '<span class="side-rank mono">'+(i+1)+'</span>' +
+        '<div class="side-item-body">' +
+          '<div class="side-item-title">'+p.titulo+'</div>' +
+          '<div class="side-item-meta mono">'+r.views+(r.views===1?' leitura':' leituras')+'</div>' +
+        '</div>' +
+      '</div>';
+    });
+    return html || '<div class="ml-empty">Ainda estamos coletando dados de leitura. Volte em breve pra ver o ranking real.</div>';
+  }
+
+  function paintMaisLidas(){
+    document.querySelectorAll(".ml-tab").forEach(b => b.classList.toggle("active", b.dataset.tab === maisLidasTab));
+    const el = $("#mais-lidas-list");
+    if (el) el.innerHTML = maisLidasListHtml(maisLidasCache[maisLidasTab]);
+  }
+
+  // Alimenta o "gancho de marca" no topo da página com a matéria mais lida
+  // de hoje, assim que existir dado real — antes disso, mantém a frase de
+  // marca padrão já escrita no HTML (nunca inventa "mais lido hoje").
+  function updateBrandHook(hojeRows){
+    const top = hojeRows && hojeRows[0];
+    const p = top && POSTS.find(x => x.id === top.post_id);
+    if (!p) return;
+    const textEl = $("#brand-hook-text");
+    const wrapEl = $("#brand-hook");
+    if (!textEl || !wrapEl) return;
+    textEl.textContent = "Mais lido hoje: " + p.titulo;
+    wrapEl.dataset.id = p.id;
+    wrapEl.classList.add("is-link");
+  }
+
+  async function loadMaisLidas(){
+    const [hoje, semana] = await Promise.all([
+      fetchTopViewed(startOfTodayIso(), 5),
+      fetchTopViewed(sevenDaysAgoIso(), 5)
+    ]);
+    maisLidasCache.hoje = hoje;
+    maisLidasCache.semana = semana;
+    paintMaisLidas();
+    updateBrandHook(hoje);
+  }
+
   // Carrega a identidade visual (logo) cadastrada no painel admin, se houver.
   // O masthead é sempre azul de marca fixo (--brand-blue), então usa sempre a
   // variante "logo para fundo escuro". Se não houver nada cadastrado ainda
@@ -1212,6 +1477,10 @@
   $("#nav-dicas").addEventListener("click", () => { location.hash = "#/dicas"; });
   $("#nav-mentorias").addEventListener("click", () => { location.hash = "#/mentorias"; });
   $("#search").addEventListener("input", (e) => { query = e.target.value.trim(); renderHome(); });
+  $("#brand-hook").addEventListener("click", () => {
+    const id = $("#brand-hook").dataset.id;
+    if (id) location.hash = "#/materia/" + id;
+  });
 
   function applyThemeLabel(){
     const isDark = document.documentElement.getAttribute("data-theme") === "dark";
@@ -1233,7 +1502,7 @@
 
   updateDateline();
   window.addEventListener("hashchange", route);
-  loadPosts();
+  loadPosts().then(loadMaisLidas);
   loadBrandConfig();
 })();
 </script>
