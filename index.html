@@ -626,20 +626,23 @@
     function onMove(e){
       if (!isDown) return;
       dragDx = e.clientX - startX;
-      if (Math.abs(dragDx) > 5){
-        moved = true;
-        // Uma vez que já deu pra ver que é um arraste (não um toque), trava
-        // o gesto por completo — impede o navegador de, no meio do arraste,
-        // ainda tentar selecionar texto ou rolar a página no celular.
-        if (e.cancelable) e.preventDefault();
-      }
+      if (Math.abs(dragDx) > 5) moved = true;
       setTransform(dragDx);
     }
+    // onUp cuida tanto do fim normal do arraste (pointerup) quanto de um
+    // cancelamento (pointercancel) — o celular pode cancelar o gesto no
+    // meio (ex: o sistema decide que era um scroll, uma notificação
+    // desceu, etc.), e sem tratar esse caso o carrossel ficava "travado":
+    // isDown nunca voltava a false, e o próximo arraste começava com o
+    // estado sujo do anterior (foi o que causava funcionar só até o
+    // segundo banner e depois parar). Sempre que up ou cancel dispara,
+    // limpamos o estado e "assentamos" o slide na posição mais próxima.
     function onUp(){
       if (!isDown) return;
       isDown = false;
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
       const threshold = track.clientWidth * 0.15;
       if (dragDx <= -threshold) goTo(idx + 1);
       else if (dragDx >= threshold) goTo(idx - 1);
@@ -651,6 +654,7 @@
       track.classList.add("dragging");
       window.addEventListener("pointermove", onMove);
       window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onUp);
     });
 
     track.querySelectorAll(".hero-slide").forEach(slide => {
