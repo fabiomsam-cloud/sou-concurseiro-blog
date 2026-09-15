@@ -260,10 +260,6 @@
   .carreira-tile .count{font-size:10.5px;color:var(--ink-soft);font-weight:600;}
   .carreira-tile.active{border-color:var(--accent);background:var(--accent-soft);}
   .carreira-tile.active .ico{background:var(--accent);color:#fff;}
-  .carreira-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:9px;}
-  .carreira-section-head .section-label{border-bottom:none;padding-bottom:0;margin-bottom:0;}
-  .carreira-clear{background:none;border:none;color:var(--accent);font-weight:700;font-size:11.5px;cursor:pointer;padding:0;white-space:nowrap;}
-  .carreira-clear:hover{text-decoration:underline;}
 
   /* ---- sidebar: Editorias (navegação por carreira, ref. Gran Cursos) ---- */
   .side-editorias{border:1px solid var(--line);border-radius:14px;padding:16px 16px 4px;}
@@ -944,20 +940,21 @@
     }
 
     // Concursos por Carreira: grade de ícones que filtra a mesma grade de
-    // publicações abaixo (mesmo campo "categoria" que os pills usavam —
-    // os pills de categoria em cima foram removidos porque duplicavam
-    // exatamente essa grade; ela fica visível mesmo com filtro ativo,
-    // pra continuar sendo o jeito de trocar/limpar o filtro sem precisar
-    // rolar até os pills do rodapé. Clicar de novo na carreira já
-    // selecionada limpa o filtro (equivalente ao antigo "Todas").
+    // publicações abaixo (mesmo campo "categoria" que os pills usavam — os
+    // pills de categoria em cima foram removidos porque duplicavam
+    // exatamente essa grade). Ela fica visível mesmo com filtro ativo, pra
+    // continuar sendo o jeito de trocar de carreira sem rolar até o
+    // rodapé. Pra sair do filtro, o principal caminho é o botão "Ver todas
+    // as carreiras" abaixo da grade (bem visível, igual ao do Amazonas) —
+    // clicar de novo na carreira já selecionada também limpa, como atalho
+    // extra, mas não é a única forma (isso já se mostrou pouco óbvio,
+    // principalmente no celular).
     const catCountsHome = {};
     POSTS.forEach(p => { catCountsHome[p.categoria] = (catCountsHome[p.categoria]||0) + 1; });
     const catsSortedHome = Object.keys(catCountsHome).sort((a,b) => catCountsHome[b]-catCountsHome[a]);
     if (catsSortedHome.length){
       html += '<div class="wrap carreira-section">';
-      html += '<div class="carreira-section-head"><div class="section-label">Concursos por Carreira</div>' +
-        (filterCat ? '<button class="carreira-clear" id="carreira-clear" type="button">Limpar filtro ✕</button>' : '') +
-      '</div>';
+      html += '<div class="section-label">Concursos por Carreira</div>';
       html += '<div class="carreira-grid">' + catsSortedHome.map(c =>
         '<div class="carreira-tile'+(filterCat===c?" active":"")+'" data-cat="'+c+'">' +
           '<div class="ico">'+catIconHtml(c)+'</div>' +
@@ -965,6 +962,9 @@
           '<div class="count">'+catCountsHome[c]+(catCountsHome[c]===1?' concurso':' concursos')+'</div>' +
         '</div>'
       ).join("") + '</div>';
+      if (filterCat){
+        html += '<div class="am-destaque-more"><button class="am-destaque-all" id="carreira-clear" type="button">✕ Ver todas as carreiras</button></div>';
+      }
       html += '</div>';
     }
 
@@ -1505,7 +1505,21 @@
     }
   }
 
-  $("#nav-home").addEventListener("click", () => { location.hash = "#/"; });
+  // Início/logo sempre volta pra home "zerada" — sem filtro de carreira,
+  // estado nem busca ativos, como se tivesse acabado de abrir o site.
+  // Precisa ser um handler próprio (não só location.hash="#/") porque, se
+  // a pessoa já está na home com um filtro aplicado, o hash não muda e o
+  // evento hashchange nunca dispara — então o reset teria que vir de outro
+  // lugar de qualquer forma.
+  function goHomeFresh(e){
+    if (e) e.preventDefault();
+    filterCat = ""; filterUf = ""; query = "";
+    const searchTop = $("#search"); if (searchTop) searchTop.value = "";
+    if (location.hash === "#/" || location.hash === ""){ renderHome(); }
+    else { location.hash = "#/"; }
+  }
+  $("#nav-home").addEventListener("click", goHomeFresh);
+  $("#brand-home").addEventListener("click", goHomeFresh);
   $("#nav-calendario").addEventListener("click", () => { location.hash = "#/calendario"; });
   $("#nav-dicas").addEventListener("click", () => { location.hash = "#/dicas"; });
   $("#nav-mentorias").addEventListener("click", () => { location.hash = "#/mentorias"; });
