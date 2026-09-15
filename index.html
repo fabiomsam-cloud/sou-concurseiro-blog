@@ -82,6 +82,7 @@
 
   .topline{background:var(--paper);border-bottom:1px solid var(--line);}
   .navrow{display:flex;align-items:center;gap:10px;padding:12px 0;flex-wrap:wrap;}
+  .nav-links{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
   .navrow a.home-link{font-weight:700;font-size:13.5px;text-decoration:none;color:var(--ink);cursor:pointer;padding:10px 18px;border-radius:999px;background:var(--paper-alt);border:1px solid var(--line);transition:border-color .15s,color .15s,background .15s;}
   .navrow a.home-link:hover{border-color:var(--accent);color:var(--accent);}
   .navrow a.home-link.active{background:var(--accent);border-color:var(--accent);color:var(--paper);}
@@ -126,8 +127,13 @@
   .hero-nav.next:hover{animation-play-state:paused;}
   @media (prefers-reduced-motion:reduce){ .hero-nav.next{animation:none;} }
   @media (max-width:640px){ .hero-nav{display:none;} .hero-img{height:220px;} }
-  .hero-dots{display:flex;gap:6px;justify-content:center;padding:16px 0 12px;}
-  .hero-dot{width:7px;height:7px;border-radius:999px;background:var(--line);border:none;padding:0;cursor:pointer;}
+  .hero-dots{display:flex;gap:2px;justify-content:center;padding:16px 0 12px;}
+  /* O ponto visível continua pequeno (7px), mas a área clicável real do
+     botão é ampliada via padding + background-clip:content-box — a marca
+     visual não muda, só cresce a "almofada" de toque ao redor dela, pra
+     não ficar um alvo minúsculo demais no celular ("evitar áreas
+     clicáveis muito próximas"/pequenas). */
+  .hero-dot{width:7px;height:7px;padding:12px;box-sizing:content-box;background-clip:content-box;border-radius:999px;background:var(--line);border:none;cursor:pointer;}
   .hero-dot.active{background:var(--accent);width:20px;border-radius:4px;transition:width .2s;}
   .hero-eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:10px;}
   .hero-slide h1{font-size:clamp(26px,4.2vw,40px);font-weight:800;line-height:1.12;margin:0 0 14px;max-width:20ch;}
@@ -140,6 +146,7 @@
 
   /* ---- filter bar ---- */
   .filterbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:20px 0;}
+  .pill-scroll{display:flex;gap:8px;flex-wrap:wrap;min-width:0;flex:1 1 auto;}
   .pill{font-size:12px;font-weight:600;border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);border-radius:999px;padding:7px 14px;cursor:pointer;white-space:nowrap;transition:border-color .15s,color .15s,background .15s;}
   .pill:hover{border-color:var(--accent);color:var(--accent);}
   .pill.active{background:var(--accent);border-color:var(--accent);color:var(--paper);}
@@ -231,6 +238,8 @@
   .article-body{font-size:16px;color:var(--ink);white-space:pre-wrap;font-weight:400;}
   .article-body p{margin:0 0 16px;}
   .article-body .article-h2{font-size:20.5px;font-weight:800;margin:32px 0 13px;letter-spacing:-.008em;line-height:1.25;}
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0 24px;}
+  .table-scroll table{width:auto;min-width:100%;margin:0;}
   .article-body table{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14px;white-space:normal;}
   .article-body th{text-align:left;padding:10px 12px;font-weight:700;border-bottom:2px solid var(--line);}
   .article-body td{padding:10px 12px;border-bottom:1px solid var(--line);}
@@ -288,6 +297,60 @@
   ::selection{background:var(--accent-soft);}
 
   .preview-badge{background:var(--amber);color:var(--paper);font-size:12px;font-weight:600;text-align:center;padding:9px 16px;}
+
+  /* ---- versão mobile ----
+     Revisão completa da experiência em celular (item de backlog "Versão
+     mobile"): navegação e filtros passam a rolar horizontalmente em vez de
+     quebrar em várias linhas (economiza espaço vertical acima da dobra),
+     a busca do topo deixa de vazar da tela, os cards de matéria empilham
+     imagem-em-cima/texto-embaixo em vez de espremer o título numa coluna
+     estreita, e os pontinhos do carrossel ganham uma área de toque maior
+     sem crescer visualmente. */
+  @media (max-width:640px){
+    .wrap{padding:0 16px;}
+
+    /* Navegação do topo: pills + botão de tema numa coluna, com os links
+       principais em uma faixa que rola na horizontal (em vez de quebrar em
+       2 linhas) e a busca ocupando a largura toda, sempre visível. */
+    .navrow{flex-direction:column;align-items:stretch;gap:10px;padding:10px 0;}
+    .nav-links{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px;margin:0 -16px;padding-left:16px;padding-right:16px;}
+    .nav-links::-webkit-scrollbar{display:none;}
+    .navrow a.home-link{flex:0 0 auto;padding:11px 16px;}
+    .theme-toggle{margin-left:0;align-self:flex-start;}
+    .searchbox{width:100%;min-width:0;}
+    .searchbox input{font-size:14px;}
+
+    /* Pills de categoria/estado: mesma lógica — rolam na horizontal em vez
+       de quebrar em várias linhas (chegava a 4 linhas de pills no filtro
+       de categorias e ainda mais no filtro de estados). */
+    .filterbar{flex-wrap:nowrap;gap:8px;}
+    .pill-scroll{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px;}
+    .pill-scroll::-webkit-scrollbar{display:none;}
+    .pill{flex:0 0 auto;padding:9px 14px;}
+    .uf-select{flex:0 0 auto;max-width:132px;}
+    .topics-foot .searchbox{max-width:none;}
+
+    /* Cards de matéria (home, "Concursos por Estado" e "Leia também"):
+       o layout lado-a-lado (selo fixo de 128px + coluna de texto) espremia
+       o título em ~210px numa tela de 390px. Empilhar a imagem em cima e
+       o texto embaixo dá espaço de sobra para título/resumo. */
+    .card{flex-direction:column;padding:14px;gap:12px;}
+    .seal{width:100%;height:auto;aspect-ratio:16/9;}
+    .card h3{font-size:16.5px;}
+
+    /* Carrossel de destaques: pontinhos de navegação continuam pequenos
+       visualmente (background-clip:content-box definido acima), mas cada
+       botão ganha uma almofada de toque maior via padding. */
+    .hero-slide h1{max-width:none;}
+    .hero-meta{gap:10px;}
+
+    /* Artigo: título e texto já usam clamp()/tamanhos confortáveis; o que
+       faltava era a tabela poder rolar (ver .table-scroll) e o CTA de
+       produto não ficar apertado. */
+    .product-cta{padding:20px;}
+    .product-cta h4{font-size:19px;}
+    .article-dateline{gap:8px 14px;}
+  }
 </style>
 
 </head>
@@ -313,10 +376,12 @@
 </div>
 <div class="topline">
   <div class="wrap navrow">
-    <a class="home-link" id="nav-home">Início</a>
-    <a class="home-link" id="nav-calendario">Concursos por Estado</a>
-    <a class="home-link" id="nav-dicas">Dicas de Estudo</a>
-    <a class="home-link" id="nav-mentorias">Mentorias</a>
+    <div class="nav-links">
+      <a class="home-link" id="nav-home">Início</a>
+      <a class="home-link" id="nav-calendario">Concursos por Estado</a>
+      <a class="home-link" id="nav-dicas">Dicas de Estudo</a>
+      <a class="home-link" id="nav-mentorias">Mentorias</a>
+    </div>
     <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Alternar modo claro ou escuro">
       <span class="icon" id="theme-icon">☾</span><span id="theme-label">Modo escuro</span>
     </button>
@@ -443,14 +508,23 @@
   }
 
   function pillsHtml(cats){
-    let h = '<button class="pill'+(filterCat===""?" active":"")+'" data-cat="">Todas</button>';
+    let h = '<div class="pill-scroll"><button class="pill'+(filterCat===""?" active":"")+'" data-cat="">Todas</button>';
     cats.forEach(c => { h += '<button class="pill'+(filterCat===c?" active":"")+'" data-cat="'+c+'">'+c+'</button>'; });
+    h += '</div>';
     return h;
   }
 
-  function heroSlideHtml(p){
+  function heroSlideHtml(p, idx){
+    // Só o primeiro slide (o único visível ao carregar a página) carrega
+    // "eager" — é o maior candidato a LCP. Os demais (2 a 5) ficam fora da
+    // tela mas dentro dos limites do container (o carrossel corta via
+    // overflow, não via posição), então o navegador ainda tentaria
+    // baixá-los cedo; loading="lazy" adia esse download até estarem perto
+    // de entrar na viewport real, melhorando a velocidade de carregamento
+    // inicial no celular.
+    const eager = idx === 0;
     return '<div class="hero-slide" data-id="'+p.id+'">' +
-      (p.imagem_capa ? '<div class="hero-img"><img src="'+p.imagem_capa+'" alt="" draggable="false"></div>' : '') +
+      (p.imagem_capa ? '<div class="hero-img"><img src="'+p.imagem_capa+'" alt="" draggable="false" decoding="async"'+(eager?' fetchpriority="high"':' loading="lazy"')+'></div>' : '') +
       '<div class="hero-eyebrow">'+p.categoria+' · '+(UF_NAMES[p.uf]||p.uf)+' · manchete</div>' +
       '<h1>'+p.titulo+'</h1>' +
       '<p class="lede">'+p.resumo+'</p>' +
@@ -640,7 +714,7 @@
         '</div>';
       }
       html += '<div class="hero-viewport">';
-      html += '<div class="hero-track" id="hero-track">' + heroSlides.map(heroSlideHtml).join("") + '</div>';
+      html += '<div class="hero-track" id="hero-track">' + heroSlides.map((p,i) => heroSlideHtml(p,i)).join("") + '</div>';
       html += '</div>';
       if (heroSlides.length > 1){
         html += '<button class="hero-nav prev" id="hero-prev" type="button" aria-label="Destaque anterior">‹</button>';
@@ -764,7 +838,7 @@
       '<span>Concurso: <b>'+p.concurso+'</b></span>' +
     '</div>';
     if (p.imagem_capa){
-      html += '<div class="article-img"><img src="'+p.imagem_capa+'" alt=""></div>';
+      html += '<div class="article-img"><img src="'+p.imagem_capa+'" alt="" decoding="async" fetchpriority="high"></div>';
     }
     if (p.highlight_num && p.highlight_num !== "—"){
       html += '<div class="pullstat"><div class="num mono">'+p.highlight_num+'</div><div class="lbl">'+p.highlight_label+'</div></div>';
@@ -809,6 +883,19 @@
 
     html += '</div>';
     app.innerHTML = html;
+    // Tabelas dentro do corpo do post vêm de HTML colado por fora e podem ter
+    // mais colunas do que cabem numa tela de celular. Em vez de deixar a
+    // tabela espremer o texto ou vazar da página, cada <table> ganha um
+    // container próprio com rolagem horizontal — a tabela mantém seu layout
+    // normal (não quebra pra lista), só o excesso de largura passa a rolar
+    // por dentro em vez de estourar o layout da página.
+    document.querySelectorAll(".article-body table").forEach(t => {
+      if (t.parentElement.classList.contains("table-scroll")) return;
+      const wrap = document.createElement("div");
+      wrap.className = "table-scroll";
+      t.parentNode.insertBefore(wrap, t);
+      wrap.appendChild(t);
+    });
     $("#back-link").addEventListener("click", () => { location.hash = "#/"; });
     document.querySelectorAll(".rel-item").forEach(item => {
       item.querySelector(".rel-q").addEventListener("click", () => {
@@ -864,10 +951,12 @@
     html += '<div class="searchbox" style="max-width:360px;margin:0 0 18px;"><span class="u" style="font-size:12px;color:var(--ink-soft)">🔍</span><input type="text" id="cal-search" placeholder="Buscar concurso, órgão, banca, estado, assunto..." value="'+calQuery.replace(/"/g,"&quot;")+'"></div>';
 
     html += '<div class="filterbar">';
+    html += '<div class="pill-scroll">';
     html += '<button class="pill'+(calUf===""?" active":"")+'" data-uf="">Todos os estados<span class="pill-count">'+POSTS.length+'</span></button>';
     ufsSorted.forEach(uf => {
       html += '<button class="pill'+(calUf===uf?" active":"")+'" data-uf="'+uf+'">'+(UF_NAMES[uf]||uf)+'<span class="pill-count">'+byUf[uf].length+'</span></button>';
     });
+    html += '</div>';
     html += '</div>';
     html += '</div>';
 
