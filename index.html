@@ -80,7 +80,7 @@
   .dateline{font-size:11.5px;color:rgba(255,255,255,.75);text-align:right;}
   .dateline b{color:#fff;}
 
-  .topline{background:var(--paper);border-bottom:1px solid var(--line);}
+  .topline{background:var(--paper);border-bottom:2px solid var(--line-strong);}
   .navrow{display:flex;align-items:center;gap:10px;padding:12px 0;flex-wrap:wrap;}
   .nav-links{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
   .navrow a.home-link{font-weight:700;font-size:13.5px;text-decoration:none;color:var(--ink);cursor:pointer;padding:10px 18px;border-radius:999px;background:var(--paper-alt);border:1px solid var(--line);transition:border-color .15s,color .15s,background .15s;}
@@ -94,6 +94,10 @@
   .theme-toggle .icon{font-size:13px;line-height:1;}
 
   /* ---- hero / manchete: carrossel de 5 destaques, arrastável ---- */
+  /* Rótulo "Destaques do dia" acima do carrossel de manchetes — marca essa
+     área do topo como uma zona editorial própria (curadoria do dia), não
+     só mais um bloco de posts. */
+  .destaques-label{display:inline-flex;align-items:center;gap:7px;background:var(--amber-soft);color:var(--amber);border:1px solid var(--amber);font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:8px 15px;border-radius:999px;margin:22px 0 14px;}
   .hero-carousel{position:relative;}
   /* .hero-viewport recorta o conteúdo que ultrapassa a largura visível.
      O carrossel move o .hero-track inteiro via transform (translateX)
@@ -103,7 +107,7 @@
      clicável, mas ainda "pintava" pixels fora do recorte). Mover por
      transform evita esse bug e também facilita centralizar a seta na
      imagem e fazer o avanço automático. */
-  .hero-viewport{position:relative;overflow:hidden;border-bottom:1px solid var(--line);}
+  .hero-viewport{position:relative;overflow:hidden;border-bottom:2px solid var(--line-strong);}
   /* Sem padding horizontal aqui: cada slide usa flex-basis:100% do
      conteúdo do track, e o translateX() do carrossel usa 100% da caixa
      inteira do track — com padding lateral os dois "100%" discordavam
@@ -132,7 +136,7 @@
   .hero-nav.next{animation:heroNavNudge 2.6s ease-in-out infinite;}
   .hero-nav.next:hover{animation-play-state:paused;}
   @media (prefers-reduced-motion:reduce){ .hero-nav.next{animation:none;} }
-  @media (max-width:640px){ .hero-nav{display:none;} .hero-img{height:220px;} }
+  @media (max-width:640px){ .hero-nav{display:none;} .hero-img{aspect-ratio:16/9;} }
   .hero-dots{display:flex;gap:6px;justify-content:center;padding:16px 0 12px;}
   /* O ponto visível continua exatamente do mesmo tamanho discreto de
      antes (7px/20px) — a área de toque é ampliada só "por baixo", via um
@@ -172,7 +176,16 @@
   .seal{flex:0 0 auto;width:128px;height:128px;}
   .seal-img{border-radius:12px;overflow:hidden;border:1px solid var(--line);}
   .seal-img img{width:100%;height:100%;object-fit:cover;display:block;}
-  .seal-fallback{width:100%;height:100%;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;letter-spacing:.03em;border:1px solid var(--line);}
+  /* Capa ilustrada de marca (ver coverHtml() no JS) — substitui o antigo
+     quadrado cinza com sigla quando o post não tem foto própria. Preenche
+     todo o espaço do selo (mesma caixa/proporção que uma foto real usaria),
+     com um padrão diagonal sutil pra parecer "ilustrado" e não só uma cor
+     lisa, mais a marquinha SCVP no canto pra reforçar que é uma capa de
+     marca deliberada — não uma imagem quebrada ou reaproveitada. */
+  .cover-illustrated{width:100%;height:100%;border-radius:12px;position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:12px;border:1px solid var(--line);}
+  .cover-illustrated::before{content:"";position:absolute;inset:0;background-image:repeating-linear-gradient(135deg, rgba(255,255,255,.10) 0 2px, transparent 2px 20px);pointer-events:none;}
+  .cover-illustrated .cover-mark{position:absolute;top:10px;right:12px;font-size:9.5px;font-weight:800;letter-spacing:.1em;color:rgba(255,255,255,.8);}
+  .cover-illustrated .cover-org{position:relative;font-weight:800;font-size:14px;line-height:1.2;letter-spacing:-.005em;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.25);}
 
   /* ---- sidebar ---- */
   .sidebar{display:flex;flex-direction:column;gap:20px;padding-top:5px;}
@@ -199,10 +212,15 @@
   .side-cal .ico{font-size:20px;margin-bottom:8px;}
   .side-cal h4{margin:0 0 4px;font-size:13.5px;font-weight:800;letter-spacing:0;text-transform:none;color:var(--ink);}
   .side-cal p{margin:0;font-size:12px;color:var(--ink-soft);}
-  .hero-img{margin:0 0 20px;border-radius:16px;overflow:hidden;border:1px solid var(--line);max-height:400px;}
-  .hero-img img{width:100%;height:100%;object-fit:cover;display:block;max-height:400px;}
-  .article-img{margin:0 0 24px;border-radius:16px;overflow:hidden;border:1px solid var(--line);}
-  .article-img img{width:100%;height:auto;display:block;}
+  /* Proporções fixas pra banner e capa — em vez de uma altura máxima "no
+     olho", o quadro em si tem uma proporção definida (aspect-ratio) e a
+     imagem sempre preenche esse quadro por completo via object-fit:cover.
+     Isso garante o mesmo enquadramento/tamanho pra qualquer imagem
+     enviada, independente das dimensões originais do arquivo. */
+  .hero-img{aspect-ratio:21/9;margin:0 0 20px;border-radius:16px;overflow:hidden;border:1px solid var(--line);}
+  .hero-img img{width:100%;height:100%;object-fit:cover;display:block;}
+  .article-img{aspect-ratio:16/9;margin:0 0 24px;border-radius:16px;overflow:hidden;border:1px solid var(--line);}
+  .article-img img{width:100%;height:100%;object-fit:cover;display:block;}
   .card-body{flex:1;min-width:0;}
   .card-kicker{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;}
   .card h3{font-size:17px;font-weight:700;line-height:1.3;margin:0 0 8px;letter-spacing:-.005em;}
@@ -229,7 +247,7 @@
   .cal-toolbar .searchbox{background:var(--paper);}
 
   /* ---- rodapé "navegue por carreira" (home) ---- */
-  .topics-foot{border-top:1px solid var(--line);margin-top:12px;padding:28px 0 6px;}
+  .topics-foot{border-top:2px solid var(--line-strong);margin-top:12px;padding:28px 0 6px;}
   .topics-foot .searchbox{max-width:360px;margin:0 0 16px;}
 
   /* ---- detail / article ---- */
@@ -274,7 +292,7 @@
   :root[data-theme="dark"] .article-body table td{background:transparent !important;color:var(--ink) !important;border-color:var(--line) !important;}
   :root[data-theme="dark"] .article-body table tr{background:transparent !important;}
   :root[data-theme="dark"] .article-body table span{color:inherit !important;}
-  .related{margin-top:34px;padding-top:22px;border-top:1px solid var(--line);}
+  .related{margin-top:34px;padding-top:22px;border-top:2px solid var(--line-strong);}
   .related h3{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin:0 0 4px;}
   .related ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;}
   .related li{font-size:14px;padding-left:16px;position:relative;font-weight:400;}
@@ -298,7 +316,7 @@
   .similar-posts{margin:38px 0 0;}
   .similar-posts h3{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin:0 0 16px;}
 
-  footer{border-top:1px solid var(--line);padding:24px 0 50px;margin-top:24px;}
+  footer{border-top:2px solid var(--line-strong);padding:24px 0 50px;margin-top:24px;}
   footer p{font-size:11.5px;color:var(--ink-soft);margin:0;}
 
   ::selection{background:var(--accent-soft);}
@@ -451,6 +469,33 @@
 
   function catAbbr(cat){
     return CAT_ABBR[cat] || (cat || "").slice(0,4).toUpperCase();
+  }
+
+  // Capa ilustrada de marca — usada no lugar de uma foto real quando o post
+  // não tem imagem própria cadastrada (referência: capas "de marca" tipo
+  // Gran Cursos — fundo colorido + nome do órgão, em vez de um quadrado
+  // cinza genérico). A cor é escolhida por hash do nome do concurso, então
+  // o mesmo concurso sempre cai na mesma cor em qualquer lugar do site.
+  const COVER_PALETTE = [
+    ["#1D4FA3", "#3f72c9"], // azul de marca
+    ["#B8791A", "#d09a3c"], // âmbar de marca
+    ["#157a8a", "#2ea3b5"], // teal
+    ["#6b3fa0", "#8f63c4"], // roxo
+    ["#2f7d4f", "#4a9c6d"], // verde
+    ["#a53349", "#c65a6f"]  // vinho
+  ];
+  function hashStr(s){
+    let h = 0;
+    for (let i = 0; i < s.length; i++){ h = (h * 31 + s.charCodeAt(i)) >>> 0; }
+    return h;
+  }
+  function coverHtml(p){
+    const [c1, c2] = COVER_PALETTE[hashStr(p.concurso || p.categoria || p.id) % COVER_PALETTE.length];
+    const nome = p.concurso || p.categoria || "";
+    return '<div class="cover-illustrated" style="background:linear-gradient(135deg,'+c1+' 0%,'+c2+' 100%);">' +
+      '<span class="cover-mark">SCVP</span>' +
+      '<span class="cover-org">'+nome+'</span>' +
+    '</div>';
   }
 
   // Rótulo de tipo de conteúdo (mesma convenção usada no painel admin) — só
@@ -740,7 +785,7 @@
     const thumbImg = p.imagem_miniatura || p.imagem_capa;
     const thumb = thumbImg
       ? '<div class="seal seal-img"><img src="'+thumbImg+'" alt="" loading="lazy"></div>'
-      : '<div class="seal"><div class="seal-fallback">'+catAbbr(p.categoria)+'</div></div>';
+      : '<div class="seal">'+coverHtml(p)+'</div>';
     const tipoLabel = TIPO_LABEL[p.tipo_conteudo];
     return '<article class="card" data-id="'+p.id+'">' +
       thumb +
@@ -748,7 +793,7 @@
         '<div class="card-kicker">'+(tipoLabel ? tipoLabel+' · ' : '')+p.categoria+' · '+(UF_NAMES[p.uf]||p.uf)+'</div>' +
         '<h3>'+p.titulo+'</h3>' +
         '<p class="excerpt">'+p.resumo+'</p>' +
-        '<div class="card-meta"><span class="mono">'+fmtDate(p.data_publicacao)+'</span>' +
+        '<div class="card-meta"><span class="mono">'+fmtDate(p.data_publicacao)+(p.hora_publicacao ? ' às '+p.hora_publicacao : '')+'</span>' +
         (p.highlight_num && p.highlight_num !== "—" ? '<span>·</span><span class="num mono">'+p.highlight_num+'</span> <span>'+p.highlight_label+'</span>' : '') +
         '</div>' +
       '</div>' +
@@ -772,7 +817,9 @@
 
     let html = "";
     if (heroSlides.length){
-      html += '<div class="wrap"><div class="hero-carousel">';
+      html += '<div class="wrap">';
+      html += '<div class="destaques-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4.5 14h6l-1 8L19 10h-6l1-8z"></path></svg>Destaques do dia</div>';
+      html += '<div class="hero-carousel">';
       // As bolinhas ficam ACIMA do banner (sinalização de que há mais
       // destaques), e o carrossel em si vive dentro de .hero-viewport, que
       // é o elemento que recorta a lateral — .hero-track só cuida da rolagem.
