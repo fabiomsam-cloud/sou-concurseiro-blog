@@ -258,6 +258,12 @@
   .carreira-tile .ico svg{width:18px;height:18px;}
   .carreira-tile .nome{font-size:12px;font-weight:700;color:var(--ink);line-height:1.25;}
   .carreira-tile .count{font-size:10.5px;color:var(--ink-soft);font-weight:600;}
+  .carreira-tile.active{border-color:var(--accent);background:var(--accent-soft);}
+  .carreira-tile.active .ico{background:var(--accent);color:#fff;}
+  .carreira-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:9px;}
+  .carreira-section-head .section-label{border-bottom:none;padding-bottom:0;margin-bottom:0;}
+  .carreira-clear{background:none;border:none;color:var(--accent);font-weight:700;font-size:11.5px;cursor:pointer;padding:0;white-space:nowrap;}
+  .carreira-clear:hover{text-decoration:underline;}
 
   /* ---- sidebar: Editorias (navegação por carreira, ref. Gran Cursos) ---- */
   .side-editorias{border:1px solid var(--line);border-radius:14px;padding:16px 16px 4px;}
@@ -270,6 +276,8 @@
   .editoria-item .nome{flex:1;font-size:12.5px;font-weight:600;color:var(--ink);}
   .editoria-item:hover .nome{color:var(--accent);}
   .editoria-item .count{font-size:11px;color:var(--ink-soft);font-weight:700;}
+  .editoria-item.active .ico{background:var(--accent);color:#fff;}
+  .editoria-item.active .nome{color:var(--accent);}
 
   /* ---- sidebar: Mais Lidas (contador real de visualizações) ---- */
   .side-mais-lidas{border:1px solid var(--line);border-radius:14px;padding:18px 18px 6px;}
@@ -936,15 +944,22 @@
     }
 
     // Concursos por Carreira: grade de ícones que filtra a mesma grade de
-    // publicações abaixo (mesmo campo "categoria" já usado nos pills).
+    // publicações abaixo (mesmo campo "categoria" que os pills usavam —
+    // os pills de categoria em cima foram removidos porque duplicavam
+    // exatamente essa grade; ela fica visível mesmo com filtro ativo,
+    // pra continuar sendo o jeito de trocar/limpar o filtro sem precisar
+    // rolar até os pills do rodapé. Clicar de novo na carreira já
+    // selecionada limpa o filtro (equivalente ao antigo "Todas").
     const catCountsHome = {};
     POSTS.forEach(p => { catCountsHome[p.categoria] = (catCountsHome[p.categoria]||0) + 1; });
     const catsSortedHome = Object.keys(catCountsHome).sort((a,b) => catCountsHome[b]-catCountsHome[a]);
-    if (!hasActiveFilter && catsSortedHome.length){
+    if (catsSortedHome.length){
       html += '<div class="wrap carreira-section">';
-      html += '<div class="section-label">Concursos por Carreira</div>';
+      html += '<div class="carreira-section-head"><div class="section-label">Concursos por Carreira</div>' +
+        (filterCat ? '<button class="carreira-clear" id="carreira-clear" type="button">Limpar filtro ✕</button>' : '') +
+      '</div>';
       html += '<div class="carreira-grid">' + catsSortedHome.map(c =>
-        '<div class="carreira-tile" data-cat="'+c+'">' +
+        '<div class="carreira-tile'+(filterCat===c?" active":"")+'" data-cat="'+c+'">' +
           '<div class="ico">'+catIconHtml(c)+'</div>' +
           '<div class="nome">'+c+'</div>' +
           '<div class="count">'+catCountsHome[c]+(catCountsHome[c]===1?' concurso':' concursos')+'</div>' +
@@ -955,7 +970,6 @@
 
     html += '<div class="wrap">';
     html += '<div class="filterbar">';
-    html += pillsHtml(cats);
     html += '<select class="uf-select" id="uf-select"><option value="">Todos os estados</option>';
     ufs.forEach(u => { html += '<option value="'+u+'"'+(filterUf===u?" selected":"")+'>'+(UF_NAMES[u]||u)+'</option>'; });
     html += '</select>';
@@ -1022,12 +1036,21 @@
     }
     document.querySelectorAll(".carreira-tile, .editoria-item").forEach(el => {
       el.addEventListener("click", () => {
-        filterCat = el.dataset.cat;
+        // Clicar na carreira já ativa limpa o filtro (equivalente ao antigo "Todas").
+        filterCat = (filterCat === el.dataset.cat) ? "" : el.dataset.cat;
         renderHome();
         const results = $("#pub-recentes");
         if (results) results.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     });
+    const carreiraClear = $("#carreira-clear");
+    if (carreiraClear){
+      carreiraClear.addEventListener("click", (e) => {
+        e.stopPropagation();
+        filterCat = "";
+        renderHome();
+      });
+    }
     document.querySelectorAll(".ml-tab").forEach(btn => {
       btn.addEventListener("click", () => { maisLidasTab = btn.dataset.tab; paintMaisLidas(); });
     });
@@ -1076,7 +1099,7 @@
     const catsSortedSide = Object.keys(catCountsSide).sort((a,b) => catCountsSide[b]-catCountsSide[a]);
     html += '<div class="side-editorias"><h4>Editorias</h4>';
     catsSortedSide.forEach(c => {
-      html += '<div class="editoria-item" data-cat="'+c+'">' +
+      html += '<div class="editoria-item'+(filterCat===c?" active":"")+'" data-cat="'+c+'">' +
         '<span class="ico">'+catIconHtml(c)+'</span>' +
         '<span class="nome">'+c+'</span>' +
         '<span class="count mono">'+catCountsSide[c]+'</span>' +
