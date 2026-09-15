@@ -239,11 +239,16 @@
   /* ---- destaque Concursos no Amazonas ---- */
   .am-destaque-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:28px 0 16px;flex-wrap:wrap;}
   .am-destaque-label{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent);font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:8px 15px;border-radius:999px;}
-  .am-destaque-all{background:none;border:none;color:var(--accent);font-weight:700;font-size:12.5px;cursor:pointer;padding:0;}
-  .am-destaque-all:hover{text-decoration:underline;}
+  .am-destaque-more{display:flex;justify-content:center;margin:4px 0 32px;}
+  .am-destaque-all{background:none;border:1.5px solid var(--accent);color:var(--accent);font-weight:700;font-size:13px;cursor:pointer;padding:11px 22px;border-radius:999px;transition:background .15s,color .15s;}
+  .am-destaque-all:hover{background:var(--accent);color:#fff;}
 
   /* ---- Concursos por Carreira (grade de ícones) ---- */
-  .carreira-section{margin:8px 0 8px;}
+  /* margin-top/bottom só (nunca a forma abreviada "margin") — essa div
+     também leva a classe .wrap, que centraliza via margin:0 auto; um
+     "margin:8px 0 8px" aqui zerava as margens laterais herdadas e a grade
+     ficava colada na esquerda em telas largas. */
+  .carreira-section{margin-top:8px;margin-bottom:8px;}
   .carreira-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:16px;margin-bottom:8px;}
   @media (max-width:900px){ .carreira-grid{grid-template-columns:repeat(3,1fr);} }
   @media (max-width:560px){ .carreira-grid{grid-template-columns:repeat(2,1fr);} }
@@ -916,12 +921,17 @@
     // próprio na home (some quando há busca/filtro ativo, igual à manchete).
     const amPosts = hasActiveFilter ? [] : sorted.filter(p => p.uf === "AM").slice(0, 4);
     if (amPosts.length){
+      const amTotal = sorted.filter(p => p.uf === "AM").length;
       html += '<div class="wrap">';
       html += '<div class="am-destaque-head">';
       html += '<div class="am-destaque-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"></path></svg>Concursos no Amazonas</div>';
-      html += '<button class="am-destaque-all" id="am-ver-todos" type="button">Ver todos do Amazonas →</button>';
       html += '</div>';
       html += '<div class="grid">' + amPosts.map(cardHtml).join("") + '</div>';
+      // Some o botão só se houver mais matérias do AM além das 4 em destaque
+      // (evita um botão "Ver todas" que levaria pra uma lista idêntica à que já está na tela).
+      if (amTotal > amPosts.length){
+        html += '<div class="am-destaque-more"><button class="am-destaque-all" id="am-ver-todos" type="button">Ver todas as oportunidades no Amazonas →</button></div>';
+      }
       html += '</div>';
     }
 
