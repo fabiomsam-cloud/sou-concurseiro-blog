@@ -368,6 +368,21 @@
   .product-cta a.btn{display:inline-flex;align-items:center;gap:8px;background:var(--paper);color:var(--accent);font-weight:800;font-size:14px;padding:13px 24px;border-radius:10px;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.18);transition:transform .15s ease,box-shadow .15s ease;}
   .product-cta a.btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.22);}
 
+  /* Vitrine de Mentorias (#/mentorias): cards-teaser que levam pra página de
+     vendas oficial de cada produto — aqui é só o "gostinho", não a venda. */
+  .mentoria-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px;}
+  @media (max-width:900px){ .mentoria-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:640px){ .mentoria-grid{grid-template-columns:1fr;} }
+  .mentoria-card{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:16px;padding:20px;background:var(--paper);box-shadow:var(--shadow);transition:border-color .15s,transform .15s,box-shadow .15s;}
+  .mentoria-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+  .mentoria-badge{align-self:flex-start;background:var(--amber-soft);color:var(--amber);font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:999px;margin-bottom:12px;}
+  .mentoria-nome{margin:0 0 10px;font-size:17px;font-weight:800;color:var(--ink);letter-spacing:-.01em;}
+  .mentoria-teaser{margin:0;font-size:13.5px;color:var(--ink-soft);line-height:1.55;flex:1;}
+  .mentoria-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line);}
+  .mentoria-preco{font-size:12px;font-weight:700;color:var(--ink-soft);}
+  .mentoria-cta{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:var(--paper);font-weight:800;font-size:13px;padding:10px 16px;border-radius:9px;text-decoration:none;white-space:nowrap;transition:transform .15s ease,box-shadow .15s ease;}
+  .mentoria-cta:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.18);}
+
   .similar-posts{margin:38px 0 0;}
   .similar-posts h3{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin:0 0 16px;}
 
@@ -430,6 +445,11 @@
     .product-cta{padding:20px;}
     .product-cta h4{font-size:19px;}
     .article-dateline{gap:8px 14px;}
+
+    /* Mentorias: preço + CTA lado a lado ficam apertados em telas pequenas —
+       empilha e deixa o botão ocupar a largura toda (área de toque maior). */
+    .mentoria-foot{flex-direction:column;align-items:stretch;}
+    .mentoria-cta{justify-content:center;}
   }
 </style>
 
@@ -509,6 +529,106 @@
       link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-tribunal-de-justica-do-amazonas"
     }
   };
+
+  // Vitrine das Mentorias Elite (categoria/página #/mentorias). Só um "gostinho"
+  // de cada produto — a venda de verdade acontece na página oficial, pra onde
+  // cada card leva com UTM próprio (utm_source=blog-scvp-mentorias).
+  function mentoriaUtm(campanha){
+    return "?utm_source=blog-scvp-mentorias&utm_medium=organico&utm_campaign=" + campanha + "-manutencao&utm_term=mkt&utm_content=cta-mentorias";
+  }
+  const MENTORIAS = [
+    {
+      nome: "Mentoria Elite TJ-AM",
+      regiao: "am",
+      teaser: "571 videoaulas e simulados pra você chegar na frente no concurso do Tribunal de Justiça do Amazonas — mais de 300 vagas e salário de até R$ 12.989.",
+      preco: "R$ 1.597,00 à vista (ou 12x R$ 159,77)",
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-tribunal-de-justica-do-amazonas" + mentoriaUtm("elite-tjam")
+    },
+    {
+      nome: "Mentoria Elite SEDUC-AM",
+      regiao: "am",
+      teaser: "Preparação completa pra disputar uma das 7.862 vagas da SEDUC-AM, com salário de até R$ 14.663 e método guiado por inteligência artificial.",
+      preco: "R$ 997,00 à vista (ou 12x R$ 99,75)",
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-seduc-am" + mentoriaUtm("elite-seducam")
+    },
+    {
+      nome: "Mentoria Elite ManausPrev",
+      regiao: "am",
+      teaser: "Conteúdo específico pra Analista Previdenciário do ManausPrev, com prova marcada e salário de até R$ 9.175,25.",
+      preco: "R$ 997,00 à vista (ou 12x R$ 99,75)",
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-manausprev" + mentoriaUtm("elite-manausprev")
+    },
+    {
+      nome: "Mentoria Elite PC-AM",
+      regiao: "am",
+      teaser: "Mentoria voltada pra Investigador e Escrivão da Polícia Civil do Amazonas, com mais de 700 aulas e salário de até R$ 12.948,78.",
+      preco: "R$ 997,00 à vista (ou 12x R$ 99,75)",
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-policia-civil-do-amazonas" + mentoriaUtm("elite-pcam")
+    },
+    {
+      nome: "Mentoria Elite SEMSA-AM",
+      regiao: "am",
+      teaser: "Preparação pra disputar uma das mais de 2 mil vagas da Saúde de Manaus (SEMSA), com aulas direto ao ponto e acompanhamento personalizado.",
+      preco: "R$ 997,00 à vista (ou 12x R$ 99,75)",
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-semsa-am" + mentoriaUtm("elite-semsaam")
+    },
+    {
+      nome: "Mentoria Elite SES-AM",
+      regiao: "am",
+      teaser: "Aulas e simulados pra quem quer estar pronto assim que sair o edital da Saúde do Amazonas (SES-AM), com mais de 10 mil vagas esperadas.",
+      preco: "R$ 837,48 à vista (ou 12x R$ 83,79)",
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-ses-am" + mentoriaUtm("elite-sesam")
+    },
+    {
+      nome: "Mentoria Elite PRF",
+      regiao: "nacional",
+      teaser: "843 aulas em 17 disciplinas pra chegar afiado no concurso da PRF — 263 vagas e salário de até R$ 13.154.",
+      preco: "R$ 1.597,00 à vista (ou 12x R$ 159,77)",
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-prf" + mentoriaUtm("elite-prf")
+    },
+    {
+      nome: "Mentoria Elite Policial",
+      regiao: "nacional",
+      teaser: "Um só plano de estudos pra quem mira qualquer um dos 27 concursos policiais civis e penais espalhados pelo Brasil.",
+      preco: "R$ 997,00 à vista (ou 12x R$ 99,75)",
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elitepolicial" + mentoriaUtm("elite-policial")
+    },
+    {
+      nome: "Mentoria Elite PP-RS",
+      regiao: "nacional",
+      teaser: "Preparação direcionada pra Polícia Penal do Rio Grande do Sul, com mais de 200 vagas e salário que pode chegar a R$ 16.536,08.",
+      preco: "R$ 1.197,00 à vista (ou 12x R$ 119,76)",
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-pp-rs" + mentoriaUtm("elite-pprs")
+    },
+    {
+      nome: "Mentoria Elite PRF Administrativo",
+      regiao: "nacional",
+      teaser: "Mentoria específica pro cargo administrativo da PRF, com 248 vagas e salário inicial de R$ 11.670,33.",
+      preco: "R$ 1.197,00 à vista (ou 12x R$ 119,76)",
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-prf-administrativo" + mentoriaUtm("elite-prfadm")
+    },
+    {
+      nome: "Mentoria Elite PC-DF Papiloscopista",
+      regiao: "nacional",
+      teaser: "Preparação voltada pra Papiloscopista da Polícia Civil do DF, com 315 vagas autorizadas e salário de R$ 13.794,41.",
+      preco: "R$ 1.197,00 à vista (ou 12x R$ 119,76)",
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-pc-df-papiloscopista" + mentoriaUtm("elite-pcdf")
+    },
+    {
+      nome: "Mentoria Elite SEDUC-PA",
+      regiao: "nacional",
+      teaser: "Pra quem vai disputar as 2 mil vagas de Professor, Pedagogo e ATA da SEDUC-PA, com salário de até R$ 6.500 + R$ 1.500 de auxílio.",
+      preco: "R$ 597,00 à vista (ou 12x R$ 59,73)",
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-seduc-pa" + mentoriaUtm("elite-seducpa")
+    },
+    {
+      nome: "Mentoria Elite INSS",
+      regiao: "nacional",
+      teaser: "473 aulas pensadas pro cargo de Técnico do Seguro Social do INSS, com 7 mil vagas e salário inicial de R$ 7.217,96.",
+      preco: "R$ 1.197,00 à vista (ou 12x R$ 119,76)",
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-inss" + mentoriaUtm("elite-inss")
+    }
+  ];
 
   // Autoria fixa das matérias do blog (crédito de fechamento + compartilhamento).
   const AUTHOR = { nome: "Vanessa Silva", cargo: "Jornalista", iniciais: "VS" };
@@ -1303,9 +1423,42 @@
   // por enquanto mostra um estado "em construção" pra não ficar quebrada
   // nem em branco. Concursos/Amazonas/Carreiras/Notícias foram removidas do
   // menu por pedido dela (menu mais enxuto, sem seções vazias por enquanto).
+  function mentoriaCardHtml(m){
+    return '<div class="mentoria-card">' +
+      '<div class="mentoria-badge">Mentoria Elite</div>' +
+      '<h3 class="mentoria-nome">'+m.nome+'</h3>' +
+      '<p class="mentoria-teaser">'+m.teaser+'</p>' +
+      '<div class="mentoria-foot">' +
+        '<span class="mentoria-preco">'+m.preco+'</span>' +
+        '<a class="mentoria-cta" href="'+m.link+'" target="_blank" rel="noopener">Conhecer a mentoria →</a>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderMentorias(){
+    clearHeroAutoTimer();
+    setPageMeta("Mentorias | Sou Concurseiro", "Conheça as Mentorias Elite do Sou Concurseiro e Vou Passar pros principais concursos do Amazonas e de outros estados.");
+    const am = MENTORIAS.filter(m => m.regiao === "am");
+    const outras = MENTORIAS.filter(m => m.regiao !== "am");
+    let html = '<div class="wrap cal-page">';
+    html += '<div class="hero-eyebrow">Preparação completa</div>';
+    html += '<h1 style="font-size:clamp(24px,3.6vw,34px);margin:0 0 10px;">Mentorias Elite</h1>';
+    html += '<p style="font-size:15px;color:var(--ink-soft);max-width:62ch;margin:0 0 32px;">Método, aulas direto ao ponto e acompanhamento pra você chegar mais preparado no seu concurso. Escolha o seu abaixo e conheça todos os detalhes na página oficial.</p>';
+    if (am.length){
+      html += '<div class="section-label">Mentorias no Amazonas</div>';
+      html += '<div class="mentoria-grid">' + am.map(mentoriaCardHtml).join("") + '</div>';
+    }
+    if (outras.length){
+      html += '<div class="section-label" style="margin-top:36px;">Mentorias em outros estados</div>';
+      html += '<div class="mentoria-grid">' + outras.map(mentoriaCardHtml).join("") + '</div>';
+    }
+    html += '</div>';
+    app.innerHTML = html;
+    window.scrollTo(0,0);
+  }
+
   const COMING_SOON_PAGES = {
-    dicas: { eyebrow: "Portal de concursos", titulo: "Dicas de Estudo", texto: "Em breve: técnicas de estudo, planos e materiais pra turbinar sua preparação." },
-    mentorias: { eyebrow: "Preparação completa", titulo: "Mentorias", texto: "Em breve: todas as mentorias e cursos do Sou Concurseiro e Vou Passar reunidos aqui." }
+    dicas: { eyebrow: "Portal de concursos", titulo: "Dicas de Estudo", texto: "Em breve: técnicas de estudo, planos e materiais pra turbinar sua preparação." }
   };
   function renderComingSoon(key){
     clearHeroAutoTimer();
@@ -1325,13 +1478,14 @@
     if (!POSTS.length){ return; }
     const h = location.hash || "#/";
     const m = /^#\/materia\/(.+)$/.exec(h);
-    const comingSoonMatch = /^#\/(dicas|mentorias)$/.exec(h);
-    $("#nav-home").classList.toggle("active", !m && h !== "#/calendario" && !comingSoonMatch);
+    const comingSoonMatch = /^#\/(dicas)$/.exec(h);
+    $("#nav-home").classList.toggle("active", !m && h !== "#/calendario" && h !== "#/mentorias" && !comingSoonMatch);
     $("#nav-calendario").classList.toggle("active", h === "#/calendario");
     $("#nav-dicas").classList.toggle("active", h === "#/dicas");
     $("#nav-mentorias").classList.toggle("active", h === "#/mentorias");
     if (m) renderArticle(decodeURIComponent(m[1]));
     else if (h === "#/calendario") renderConcursosPorEstado(true);
+    else if (h === "#/mentorias") renderMentorias();
     else if (comingSoonMatch) renderComingSoon(comingSoonMatch[1]);
     else renderHome();
   }
