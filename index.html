@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sou Concurseiro</title>
-<meta name="description" id="meta-description" content="Sou Concurseiro e Vou Passar — notícias, editais e guias completos de concursos públicos no Brasil.">
-<meta property="og:description" id="og-description" content="Sou Concurseiro e Vou Passar — notícias, editais e guias completos de concursos públicos no Brasil.">
+<meta name="description" id="meta-description" content="Sou Concurseiro e Vou Passar: notícias, editais e guias completos de concursos públicos no Brasil.">
+<meta property="og:description" id="og-description" content="Sou Concurseiro e Vou Passar: notícias, editais e guias completos de concursos públicos no Brasil.">
 <meta property="og:title" id="og-title" content="Sou Concurseiro">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
 <style>
@@ -169,6 +169,7 @@
 
   /* ---- grid / seal cards ---- */
   .section-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;border-bottom:1px solid var(--line);padding-bottom:9px;margin-bottom:18px;}
+  .section-label-lg{font-size:22px;letter-spacing:-.01em;text-transform:none;color:var(--ink);font-weight:800;border-bottom:2px solid var(--accent);padding-bottom:12px;margin-bottom:20px;}
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:40px;}
   @media (max-width:720px){ .grid{grid-template-columns:1fr;} }
   .card{padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--paper);display:flex;gap:16px;cursor:pointer;transition:box-shadow .15s ease,border-color .15s ease,transform .15s ease;}
@@ -369,19 +370,26 @@
   .product-cta a.btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.22);}
 
   /* Vitrine de Mentorias (#/mentorias): cards-teaser que levam pra página de
-     vendas oficial de cada produto — aqui é só o "gostinho", não a venda. */
-  .mentoria-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px;}
-  @media (max-width:900px){ .mentoria-grid{grid-template-columns:repeat(2,1fr);} }
+     vendas oficial de cada produto — aqui é só o "gostinho", não a venda.
+     Grade de 2 colunas (em vez de 3) de propósito: cards maiores e mais
+     scroll passam a sensação de catálogo maior/mais robusto. Card inteiro é
+     um <a> clicável (não só o botão) — o "botão" visual é decorativo. */
+  .mentoria-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:16px;}
   @media (max-width:640px){ .mentoria-grid{grid-template-columns:1fr;} }
-  .mentoria-card{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:16px;padding:20px;background:var(--paper);box-shadow:var(--shadow);transition:border-color .15s,transform .15s,box-shadow .15s;}
-  .mentoria-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+  .mentoria-card{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:16px;padding:22px;background:var(--paper);box-shadow:var(--shadow);text-decoration:none;color:inherit;cursor:pointer;transition:border-color .15s,transform .18s ease,box-shadow .18s ease;}
+  .mentoria-card:hover{border-color:var(--accent);transform:translateY(-5px);box-shadow:0 16px 34px -16px rgba(20,24,31,.32);}
   .mentoria-badge{align-self:flex-start;background:var(--amber-soft);color:var(--amber);font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:999px;margin-bottom:12px;}
-  .mentoria-nome{margin:0 0 10px;font-size:17px;font-weight:800;color:var(--ink);letter-spacing:-.01em;}
-  .mentoria-teaser{margin:0;font-size:13.5px;color:var(--ink-soft);line-height:1.55;flex:1;}
-  .mentoria-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line);}
-  .mentoria-preco{font-size:12px;font-weight:700;color:var(--ink-soft);}
-  .mentoria-cta{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:var(--paper);font-weight:800;font-size:13px;padding:10px 16px;border-radius:9px;text-decoration:none;white-space:nowrap;transition:transform .15s ease,box-shadow .15s ease;}
-  .mentoria-cta:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.18);}
+  .mentoria-nome{margin:0 0 10px;font-size:18px;font-weight:800;color:var(--ink);letter-spacing:-.01em;}
+  .mentoria-teaser{margin:0;font-size:13.5px;color:var(--ink-soft);line-height:1.55;}
+  .mentoria-ia{margin:14px 0 0;font-size:12.5px;line-height:1.5;color:var(--accent);background:var(--accent-soft);border-radius:10px;padding:10px 12px;}
+  .mentoria-foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:auto;padding-top:16px;border-top:1px solid var(--line);}
+  .mentoria-garantia{font-size:12px;font-weight:700;color:var(--ink-soft);}
+  .mentoria-cta{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:var(--paper);font-weight:800;font-size:13px;padding:10px 16px;border-radius:9px;white-space:nowrap;transition:transform .18s ease,box-shadow .18s ease;}
+  .mentoria-card:hover .mentoria-cta{transform:translateY(-3px);box-shadow:0 10px 22px -8px rgba(0,0,0,.4);}
+
+  .mentoria-footer-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:40px 0 0;}
+  .mentoria-footer-btn{background:none;border:1.5px solid var(--line-strong);color:var(--ink);font-weight:700;font-size:13px;cursor:pointer;padding:11px 20px;border-radius:999px;transition:background .15s,border-color .15s,transform .15s;}
+  .mentoria-footer-btn:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px);}
 
   .similar-posts{margin:38px 0 0;}
   .similar-posts h3{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin:0 0 16px;}
@@ -465,7 +473,7 @@
 <div class="brand-hook" id="brand-hook">
   <div class="wrap brand-hook-inner">
     <span class="brand-hook-badge">🔥</span>
-    <span class="brand-hook-text" id="brand-hook-text">Sua aprovação começa aqui — confira os concursos que estão bombando</span>
+    <span class="brand-hook-text" id="brand-hook-text">Sua aprovação começa aqui: confira os concursos que estão bombando</span>
   </div>
 </div>
 
@@ -499,7 +507,7 @@
   </div>
 </div>
 
-<div id="preview-badge" class="preview-badge" hidden>Prévia com dados de exemplo — nesta pré-visualização a conexão ao vivo com o banco não roda; no site publicado, esses mesmos dados vêm direto do Supabase.</div>
+<div id="preview-badge" class="preview-badge" hidden>Prévia com dados de exemplo: nesta pré-visualização a conexão ao vivo com o banco não roda; no site publicado, esses mesmos dados vêm direto do Supabase.</div>
 
 <div id="app"></div>
 
@@ -507,7 +515,7 @@
 
 <footer>
   <div class="wrap">
-    <p class="u">Protótipo de redesign — Sou Concurseiro e Vou Passar · dados reais das matérias já publicadas no blog</p>
+    <p class="u">Protótipo de redesign · Sou Concurseiro e Vou Passar · dados reais das matérias já publicadas no blog</p>
   </div>
 </footer>
 
@@ -540,7 +548,7 @@
     {
       nome: "Mentoria Elite TJ-AM",
       regiao: "am",
-      teaser: "571 videoaulas e simulados pra você chegar na frente no concurso do Tribunal de Justiça do Amazonas — mais de 300 vagas e salário de até R$ 12.989.",
+      teaser: "571 videoaulas e simulados pra você chegar na frente no concurso do Tribunal de Justiça do Amazonas, com mais de 300 vagas e salário de até R$ 12.989.",
       preco: "R$ 1.597,00 à vista (ou 12x R$ 159,77)",
       link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-tribunal-de-justica-do-amazonas" + mentoriaUtm("elite-tjam")
     },
@@ -582,7 +590,7 @@
     {
       nome: "Mentoria Elite PRF",
       regiao: "nacional",
-      teaser: "843 aulas em 17 disciplinas pra chegar afiado no concurso da PRF — 263 vagas e salário de até R$ 13.154.",
+      teaser: "843 aulas em 17 disciplinas pra chegar afiado no concurso da PRF, com 263 vagas e salário de até R$ 13.154.",
       preco: "R$ 1.597,00 à vista (ou 12x R$ 159,77)",
       link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-prf" + mentoriaUtm("elite-prf")
     },
@@ -745,7 +753,7 @@
   // (que executa JS) e qualquer compartilhamento feito depois da página
   // carregar. Sem argumentos, volta pro título/descrição padrão do blog.
   const DEFAULT_TITLE = "Sou Concurseiro";
-  const DEFAULT_DESCRIPTION = "Sou Concurseiro e Vou Passar — notícias, editais e guias completos de concursos públicos no Brasil.";
+  const DEFAULT_DESCRIPTION = "Sou Concurseiro e Vou Passar: notícias, editais e guias completos de concursos públicos no Brasil.";
   function setPageMeta(title, description){
     const t = title || DEFAULT_TITLE;
     const d = description || DEFAULT_DESCRIPTION;
@@ -1424,15 +1432,20 @@
   // nem em branco. Concursos/Amazonas/Carreiras/Notícias foram removidas do
   // menu por pedido dela (menu mais enxuto, sem seções vazias por enquanto).
   function mentoriaCardHtml(m){
-    return '<div class="mentoria-card">' +
+    // Card inteiro é o link (pedido dela: "deixe todo o botão clicável, não só
+    // o 'conhecer a mentoria'") — o "botão" visual é só um <span>, não um <a>
+    // aninhado. O preço saiu do rodapé e virou um selo de garantia (mais
+    // gatilho de confiança do que número de preço nesse estágio de teaser).
+    return '<a class="mentoria-card" href="'+m.link+'" target="_blank" rel="noopener">' +
       '<div class="mentoria-badge">Mentoria Elite</div>' +
       '<h3 class="mentoria-nome">'+m.nome+'</h3>' +
       '<p class="mentoria-teaser">'+m.teaser+'</p>' +
+      '<div class="mentoria-ia">🎯 Método com apoio de IA cria seu plano de estudos com base no tempo livre que você tem, focado só nas matérias que fazem diferença, sem perder tempo.</div>' +
       '<div class="mentoria-foot">' +
-        '<span class="mentoria-preco">'+m.preco+'</span>' +
-        '<a class="mentoria-cta" href="'+m.link+'" target="_blank" rel="noopener">Conhecer a mentoria →</a>' +
+        '<span class="mentoria-garantia">🛡️ 7 dias de garantia</span>' +
+        '<span class="mentoria-cta">Conhecer a mentoria →</span>' +
       '</div>' +
-    '</div>';
+    '</a>';
   }
 
   function renderMentorias(){
@@ -1445,15 +1458,23 @@
     html += '<h1 style="font-size:clamp(24px,3.6vw,34px);margin:0 0 10px;">Mentorias Elite</h1>';
     html += '<p style="font-size:15px;color:var(--ink-soft);max-width:62ch;margin:0 0 32px;">Método, aulas direto ao ponto e acompanhamento pra você chegar mais preparado no seu concurso. Escolha o seu abaixo e conheça todos os detalhes na página oficial.</p>';
     if (am.length){
-      html += '<div class="section-label">Mentorias no Amazonas</div>';
+      html += '<div class="section-label-lg">Mentorias no Amazonas</div>';
       html += '<div class="mentoria-grid">' + am.map(mentoriaCardHtml).join("") + '</div>';
     }
     if (outras.length){
-      html += '<div class="section-label" style="margin-top:36px;">Mentorias em outros estados</div>';
+      html += '<div class="section-label-lg" style="margin-top:36px;">Mentorias em outros estados</div>';
       html += '<div class="mentoria-grid">' + outras.map(mentoriaCardHtml).join("") + '</div>';
     }
+    html += '<div class="mentoria-footer-actions">';
+    html += '<button class="mentoria-footer-btn" id="mentorias-topo" type="button">↑ Voltar para o topo</button>';
+    html += '<button class="mentoria-footer-btn" id="mentorias-inicio" type="button">🏠 Voltar para o início</button>';
+    html += '</div>';
     html += '</div>';
     app.innerHTML = html;
+    const btnTopo = $("#mentorias-topo");
+    if (btnTopo){ btnTopo.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" })); }
+    const btnInicio = $("#mentorias-inicio");
+    if (btnInicio){ btnInicio.addEventListener("click", goHomeFresh); }
     window.scrollTo(0,0);
   }
 
