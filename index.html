@@ -378,8 +378,12 @@
   @media (max-width:640px){ .mentoria-grid{grid-template-columns:1fr;} }
   .mentoria-card{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:16px;padding:22px;background:var(--paper);box-shadow:var(--shadow);text-decoration:none;color:inherit;cursor:pointer;transition:border-color .15s,transform .18s ease,box-shadow .18s ease;}
   .mentoria-card:hover{border-color:var(--accent);transform:translateY(-5px);box-shadow:0 16px 34px -16px rgba(20,24,31,.32);}
-  .mentoria-badge{align-self:flex-start;background:var(--amber-soft);color:var(--amber);font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:999px;margin-bottom:12px;}
-  .mentoria-nome{margin:0 0 10px;font-size:18px;font-weight:800;color:var(--ink);letter-spacing:-.01em;}
+  .mentoria-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
+  .mentoria-badge{background:var(--amber-soft);color:var(--amber);font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:999px;}
+  .mentoria-cat-icon{width:30px;height:30px;border-radius:999px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+  .mentoria-cat-icon svg{width:16px;height:16px;}
+  .mentoria-nome{margin:0 0 4px;font-size:18px;font-weight:800;color:var(--ink);letter-spacing:-.01em;}
+  .mentoria-cat-label{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;}
   .mentoria-teaser{margin:0;font-size:13.5px;color:var(--ink-soft);line-height:1.55;}
   .mentoria-ia{margin:14px 0 0;font-size:12.5px;line-height:1.5;color:var(--accent);background:var(--accent-soft);border-radius:10px;padding:10px 12px;}
   .mentoria-foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:auto;padding-top:16px;border-top:1px solid var(--line);}
@@ -548,6 +552,7 @@
     {
       nome: "Mentoria Elite TJ-AM",
       regiao: "am",
+      cat: "Tribunais",
       teaser: "571 videoaulas e simulados pra você chegar na frente no concurso do Tribunal de Justiça do Amazonas, com mais de 300 vagas e salário de até R$ 12.989.",
       preco: "R$ 1.597,00 à vista (ou 12x R$ 159,77)",
       link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-tribunal-de-justica-do-amazonas" + mentoriaUtm("elite-tjam")
@@ -555,6 +560,7 @@
     {
       nome: "Mentoria Elite SEDUC-AM",
       regiao: "am",
+      cat: "Educação",
       teaser: "Preparação completa pra disputar uma das 7.862 vagas da SEDUC-AM, com salário de até R$ 14.663 e método guiado por inteligência artificial.",
       preco: "R$ 997,00 à vista (ou 12x R$ 99,75)",
       link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-seduc-am" + mentoriaUtm("elite-seducam")
@@ -562,6 +568,7 @@
     {
       nome: "Mentoria Elite ManausPrev",
       regiao: "am",
+      cat: "Previdenciário",
       teaser: "Conteúdo específico pra Analista Previdenciário do ManausPrev, com prova marcada e salário de até R$ 9.175,25.",
       preco: "R$ 997,00 à vista (ou 12x R$ 99,75)",
       link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-manausprev" + mentoriaUtm("elite-manausprev")
@@ -569,6 +576,7 @@
     {
       nome: "Mentoria Elite PC-AM",
       regiao: "am",
+      cat: "Policial",
       teaser: "Mentoria voltada pra Investigador e Escrivão da Polícia Civil do Amazonas, com mais de 700 aulas e salário de até R$ 12.948,78.",
       preco: "R$ 997,00 à vista (ou 12x R$ 99,75)",
       link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-policia-civil-do-amazonas" + mentoriaUtm("elite-pcam")
@@ -576,6 +584,7 @@
     {
       nome: "Mentoria Elite SEMSA-AM",
       regiao: "am",
+      cat: "Saúde",
       teaser: "Preparação pra disputar uma das mais de 2 mil vagas da Saúde de Manaus (SEMSA), com aulas direto ao ponto e acompanhamento personalizado.",
       preco: "R$ 997,00 à vista (ou 12x R$ 99,75)",
       link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-semsa-am" + mentoriaUtm("elite-semsaam")
@@ -583,6 +592,7 @@
     {
       nome: "Mentoria Elite SES-AM",
       regiao: "am",
+      cat: "Saúde",
       teaser: "Aulas e simulados pra quem quer estar pronto assim que sair o edital da Saúde do Amazonas (SES-AM), com mais de 10 mil vagas esperadas.",
       preco: "R$ 837,48 à vista (ou 12x R$ 83,79)",
       link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-ses-am" + mentoriaUtm("elite-sesam")
@@ -590,6 +600,7 @@
     {
       nome: "Mentoria Elite PRF",
       regiao: "nacional",
+      cat: "Policial",
       teaser: "843 aulas em 17 disciplinas pra chegar afiado no concurso da PRF, com 263 vagas e salário de até R$ 13.154.",
       preco: "R$ 1.597,00 à vista (ou 12x R$ 159,77)",
       link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-prf" + mentoriaUtm("elite-prf")
@@ -597,6 +608,7 @@
     {
       nome: "Mentoria Elite Policial",
       regiao: "nacional",
+      cat: "Policial",
       teaser: "Um só plano de estudos pra quem mira qualquer um dos 27 concursos policiais civis e penais espalhados pelo Brasil.",
       preco: "R$ 997,00 à vista (ou 12x R$ 99,75)",
       link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elitepolicial" + mentoriaUtm("elite-policial")
@@ -604,6 +616,7 @@
     {
       nome: "Mentoria Elite PP-RS",
       regiao: "nacional",
+      cat: "Policial",
       teaser: "Preparação direcionada pra Polícia Penal do Rio Grande do Sul, com mais de 200 vagas e salário que pode chegar a R$ 16.536,08.",
       preco: "R$ 1.197,00 à vista (ou 12x R$ 119,76)",
       link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-pp-rs" + mentoriaUtm("elite-pprs")
@@ -611,6 +624,7 @@
     {
       nome: "Mentoria Elite PRF Administrativo",
       regiao: "nacional",
+      cat: "Administrativo",
       teaser: "Mentoria específica pro cargo administrativo da PRF, com 248 vagas e salário inicial de R$ 11.670,33.",
       preco: "R$ 1.197,00 à vista (ou 12x R$ 119,76)",
       link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-prf-administrativo" + mentoriaUtm("elite-prfadm")
@@ -618,6 +632,7 @@
     {
       nome: "Mentoria Elite PC-DF Papiloscopista",
       regiao: "nacional",
+      cat: "Policial",
       teaser: "Preparação voltada pra Papiloscopista da Polícia Civil do DF, com 315 vagas autorizadas e salário de R$ 13.794,41.",
       preco: "R$ 1.197,00 à vista (ou 12x R$ 119,76)",
       link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-pc-df-papiloscopista" + mentoriaUtm("elite-pcdf")
@@ -625,6 +640,7 @@
     {
       nome: "Mentoria Elite SEDUC-PA",
       regiao: "nacional",
+      cat: "Educação",
       teaser: "Pra quem vai disputar as 2 mil vagas de Professor, Pedagogo e ATA da SEDUC-PA, com salário de até R$ 6.500 + R$ 1.500 de auxílio.",
       preco: "R$ 597,00 à vista (ou 12x R$ 59,73)",
       link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-seduc-pa" + mentoriaUtm("elite-seducpa")
@@ -632,6 +648,7 @@
     {
       nome: "Mentoria Elite INSS",
       regiao: "nacional",
+      cat: "Previdenciário",
       teaser: "473 aulas pensadas pro cargo de Técnico do Seguro Social do INSS, com 7 mil vagas e salário inicial de R$ 7.217,96.",
       preco: "R$ 1.197,00 à vista (ou 12x R$ 119,76)",
       link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-inss" + mentoriaUtm("elite-inss")
@@ -1431,14 +1448,34 @@
   // por enquanto mostra um estado "em construção" pra não ficar quebrada
   // nem em branco. Concursos/Amazonas/Carreiras/Notícias foram removidas do
   // menu por pedido dela (menu mais enxuto, sem seções vazias por enquanto).
+  // Cor de identidade por carreira, só pra vitrine de Mentorias — reaproveita
+  // as mesmas categorias/ícones de "Concursos por Carreira" (catIconHtml),
+  // então cada card fica reconhecível de longe (13 cards com o mesmo selo
+  // amarelo e o mesmo botão azul ficavam todos parecidos — pedido dela).
+  // O botão "Conhecer a mentoria" continua azul (--accent) de propósito: é a
+  // cor de ação em todo o site, então manter ela igual em todo canto reforça
+  // "isso é clicável" em vez de virar um arco-íris sem hierarquia.
+  const CAT_COLOR = {
+    "Policial": "#B3452F",
+    "Tribunais": "#6C4FA1",
+    "Educação": "#2E7D5B",
+    "Saúde": "#1A8FA3",
+    "Previdenciário": "#3B5FA0",
+    "Administrativo": "#6E7B8B"
+  };
   function mentoriaCardHtml(m){
     // Card inteiro é o link (pedido dela: "deixe todo o botão clicável, não só
     // o 'conhecer a mentoria'") — o "botão" visual é só um <span>, não um <a>
     // aninhado. O preço saiu do rodapé e virou um selo de garantia (mais
     // gatilho de confiança do que número de preço nesse estágio de teaser).
-    return '<a class="mentoria-card" href="'+m.link+'" target="_blank" rel="noopener">' +
-      '<div class="mentoria-badge">Mentoria Elite</div>' +
+    const cor = CAT_COLOR[m.cat] || "#1D4FA3";
+    return '<a class="mentoria-card" href="'+m.link+'" target="_blank" rel="noopener" style="border-top:3px solid '+cor+';">' +
+      '<div class="mentoria-top">' +
+        '<div class="mentoria-badge">Mentoria Elite</div>' +
+        '<div class="mentoria-cat-icon" style="background:'+cor+'1a;color:'+cor+';">'+catIconHtml(m.cat)+'</div>' +
+      '</div>' +
       '<h3 class="mentoria-nome">'+m.nome+'</h3>' +
+      '<div class="mentoria-cat-label" style="color:'+cor+';">'+(m.cat||"")+'</div>' +
       '<p class="mentoria-teaser">'+m.teaser+'</p>' +
       '<div class="mentoria-ia">🎯 Método com apoio de IA cria seu plano de estudos com base no tempo livre que você tem, focado só nas matérias que fazem diferença, sem perder tempo.</div>' +
       '<div class="mentoria-foot">' +
