@@ -376,12 +376,18 @@
   .rel-a{max-height:0;overflow:hidden;transition:max-height .22s ease;}
   .rel-a p{margin:0 0 14px;padding:0 2px;font-size:13.5px;color:var(--ink-soft);}
 
-  .product-cta{margin:32px 0;border-radius:18px;padding:28px;background:var(--accent);color:var(--paper);}
-  .product-cta .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--paper);opacity:.75;font-weight:700;margin-bottom:10px;}
-  .product-cta h4{margin:0 0 10px;font-size:22px;font-weight:800;color:var(--paper);letter-spacing:-.01em;}
-  .product-cta p{margin:0 0 20px;font-size:14.5px;color:var(--paper);opacity:.85;max-width:52ch;}
-  .product-cta a.btn{display:inline-flex;align-items:center;gap:8px;background:var(--paper);color:var(--accent);font-weight:800;font-size:14px;padding:13px 24px;border-radius:10px;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.18);transition:transform .15s ease,box-shadow .15s ease;}
-  .product-cta a.btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.22);}
+  /* Banner de produto dentro da matéria: identidade própria por mentoria
+     (logo real + cor da categoria), em vez de uma caixa azul genérica igual
+     pra todo produto — mesma lógica de "banner específico" usada nos cards
+     da página de Mentorias. */
+  .product-cta{display:block;margin:32px 0;border-radius:18px;padding:26px 28px;background:var(--paper);border:1.5px solid var(--line);text-decoration:none;color:inherit;transition:border-color .15s,transform .18s ease,box-shadow .18s ease;}
+  .product-cta:hover{transform:translateY(-3px);box-shadow:0 16px 34px -18px rgba(20,24,31,.32);}
+  .product-cta-top{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+  .product-cta .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;}
+  .product-cta h4{margin:0 0 10px;font-size:21px;font-weight:800;color:var(--ink);letter-spacing:-.01em;}
+  .product-cta p{margin:0 0 20px;font-size:14.5px;color:var(--ink-soft);max-width:52ch;line-height:1.55;}
+  .product-cta .btn{display:inline-flex;align-items:center;gap:8px;color:var(--paper);font-weight:800;font-size:14px;padding:13px 24px;border-radius:10px;transition:transform .15s ease,box-shadow .15s ease;}
+  .product-cta:hover .btn{transform:translateY(-2px);box-shadow:0 10px 22px -8px rgba(0,0,0,.32);}
 
   /* Vitrine de Mentorias (#/mentorias): cards-teaser que levam pra página de
      vendas oficial de cada produto — aqui é só o "gostinho", não a venda.
@@ -562,20 +568,44 @@
   const app = $("#app");
 
   // Produtos pagos com página de vendas própria, mapeados por id de matéria.
-  // Só entram aqui concursos com vitrine confirmada — sem link inventado.
-  const PRODUCTS = {
-    "am-tj-am": {
-      nome: "Mentoria Elite TJ-AM",
-      linha: "Preparação completa para o concurso do Tribunal de Justiça do Amazonas, com aulas ao vivo, simulados e a IA ANNE, acompanhada pelo Professor Fabio Silva.",
-      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-tribunal-de-justica-do-amazonas"
-    }
-  };
-
   // Vitrine das Mentorias Elite (categoria/página #/mentorias). Só um "gostinho"
   // de cada produto — a venda de verdade acontece na página oficial, pra onde
   // cada card leva com UTM próprio (utm_source=blog-scvp-mentorias).
   function mentoriaUtm(campanha){
     return "?utm_source=blog-scvp-mentorias&utm_medium=organico&utm_campaign=" + campanha + "-manutencao&utm_term=mkt&utm_content=cta-mentorias";
+  }
+  // UTM do banner de produto DENTRO de uma matéria — propositalmente diferente
+  // do UTM da página de Mentorias (utm_content=cta-produto vs cta-mentorias),
+  // pra distinguir no relatório se o clique veio da vitrine ou de dentro do
+  // conteúdo editorial.
+  function productCtaUtm(campanha){
+    return "?utm_source=blog-scvp-materia&utm_medium=organico&utm_campaign=" + campanha + "-materia&utm_term=mkt&utm_content=cta-produto";
+  }
+  // Matérias de concurso que têm mentoria com vitrine confirmada: mapeia o id
+  // do post pro "nome" exato da mentoria em MENTORIAS. Os dados do banner
+  // (título, descrição, logo, cor, link) vêm todos de lá — uma fonte só,
+  // nunca duas cópias que podem ficar desatualizadas entre si.
+  // Importante: só entram aqui pares 100% confirmados — mesmo órgão E mesmo
+  // cargo. Concursos parecidos mas de órgão/estado/cargo diferente (ex:
+  // PC-RR x mentoria PC-AM; Amazonprev x ManausPrev — fundos previdenciários
+  // distintos; PMDF x mentoria genérica "Elite Policial", que é só pra
+  // carreiras civis/penais; PCDF geral x mentoria específica de
+  // Papiloscopista) ficam de fora até existir produto certo pra eles — sem
+  // link "quase certo".
+  const POST_PRODUCT_MAP = {
+    "am-tj-am": "Mentoria Elite TJ-AM",
+    "am-semsa-manaus": "Mentoria Elite SEMSA-AM",
+    "am-manausprev": "Mentoria Elite ManausPrev",
+    "am-ses-am": "Mentoria Elite SES-AM",
+    "pa-seduc-pa": "Mentoria Elite SEDUC-PA",
+    "inss": "Mentoria Elite INSS"
+  };
+  function productForPost(p){
+    const nome = POST_PRODUCT_MAP[p.id];
+    if (!nome) return null;
+    const m = MENTORIAS.find(x => x.nome === nome);
+    if (!m) return null;
+    return m;
   }
   const MENTORIA_LOGOS = {
     "TJ-AM": { single: "data:image/png;base64,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", darkChip: true },
@@ -600,7 +630,7 @@
       logoKey: "TJ-AM",
       teaser: "571 videoaulas e simulados pra você chegar na frente no concurso do Tribunal de Justiça do Amazonas, com mais de 300 vagas e salário de até R$ 12.989.",
       preco: "R$ 1.597,00 à vista (ou 12x R$ 159,77)",
-      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-tribunal-de-justica-do-amazonas" + mentoriaUtm("elite-tjam")
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-tribunal-de-justica-do-amazonas", campanha: "elite-tjam"
     },
     {
       nome: "Mentoria Elite SEDUC-AM",
@@ -609,7 +639,7 @@
       logoKey: "SEDUC-AM",
       teaser: "Preparação completa pra disputar uma das 7.862 vagas da SEDUC-AM, com salário de até R$ 14.663 e método guiado por inteligência artificial.",
       preco: "R$ 997,00 à vista (ou 12x R$ 99,75)",
-      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-seduc-am" + mentoriaUtm("elite-seducam")
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-seduc-am", campanha: "elite-seducam"
     },
     {
       nome: "Mentoria Elite ManausPrev",
@@ -618,7 +648,7 @@
       logoKey: "ManausPrev",
       teaser: "Conteúdo específico pra Analista Previdenciário do ManausPrev, com prova marcada e salário de até R$ 9.175,25.",
       preco: "R$ 997,00 à vista (ou 12x R$ 99,75)",
-      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-manausprev" + mentoriaUtm("elite-manausprev")
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-manausprev", campanha: "elite-manausprev"
     },
     {
       nome: "Mentoria Elite PC-AM",
@@ -627,7 +657,7 @@
       logoKey: "PC-AM",
       teaser: "Mentoria voltada pra Investigador e Escrivão da Polícia Civil do Amazonas, com mais de 700 aulas e salário de até R$ 12.948,78.",
       preco: "R$ 997,00 à vista (ou 12x R$ 99,75)",
-      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-policia-civil-do-amazonas" + mentoriaUtm("elite-pcam")
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-policia-civil-do-amazonas", campanha: "elite-pcam"
     },
     {
       nome: "Mentoria Elite SEMSA-AM",
@@ -636,7 +666,7 @@
       logoKey: "SEMSA-AM",
       teaser: "Preparação pra disputar uma das mais de 2 mil vagas da Saúde de Manaus (SEMSA), com aulas direto ao ponto e acompanhamento personalizado.",
       preco: "R$ 997,00 à vista (ou 12x R$ 99,75)",
-      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-semsa-am" + mentoriaUtm("elite-semsaam")
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-semsa-am", campanha: "elite-semsaam"
     },
     {
       nome: "Mentoria Elite SES-AM",
@@ -645,7 +675,7 @@
       logoKey: "SES-AM",
       teaser: "Aulas e simulados pra quem quer estar pronto assim que sair o edital da Saúde do Amazonas (SES-AM), com mais de 10 mil vagas esperadas.",
       preco: "R$ 837,48 à vista (ou 12x R$ 83,79)",
-      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-ses-am" + mentoriaUtm("elite-sesam")
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-ses-am", campanha: "elite-sesam"
     },
     {
       nome: "Mentoria Elite PRF",
@@ -654,7 +684,7 @@
       logoKey: "PRF",
       teaser: "843 aulas em 17 disciplinas pra chegar afiado no concurso da PRF, com 263 vagas e salário de até R$ 13.154.",
       preco: "R$ 1.597,00 à vista (ou 12x R$ 159,77)",
-      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-prf" + mentoriaUtm("elite-prf")
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-prf", campanha: "elite-prf"
     },
     {
       nome: "Mentoria Elite Policial",
@@ -663,7 +693,7 @@
       logoKey: "Policial",
       teaser: "Um só plano de estudos pra quem mira qualquer um dos 27 concursos policiais civis e penais espalhados pelo Brasil.",
       preco: "R$ 997,00 à vista (ou 12x R$ 99,75)",
-      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elitepolicial" + mentoriaUtm("elite-policial")
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elitepolicial", campanha: "elite-policial"
     },
     {
       nome: "Mentoria Elite PP-RS",
@@ -672,7 +702,7 @@
       logoKey: "PP-RS",
       teaser: "Preparação direcionada pra Polícia Penal do Rio Grande do Sul, com mais de 200 vagas e salário que pode chegar a R$ 16.536,08.",
       preco: "R$ 1.197,00 à vista (ou 12x R$ 119,76)",
-      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-pp-rs" + mentoriaUtm("elite-pprs")
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-pp-rs", campanha: "elite-pprs"
     },
     {
       nome: "Mentoria Elite PRF Administrativo",
@@ -681,7 +711,7 @@
       logoKey: "PRF Administrativo",
       teaser: "Mentoria específica pro cargo administrativo da PRF, com 248 vagas e salário inicial de R$ 11.670,33.",
       preco: "R$ 1.197,00 à vista (ou 12x R$ 119,76)",
-      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-prf-administrativo" + mentoriaUtm("elite-prfadm")
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-prf-administrativo", campanha: "elite-prfadm"
     },
     {
       nome: "Mentoria Elite PC-DF Papiloscopista",
@@ -690,7 +720,7 @@
       logoKey: "PC-DF Papiloscopista",
       teaser: "Preparação voltada pra Papiloscopista da Polícia Civil do DF, com 315 vagas autorizadas e salário de R$ 13.794,41.",
       preco: "R$ 1.197,00 à vista (ou 12x R$ 119,76)",
-      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-pc-df-papiloscopista" + mentoriaUtm("elite-pcdf")
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-pc-df-papiloscopista", campanha: "elite-pcdf"
     },
     {
       nome: "Mentoria Elite SEDUC-PA",
@@ -699,7 +729,7 @@
       logoKey: "SEDUC-PA",
       teaser: "Pra quem vai disputar as 2 mil vagas de Professor, Pedagogo e ATA da SEDUC-PA, com salário de até R$ 6.500 + R$ 1.500 de auxílio.",
       preco: "R$ 597,00 à vista (ou 12x R$ 59,73)",
-      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-seduc-pa" + mentoriaUtm("elite-seducpa")
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-seduc-pa", campanha: "elite-seducpa"
     },
     {
       nome: "Mentoria Elite INSS",
@@ -708,7 +738,7 @@
       logoKey: "INSS",
       teaser: "473 aulas pensadas pro cargo de Técnico do Seguro Social do INSS, com 7 mil vagas e salário inicial de R$ 7.217,96.",
       preco: "R$ 1.197,00 à vista (ou 12x R$ 119,76)",
-      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-inss" + mentoriaUtm("elite-inss")
+      link: "https://www.souconcurseiroevoupassar.com/cursos/ver/elite-inss", campanha: "elite-inss"
     }
   ];
 
@@ -1395,9 +1425,23 @@
         }).join("") +
       '</ul></div>';
     }
-    const prod = PRODUCTS[p.id];
+    // Banner do produto/mentoria dentro da matéria: só aparece quando o
+    // concurso da matéria tem mentoria com vitrine confirmada (ver
+    // POST_PRODUCT_MAP). Fica um único banner, depois do corpo do texto e
+    // antes de "Também nessa cobertura" — a leitura completa continua no
+    // blog, e quem clicar no produto é quem decide ir pra página de vendas
+    // (link de fora, next tab), sem interromper quem só quer ler a matéria.
+    const prod = productForPost(p);
     if (prod){
-      html += '<div class="product-cta"><div class="eyebrow">Preparação para esse concurso</div><h4>'+prod.nome+'</h4><p>'+prod.linha+'</p><a class="btn" href="'+prod.link+'" target="_blank" rel="noopener">Conhecer a '+prod.nome+' →</a></div>';
+      const corProd = CAT_COLOR[prod.cat] || "#1D4FA3";
+      html += '<a class="product-cta" href="'+prod.link+productCtaUtm(prod.campanha)+'" target="_blank" rel="noopener" style="border-color:'+corProd+'55;">' +
+        '<div class="product-cta-top">' + mentoriaLogoHtml(prod.logoKey) +
+          '<span class="eyebrow" style="color:'+corProd+';">Preparação para esse concurso</span>' +
+        '</div>' +
+        '<h4>'+prod.nome+'</h4>' +
+        '<p>'+prod.teaser+'</p>' +
+        '<span class="btn" style="background:'+corProd+';">Conhecer a '+prod.nome+' →</span>' +
+      '</a>';
     }
     if (p.relacionados && p.relacionados.length){
       const first = p.relacionados[0];
@@ -1585,7 +1629,7 @@
     // Elite" — isso já está no nome do produto logo abaixo, então repetir
     // ali ficava redundante. A área também já orienta o candidato mais rápido
     // que o nome genérico.
-    return '<a class="mentoria-card" href="'+m.link+'" target="_blank" rel="noopener">' +
+    return '<a class="mentoria-card" href="'+m.link+mentoriaUtm(m.campanha)+'" target="_blank" rel="noopener">' +
       '<div class="mentoria-top">' +
         '<div class="mentoria-badge" style="background:'+cor+'1F;color:'+cor+';">'+(m.cat||"")+'</div>' +
       '</div>' +
