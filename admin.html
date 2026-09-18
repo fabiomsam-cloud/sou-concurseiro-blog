@@ -107,6 +107,29 @@
   .rel-row textarea{min-height:52px;resize:vertical;}
   .rel-remove{flex:0 0 auto;background:none;border:1px solid var(--line);border-radius:7px;width:28px;height:28px;color:var(--ink-soft);font-size:14px;line-height:1;}
   .rel-remove:hover{border-color:var(--danger);color:var(--danger);}
+  .rel-linked-badge{font-size:10.5px;font-weight:700;color:var(--ok);background:var(--ok-soft);border-radius:6px;padding:3px 8px;display:inline-block;margin-bottom:8px;}
+  .rel-explainer{display:flex;gap:11px;align-items:flex-start;background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12.5px;color:var(--ink);line-height:1.5;}
+  .rel-explainer .ico{font-size:16px;flex:0 0 auto;line-height:1.3;}
+  .rel-search-wrap{position:relative;margin-bottom:14px;}
+  .rel-search-input{width:100%;font-family:inherit;font-size:13.5px;border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:var(--paper);color:var(--ink);}
+  .rel-search-input:focus{border-color:var(--accent);outline:none;}
+  .rel-search-results{display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:5;background:var(--paper);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);max-height:260px;overflow-y:auto;}
+  .rel-search-results.show{display:block;}
+  .rel-search-item{padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--line);}
+  .rel-search-item:last-child{border-bottom:none;}
+  .rel-search-item:hover{background:var(--accent-soft);}
+  .rel-search-title{font-size:13px;font-weight:700;color:var(--ink);}
+  .rel-search-meta{font-size:11px;color:var(--ink-soft);margin-top:2px;}
+  .rel-search-empty{padding:12px;margin:0;}
+
+  .fonte-editor .fonte-row{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--paper-alt);}
+  .fonte-row .fonte-fields{flex:1;display:grid;grid-template-columns:1fr 1fr 130px;gap:8px;}
+  @media (max-width:640px){ .fonte-row .fonte-fields{grid-template-columns:1fr;} }
+  .fonte-row input, .fonte-row select{width:100%;font-family:inherit;font-size:13px;border:1px solid var(--line);border-radius:7px;padding:8px 10px;background:var(--paper);color:var(--ink);}
+  .checkbox-field{display:flex;align-items:flex-start;gap:10px;margin-bottom:16px;}
+  .checkbox-field input[type=checkbox]{margin-top:3px;width:16px;height:16px;accent-color:var(--accent);flex:0 0 auto;}
+  .checkbox-field label{font-size:13.5px;font-weight:700;color:var(--ink);cursor:pointer;}
+  .checkbox-field .hint{font-size:11.5px;color:var(--ink-soft);margin-top:3px;font-weight:400;text-transform:none;letter-spacing:0;}
   .legacy-note{font-size:11.5px;color:var(--amber);background:var(--amber-soft);border-radius:7px;padding:7px 10px;margin-bottom:10px;}
 
   .form-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:4px;}
@@ -278,13 +301,21 @@
   function esc(s){
     return (s == null ? "" : String(s)).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   }
+  function fmtDateTime(ts){
+    // ts = timestamp do Supabase, ex: "2026-09-15 18:34:59.587131-03"
+    if (!ts) return "";
+    const datePart = ts.slice(0,10).split("-");
+    if (datePart.length !== 3) return ts;
+    const timeMatch = ts.match(/\d{2}:\d{2}/);
+    return datePart[2] + "/" + datePart[1] + "/" + datePart[0] + (timeMatch ? " às " + timeMatch[0] : "");
+  }
   function slugify(s){
     return (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
       .replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
   }
   function normRelacionados(rel){
     if (!Array.isArray(rel)) return [];
-    return rel.map(r => typeof r === "string" ? { titulo: r, resumo: "" } : { titulo: r.titulo || "", resumo: r.resumo || "" });
+    return rel.map(r => typeof r === "string" ? { titulo: r, resumo: "", post_id: "" } : { titulo: r.titulo || "", resumo: r.resumo || "", post_id: r.post_id || "" });
   }
 
   // -------------------------------------------------------------- carregar
@@ -334,12 +365,15 @@
       posts.forEach(p => {
         const isPub = p.status === "publicado";
         const tipoLabel = {"noticia":"📰 Notícia","dica-de-estudo":"📘 Dica de estudo"}[p.tipo_conteudo];
+        const destLabel = {"manchete":"🏆 Manchete","destaque":"⭐ Destaque"}[p.classificacao];
         html += '<div class="post-row">' +
           '<div class="post-thumb">' + ((p.imagem_miniatura||p.imagem_capa) ? '<img src="'+esc(p.imagem_miniatura||p.imagem_capa)+'" alt="">' : esc((p.categoria||"").slice(0,4).toUpperCase())) + '</div>' +
           '<div class="post-body">' +
             '<div class="post-title">'+esc(p.titulo)+'</div>' +
             '<div class="post-meta">' +
               '<span class="badge '+(isPub?"badge-pub":"badge-draft")+'">'+esc(p.status||"—")+'</span>' +
+              (destLabel ? '<span class="badge badge-pub">'+destLabel+'</span>' : '') +
+              (p.info_nao_oficial ? '<span class="badge badge-draft">⚠️ não oficial</span>' : '') +
               (tipoLabel ? '<span>'+tipoLabel+'</span>' : '') +
               '<span>'+esc(p.categoria)+' · '+esc(UF_NAMES[p.uf]||p.uf||"—")+'</span>' +
               '<span class="mono">'+esc(p.data_publicacao||"")+'</span>' +
@@ -385,9 +419,17 @@
 
   function blankPost(){
     return { id:"", titulo:"", categoria:"", uf:"", concurso:"", resumo:"", conteudo:"",
-      highlight_num:"", highlight_label:"", imagem_capa:"", imagem_miniatura:"", link_original:"",
+      highlight_num:"", highlight_label:"", imagem_capa:"", imagem_miniatura:"", imagem_manchete:"", link_original:"",
       relacionados: [], data_publicacao: new Date().toISOString().slice(0,10),
-      hora_publicacao:"", status:"rascunho", tipo_conteudo:"concurso", meta_descricao:"" };
+      hora_publicacao:"", status:"rascunho", tipo_conteudo:"concurso", meta_descricao:"",
+      fontes: [], info_nao_oficial:false, nota_nao_oficial:"",
+      classificacao:"recente", ordem_destaque:"" };
+  }
+  function normFontes(f){
+    if (!Array.isArray(f)) return [];
+    return f.map(x => typeof x === "string" ? { label: x, url:"", tipo:"secundaria" } : {
+      label: x.label || "", url: x.url || "", tipo: x.tipo === "oficial" ? "oficial" : "secundaria"
+    });
   }
 
   function renderForm(id){
@@ -395,6 +437,7 @@
     const post = isNew ? blankPost() : Object.assign({}, POSTS.find(x => x.id === id));
     if (!post){ editingId = null; render(); return; }
     post.relacionados = normRelacionados(post.relacionados);
+    post.fontes = normFontes(post.fontes);
 
     let html = '<div class="toolbar"><h1>'+(isNew ? "Nova matéria" : "Editar matéria")+'</h1>' +
       '<button class="btn" id="btn-cancel">← Voltar pra lista</button></div>';
@@ -415,6 +458,22 @@
       ["dica-de-estudo","Dica de estudo"]
     ]);
     html += '<div class="hint">Isso decide se a matéria entra na seção "Notícias" ou "Dicas de Estudo" do menu novo (as duas ainda em construção). "Categoria" acima já controla a página "Carreiras", e "UF" já controla a página do estado (ex: Amazonas) — não precisa duplicar essa informação aqui.</div>';
+    html += '<div class="row2" style="margin-top:14px;">';
+    html += field_select("classificacao", "Destaque na home", post.classificacao || "recente", [
+      ["manchete","Manchete (carrossel do topo)"],
+      ["destaque","Destaque (card lateral \"Concursos em destaque\")"],
+      ["recente","Publicação recente (grade normal)"],
+      ["normal","Conteúdo normal (grade normal)"]
+    ]);
+    html += field_text("ordem_destaque", "Ordem dentro do destaque (1 = primeiro, opcional)", post.ordem_destaque, "", "deixe em branco pra ordenar por mais recente");
+    html += '</div>';
+    const manchCount = POSTS.filter(x => x.classificacao === "manchete" && x.id !== post.id).length;
+    const destCount = POSTS.filter(x => x.classificacao === "destaque" && x.id !== post.id).length;
+    html += '<div class="hint" id="destaque-count-hint">' +
+      '"Manchete" e "Destaque" mostram no máximo <strong>5 matérias</strong> cada um no site (o resto some da lista, mesmo marcado). Hoje: <strong>'+manchCount+' de 5</strong> em Manchete, <strong>'+destCount+' de 5</strong> em Destaque' +
+      (manchCount >= 5 || destCount >= 5 ? ' — <span style="color:var(--danger)">já no limite, marcar mais uma aqui só entra tirando outra matéria da lista (a de ordem mais alta sai primeiro).</span>' : '.') +
+      ' Sem nenhuma matéria marcada como Manchete ou Destaque, o site volta a escolher sozinho as mais recentes (comportamento de sempre) — então essa marcação é opcional, não obrigatória. "Recente" e "Normal" não mudam nada na exibição hoje (ambas caem na grade "Publicações recentes"); são só pra sua própria organização.' +
+    '</div>';
     html += '</div>';
 
     html += '<div class="form-card"><h3>Conteúdo</h3>';
@@ -428,25 +487,50 @@
     html += field_text("highlight_label", "Legenda do destaque", post.highlight_label, "", "ex: vagas previstas");
     html += '</div></div>';
 
+    html += '<div class="form-card"><h3>Transparência editorial</h3>';
+    html += '<div class="checkbox-field"><input type="checkbox" id="info_nao_oficial"' + (post.info_nao_oficial ? ' checked' : '') + '>' +
+      '<div><label for="info_nao_oficial">Contém informação ainda não oficial</label>' +
+      '<div class="hint">Marque quando a matéria traz previsão, estimativa ou dado baseado no último edital (ex: pré-edital). Isso mostra um aviso no topo da matéria no site.</div></div></div>';
+    html += field_textarea("nota_nao_oficial", "Texto do aviso (opcional)", post.nota_nao_oficial, 2);
+    html += '<div class="hint" style="margin-top:-8px;margin-bottom:16px;">Se deixar em branco, o site usa um texto padrão. Só aparece se a caixa acima estiver marcada. Ex: "Vagas e valores são estimativas com base no edital de 2022; o edital 2026 ainda não foi publicado."</div>';
+    html += '<div class="fonte-editor" id="fonte-editor">' + fonteRowsHtml(post.fontes) + '</div>';
+    html += '<button class="btn btn-sm" id="fonte-add" type="button">+ Adicionar fonte</button>';
+    html += '<div class="hint" style="margin-top:10px;">Liste as fontes usadas na matéria. Priorize fontes oficiais (Diário Oficial, site do órgão, banca organizadora, governo, tribunal, documento oficial) — elas aparecem primeiro e com o selo "Fonte oficial" no site. Fontes secundárias (portais especializados etc.) também podem entrar, só marque o tipo certo.</div>';
+    html += '</div>';
+
     html += '<div class="form-card"><h3>SEO (metadados)</h3>';
-    html += field_textarea("meta_descricao", "Descrição para buscadores (article:description)", post.meta_descricao, 2);
-    html += '<div class="hint">Aparece no resultado do Google e quando a matéria é compartilhada (WhatsApp, redes sociais). Se deixar em branco, usamos o "Resumo" acima. Ideal: até 155 caracteres.</div>';
+    html += field_textarea("meta_descricao", "Meta descrição / article:description", post.meta_descricao, 2);
+    html += '<div class="hint">Esse único campo alimenta tanto a meta description (o texto que aparece no resultado do Google) quanto a tag article:description (usada quando a matéria é compartilhada no WhatsApp e redes sociais) — o site usa o mesmo texto nas duas. Se deixar em branco, usamos o "Resumo" acima. Ideal: até 155 caracteres.</div>';
     html += '</div>';
 
     html += '<div class="form-card"><h3>Publicação</h3><div class="row3">';
     html += field_date("data_publicacao", "Data de publicação", post.data_publicacao);
     html += field_text("hora_publicacao", "Hora (opcional)", post.hora_publicacao, "", "ex: 09:40");
     html += field_text("link_original", "Link original (opcional)", post.link_original, "", "");
-    html += '</div></div>';
+    html += '</div>';
+    if (!isNew && post.updated_at){
+      html += '<div class="hint" style="margin-top:4px;">Atualizado pela última vez em ' + fmtDateTime(post.updated_at) + ' (automático, atualiza sozinho a cada edição salva — aparece pro leitor no site quando for depois da data de publicação).</div>';
+    }
+    html += '</div>';
 
     html += '<div class="form-card"><h3>Imagens</h3>';
+    html += '<div class="hint" style="margin-bottom:16px;">Três imagens diferentes, cada uma com seu próprio enquadramento — pode repetir a mesma foto nas três se não tiver versões diferentes, mas o ideal é uma foto/arte adaptada pra cada proporção abaixo.</div>';
     html += '<div class="img-upload">' +
       '<div class="img-preview" id="img-preview">' + (post.imagem_capa ? '<img src="'+esc(post.imagem_capa)+'" alt="">' : "Sem imagem") + '</div>' +
       '<div class="img-upload-controls">' +
-        field_text("imagem_capa", "Imagem de capa (banner/manchete)", post.imagem_capa, "", "cole uma URL ou envie um arquivo abaixo") +
+        field_text("imagem_capa", "Imagem principal / capa", post.imagem_capa, "", "cole uma URL ou envie um arquivo abaixo") +
         '<input type="file" id="img-file" accept="image/*" style="margin-top:6px;font-size:12.5px;">' +
-        '<div class="hint">Usada em tamanho grande quando a matéria está em destaque na manchete. Ideal: horizontal, pelo menos 1600×580px (proporção aproximada 3:1) — a imagem é cortada automaticamente pra preencher o espaço, então não precisa ser exata.</div>' +
+        '<div class="hint">Aparece no topo da matéria quando o leitor abre pra ler, e nos cards da grade "Publicações recentes". Tamanho recomendado: horizontal, pelo menos <strong>1200×675px</strong> (proporção 16:9) — a imagem é cortada automaticamente pra preencher o espaço.</div>' +
         '<div class="hint" id="img-upload-status"></div>' +
+      '</div>' +
+    '</div>';
+    html += '<div class="img-upload" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line);">' +
+      '<div class="img-preview" id="img-preview-manchete">' + (post.imagem_manchete ? '<img src="'+esc(post.imagem_manchete)+'" alt="">' : "Usa a imagem principal") + '</div>' +
+      '<div class="img-upload-controls">' +
+        field_text("imagem_manchete", "Banner da manchete (opcional)", post.imagem_manchete, "", "se deixar em branco, usamos a imagem principal") +
+        '<input type="file" id="img-file-manchete" accept="image/*" style="margin-top:6px;font-size:12.5px;">' +
+        '<div class="hint">Só é usada quando a matéria está marcada como "Manchete" (carrossel do topo da home) — veja mais acima. É um recorte bem mais largo que a imagem principal, então uma foto vertical ou muito quadrada corta mal aqui. Tamanho recomendado: horizontal bem panorâmico, pelo menos <strong>1600×685px</strong> (proporção 21:9).</div>' +
+        '<div class="hint" id="img-upload-status-manchete"></div>' +
       '</div>' +
     '</div>';
     html += '<div class="img-upload" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line);">' +
@@ -454,14 +538,19 @@
       '<div class="img-upload-controls">' +
         field_text("imagem_miniatura", "Imagem miniatura (opcional)", post.imagem_miniatura, "", "se deixar em branco, usamos a imagem de capa") +
         '<input type="file" id="img-file-thumb" accept="image/*" style="margin-top:6px;font-size:12.5px;">' +
-        '<div class="hint">Usada pequena, nos cards de "Publicações recentes" e nas listas. Ideal: quadrada, pelo menos 600×600px. Só preencha se quiser um enquadramento diferente do banner (ex: cortar mais de perto o rosto/logo).</div>' +
+        '<div class="hint">Usada bem pequena, no card do card lateral "Concursos em destaque" e nas listas do painel. Ideal: quadrada, pelo menos <strong>300×300px</strong>. Só preencha se quiser um enquadramento diferente da imagem principal (ex: cortar mais de perto o rosto/logo).</div>' +
         '<div class="hint" id="img-upload-status-thumb"></div>' +
       '</div>' +
     '</div></div>';
 
     html += '<div class="form-card"><h3>Também nessa cobertura (relacionados)</h3>';
+    html += '<div class="rel-explainer"><span class="ico">🔗</span><div>Essa lista aparece dentro da matéria, num bloco "Também nessa cobertura", pra levar o leitor a outras matérias sobre o mesmo concurso ou tema (ex: a pilar e as satélites de um mesmo edital). Busque e selecione matérias já existentes no painel, ou adicione um item avulso (título + resumo) se a matéria relacionada ainda não estiver publicada aqui.</div></div>';
+    html += '<div class="rel-search-wrap">' +
+      '<input type="text" id="rel-search" class="rel-search-input" placeholder="🔍 Buscar matéria existente por título, ID ou concurso...">' +
+      '<div class="rel-search-results" id="rel-search-results"></div>' +
+    '</div>';
     html += '<div class="rel-editor" id="rel-editor">' + relRowsHtml(post.relacionados) + '</div>';
-    html += '<button class="btn btn-sm" id="rel-add">+ Adicionar item</button></div>';
+    html += '<button class="btn btn-sm" id="rel-add">+ Adicionar item em branco</button></div>';
 
     html += '<div class="form-footer">' +
       '<button class="btn btn-primary" id="btn-save">'+(isNew?"Criar matéria":"Salvar alterações")+'</button>' +
@@ -472,8 +561,33 @@
     $("#btn-cancel").addEventListener("click", () => { editingId = null; render(); });
     $("#rel-add").addEventListener("click", () => { addRelRow(); });
     document.querySelectorAll("#rel-editor .rel-remove").forEach(bindRelRemove);
+    const relSearchInput = $("#rel-search");
+    const relSearchResults = $("#rel-search-results");
+    relSearchInput.addEventListener("input", () => {
+      const alreadyIds = Array.from(document.querySelectorAll("#rel-editor .rel-post-id")).map(el => el.value).filter(Boolean);
+      relSearchResults.innerHTML = relSearchResultsHtml(relSearchInput.value, post.id, alreadyIds);
+      relSearchResults.classList.toggle("show", !!relSearchInput.value.trim());
+      relSearchResults.querySelectorAll(".rel-search-item").forEach(item => {
+        item.addEventListener("click", () => {
+          const p = POSTS.find(x => x.id === item.dataset.id);
+          if (!p) return;
+          addRelRow({ titulo: p.titulo, resumo: p.resumo || "", post_id: p.id });
+          relSearchInput.value = "";
+          relSearchResults.innerHTML = "";
+          relSearchResults.classList.remove("show");
+        });
+      });
+    });
+    document.addEventListener("click", (e) => {
+      if (relSearchResults && !relSearchResults.contains(e.target) && e.target !== relSearchInput) relSearchResults.classList.remove("show");
+    });
+    $("#fonte-add").addEventListener("click", () => { addFonteRow(); });
+    document.querySelectorAll("#fonte-editor .fonte-remove").forEach(bindFonteRemove);
     $("#imagem_capa").addEventListener("input", () => {
       $("#img-preview").innerHTML = $("#imagem_capa").value ? '<img src="'+esc($("#imagem_capa").value)+'" alt="">' : "Sem imagem";
+    });
+    $("#imagem_manchete").addEventListener("input", () => {
+      $("#img-preview-manchete").innerHTML = $("#imagem_manchete").value ? '<img src="'+esc($("#imagem_manchete").value)+'" alt="">' : "Usa a imagem principal";
     });
     $("#imagem_miniatura").addEventListener("input", () => {
       $("#img-preview-thumb").innerHTML = $("#imagem_miniatura").value ? '<img src="'+esc($("#imagem_miniatura").value)+'" alt="">' : "Usa a de capa";
@@ -481,9 +595,20 @@
     $("#img-file").addEventListener("change", (e) => uploadImage(e.target.files[0], isNew ? $("#id").value : post.id, {
       inputId: "imagem_capa", previewId: "img-preview", statusId: "img-upload-status", emptyLabel: "Sem imagem"
     }));
+    $("#img-file-manchete").addEventListener("change", (e) => uploadImage(e.target.files[0], isNew ? $("#id").value : post.id, {
+      inputId: "imagem_manchete", previewId: "img-preview-manchete", statusId: "img-upload-status-manchete", emptyLabel: "Usa a imagem principal", pathPrefix: "manchetes/"
+    }));
     $("#img-file-thumb").addEventListener("change", (e) => uploadImage(e.target.files[0], isNew ? $("#id").value : post.id, {
       inputId: "imagem_miniatura", previewId: "img-preview-thumb", statusId: "img-upload-status-thumb", emptyLabel: "Usa a de capa"
     }));
+    $("#classificacao").addEventListener("change", () => {
+      const val = $("#classificacao").value;
+      const mc = POSTS.filter(x => x.classificacao === "manchete" && x.id !== post.id).length + (val === "manchete" ? 1 : 0);
+      const dc = POSTS.filter(x => x.classificacao === "destaque" && x.id !== post.id).length + (val === "destaque" ? 1 : 0);
+      $("#destaque-count-hint").innerHTML = '"Manchete" e "Destaque" mostram no máximo <strong>5 matérias</strong> cada um no site (o resto some da lista, mesmo marcado). Com essa escolha: <strong>'+mc+' de 5</strong> em Manchete, <strong>'+dc+' de 5</strong> em Destaque' +
+        (mc > 5 || dc > 5 ? ' — <span style="color:var(--danger)">passou do limite, a matéria de ordem mais alta fica de fora da lista.</span>' : '.') +
+        ' Sem nenhuma matéria marcada, o site volta a escolher sozinho as mais recentes. "Recente" e "Normal" não mudam nada na exibição hoje; são só pra sua própria organização.';
+    });
     $("#btn-insert-link").addEventListener("click", insertLinkIntoConteudo);
     $("#btn-save").addEventListener("click", () => savePost(isNew, post.id));
     if (isNew) $("#id").addEventListener("input", () => { $("#id").value = slugify($("#id").value); });
@@ -603,25 +728,27 @@
     return h + '</select></div>';
   }
 
-  function relRowsHtml(rows){
-    if (!rows.length) return '<p class="hint" style="margin:0 0 10px;">Nenhum item ainda. Use "+ Adicionar item" abaixo.</p>';
-    return rows.map((r,i) =>
-      '<div class="rel-row" data-idx="'+i+'"><div class="rel-fields">' +
+  function relRowInnerHtml(r){
+    r = r || { titulo:"", resumo:"", post_id:"" };
+    const linked = !!r.post_id;
+    return (linked ? '<div class="rel-linked-badge">🔗 Vinculado a matéria existente do painel</div>' : '') +
+      '<input type="hidden" class="rel-post-id" value="'+esc(r.post_id)+'">' +
+      '<div class="rel-fields">' +
         '<input type="text" class="rel-titulo" value="'+esc(r.titulo)+'" placeholder="Título do item">' +
         '<textarea class="rel-resumo" placeholder="Resumo (1-3 frases)">'+esc(r.resumo)+'</textarea>' +
-      '</div><button class="rel-remove" type="button" title="Remover">×</button></div>'
-    ).join("");
+      '</div><button class="rel-remove" type="button" title="Remover">×</button>';
   }
-  function addRelRow(){
+  function relRowsHtml(rows){
+    if (!rows.length) return '<p class="hint" style="margin:0 0 10px;">Nenhum item ainda. Busque uma matéria abaixo ou use "+ Adicionar item em branco".</p>';
+    return rows.map((r,i) => '<div class="rel-row" data-idx="'+i+'">' + relRowInnerHtml(r) + '</div>').join("");
+  }
+  function addRelRow(prefill){
     const wrap = $("#rel-editor");
     const empty = wrap.querySelector(".hint");
     if (empty) empty.remove();
     const div = document.createElement("div");
     div.className = "rel-row";
-    div.innerHTML = '<div class="rel-fields">' +
-      '<input type="text" class="rel-titulo" placeholder="Título do item">' +
-      '<textarea class="rel-resumo" placeholder="Resumo (1-3 frases)"></textarea>' +
-      '</div><button class="rel-remove" type="button" title="Remover">×</button>';
+    div.innerHTML = relRowInnerHtml(prefill);
     wrap.appendChild(div);
     bindRelRemove(div.querySelector(".rel-remove"));
   }
@@ -629,14 +756,71 @@
     btn.addEventListener("click", () => {
       const row = btn.closest(".rel-row");
       row.remove();
-      if (!$("#rel-editor").querySelector(".rel-row")) $("#rel-editor").innerHTML = '<p class="hint" style="margin:0 0 10px;">Nenhum item ainda. Use "+ Adicionar item" abaixo.</p>';
+      if (!$("#rel-editor").querySelector(".rel-row")) $("#rel-editor").innerHTML = '<p class="hint" style="margin:0 0 10px;">Nenhum item ainda. Busque uma matéria abaixo ou use "+ Adicionar item em branco".</p>';
     });
   }
   function collectRel(){
     return Array.from(document.querySelectorAll("#rel-editor .rel-row")).map(row => ({
       titulo: row.querySelector(".rel-titulo").value.trim(),
-      resumo: row.querySelector(".rel-resumo").value.trim()
+      resumo: row.querySelector(".rel-resumo").value.trim(),
+      post_id: (row.querySelector(".rel-post-id") || {}).value || ""
     })).filter(r => r.titulo);
+  }
+  function relSearchResultsHtml(q, currentId, alreadyIds){
+    q = q.trim().toLowerCase();
+    if (!q) return "";
+    const matches = POSTS.filter(p => p.id !== currentId && !alreadyIds.includes(p.id) &&
+      (p.titulo.toLowerCase().includes(q) || p.id.toLowerCase().includes(q) || (p.concurso||"").toLowerCase().includes(q))
+    ).slice(0, 8);
+    if (!matches.length) return '<div class="rel-search-empty hint">Nenhuma matéria encontrada com esse termo.</div>';
+    return matches.map(p =>
+      '<div class="rel-search-item" data-id="'+esc(p.id)+'">' +
+        '<div class="rel-search-title">'+esc(p.titulo)+'</div>' +
+        '<div class="rel-search-meta">'+esc(p.categoria)+' · '+esc(UF_NAMES[p.uf]||p.uf||"—")+'</div>' +
+      '</div>'
+    ).join("");
+  }
+
+  function fonteFieldsHtml(f){
+    f = f || { label:"", url:"", tipo:"secundaria" };
+    return '<div class="fonte-fields">' +
+      '<input type="text" class="fonte-label" value="'+esc(f.label)+'" placeholder="Nome da fonte (ex: Diário Oficial do Amazonas)">' +
+      '<input type="text" class="fonte-url" value="'+esc(f.url)+'" placeholder="Link (opcional)">' +
+      '<select class="fonte-tipo">' +
+        '<option value="oficial"'+(f.tipo==="oficial"?" selected":"")+'>Oficial</option>' +
+        '<option value="secundaria"'+(f.tipo!=="oficial"?" selected":"")+'>Secundária</option>' +
+      '</select>' +
+    '</div>';
+  }
+  function fonteRowsHtml(rows){
+    if (!rows.length) return '<p class="hint" style="margin:0 0 10px;">Nenhuma fonte ainda. Use "+ Adicionar fonte" abaixo.</p>';
+    return rows.map((f,i) =>
+      '<div class="fonte-row" data-idx="'+i+'">' + fonteFieldsHtml(f) + '<button class="rel-remove fonte-remove" type="button" title="Remover">×</button></div>'
+    ).join("");
+  }
+  function addFonteRow(){
+    const wrap = $("#fonte-editor");
+    const empty = wrap.querySelector(".hint");
+    if (empty) empty.remove();
+    const div = document.createElement("div");
+    div.className = "fonte-row";
+    div.innerHTML = fonteFieldsHtml(null) + '<button class="rel-remove fonte-remove" type="button" title="Remover">×</button>';
+    wrap.appendChild(div);
+    bindFonteRemove(div.querySelector(".fonte-remove"));
+  }
+  function bindFonteRemove(btn){
+    btn.addEventListener("click", () => {
+      const row = btn.closest(".fonte-row");
+      row.remove();
+      if (!$("#fonte-editor").querySelector(".fonte-row")) $("#fonte-editor").innerHTML = '<p class="hint" style="margin:0 0 10px;">Nenhuma fonte ainda. Use "+ Adicionar fonte" abaixo.</p>';
+    });
+  }
+  function collectFontes(){
+    return Array.from(document.querySelectorAll("#fonte-editor .fonte-row")).map(row => ({
+      label: row.querySelector(".fonte-label").value.trim(),
+      url: row.querySelector(".fonte-url").value.trim(),
+      tipo: row.querySelector(".fonte-tipo").value
+    })).filter(f => f.label || f.url);
   }
 
   async function uploadImage(file, idHint, target){
@@ -686,13 +870,19 @@
       highlight_label: $("#highlight_label").value.trim(),
       imagem_capa: $("#imagem_capa").value.trim(),
       imagem_miniatura: $("#imagem_miniatura").value.trim(),
+      imagem_manchete: $("#imagem_manchete").value.trim(),
       link_original: $("#link_original").value.trim(),
       relacionados: collectRel(),
       data_publicacao: $("#data_publicacao").value || null,
       hora_publicacao: $("#hora_publicacao").value.trim(),
       status: $("#status").value,
       tipo_conteudo: $("#tipo_conteudo").value,
-      meta_descricao: $("#meta_descricao").value.trim()
+      classificacao: $("#classificacao").value,
+      ordem_destaque: $("#ordem_destaque").value.trim() ? parseInt($("#ordem_destaque").value.trim(), 10) : null,
+      meta_descricao: $("#meta_descricao").value.trim(),
+      fontes: collectFontes(),
+      info_nao_oficial: $("#info_nao_oficial").checked,
+      nota_nao_oficial: $("#nota_nao_oficial").value.trim()
     };
 
     $("#btn-save").disabled = true;
