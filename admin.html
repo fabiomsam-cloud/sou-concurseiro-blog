@@ -126,6 +126,11 @@
   .fonte-row .fonte-fields{flex:1;display:grid;grid-template-columns:1fr 1fr 130px;gap:8px;}
   @media (max-width:640px){ .fonte-row .fonte-fields{grid-template-columns:1fr;} }
   .fonte-row input, .fonte-row select{width:100%;font-family:inherit;font-size:13px;border:1px solid var(--line);border-radius:7px;padding:8px 10px;background:var(--paper);color:var(--ink);}
+
+  .meta-editor .meta-row{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--paper-alt);}
+  .meta-row .meta-fields{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  @media (max-width:640px){ .meta-row .meta-fields{grid-template-columns:1fr;} }
+  .meta-row input{width:100%;font-family:inherit;font-size:13px;border:1px solid var(--line);border-radius:7px;padding:8px 10px;background:var(--paper);color:var(--ink);}
   .checkbox-field{display:flex;align-items:flex-start;gap:10px;margin-bottom:16px;}
   .checkbox-field input[type=checkbox]{margin-top:3px;width:16px;height:16px;accent-color:var(--accent);flex:0 0 auto;}
   .checkbox-field label{font-size:13.5px;font-weight:700;color:var(--ink);cursor:pointer;}
@@ -423,7 +428,11 @@
       relacionados: [], data_publicacao: new Date().toISOString().slice(0,10),
       hora_publicacao:"", status:"rascunho", tipo_conteudo:"concurso", meta_descricao:"",
       fontes: [], info_nao_oficial:false, nota_nao_oficial:"",
-      classificacao:"recente", ordem_destaque:"" };
+      classificacao:"recente", ordem_destaque:"", metadados: [] };
+  }
+  function normMetadados(m){
+    if (!Array.isArray(m)) return [];
+    return m.map(x => ({ property: x.property || "", content: x.content || "" }));
   }
   function normFontes(f){
     if (!Array.isArray(f)) return [];
@@ -438,6 +447,7 @@
     if (!post){ editingId = null; render(); return; }
     post.relacionados = normRelacionados(post.relacionados);
     post.fontes = normFontes(post.fontes);
+    post.metadados = normMetadados(post.metadados);
 
     let html = '<div class="toolbar"><h1>'+(isNew ? "Nova matéria" : "Editar matéria")+'</h1>' +
       '<button class="btn" id="btn-cancel">← Voltar pra lista</button></div>';
@@ -499,8 +509,11 @@
     html += '</div>';
 
     html += '<div class="form-card"><h3>SEO (metadados)</h3>';
-    html += field_textarea("meta_descricao", "Meta descrição / article:description", post.meta_descricao, 2);
+    html += field_textarea("meta_descricao", "Meta descrição", post.meta_descricao, 2);
     html += '<div class="hint">Usado no Google e ao compartilhar no WhatsApp/redes. Em branco, usa o Resumo. Ideal: até 155 caracteres.</div>';
+    html += '<div class="meta-editor" id="meta-editor" style="margin-top:16px;">' + metaRowsHtml(post.metadados) + '</div>';
+    html += '<button class="btn btn-sm" id="meta-add" type="button">+ Adicionar metadado</button>';
+    html += '<div class="hint" style="margin-top:10px;">Pra tags extras além da descrição acima — ex: Property <code>article:description</code>, Content com o texto. Property é o nome da tag, Content é o valor dela.</div>';
     html += '</div>';
 
     html += '<div class="form-card"><h3>Publicação</h3><div class="row3">';
@@ -582,6 +595,8 @@
     });
     $("#fonte-add").addEventListener("click", () => { addFonteRow(); });
     document.querySelectorAll("#fonte-editor .fonte-remove").forEach(bindFonteRemove);
+    $("#meta-add").addEventListener("click", () => { addMetaRow(); });
+    document.querySelectorAll("#meta-editor .meta-remove").forEach(bindMetaRemove);
     $("#imagem_capa").addEventListener("input", () => {
       $("#img-preview").innerHTML = $("#imagem_capa").value ? '<img src="'+esc($("#imagem_capa").value)+'" alt="">' : "Sem imagem";
     });
@@ -822,6 +837,43 @@
     })).filter(f => f.label || f.url);
   }
 
+  function metaFieldsHtml(m){
+    m = m || { property:"", content:"" };
+    return '<div class="meta-fields">' +
+      '<input type="text" class="meta-property" value="'+esc(m.property)+'" placeholder="Property (ex: article:description)">' +
+      '<input type="text" class="meta-content" value="'+esc(m.content)+'" placeholder="Content">' +
+    '</div>';
+  }
+  function metaRowsHtml(rows){
+    if (!rows.length) return '<p class="hint" style="margin:0 0 10px;">Nenhum metadado extra ainda.</p>';
+    return rows.map((m,i) =>
+      '<div class="meta-row" data-idx="'+i+'">' + metaFieldsHtml(m) + '<button class="rel-remove meta-remove" type="button" title="Remover">×</button></div>'
+    ).join("");
+  }
+  function addMetaRow(){
+    const wrap = $("#meta-editor");
+    const empty = wrap.querySelector(".hint");
+    if (empty) empty.remove();
+    const div = document.createElement("div");
+    div.className = "meta-row";
+    div.innerHTML = metaFieldsHtml(null) + '<button class="rel-remove meta-remove" type="button" title="Remover">×</button>';
+    wrap.appendChild(div);
+    bindMetaRemove(div.querySelector(".meta-remove"));
+  }
+  function bindMetaRemove(btn){
+    btn.addEventListener("click", () => {
+      const row = btn.closest(".meta-row");
+      row.remove();
+      if (!$("#meta-editor").querySelector(".meta-row")) $("#meta-editor").innerHTML = '<p class="hint" style="margin:0 0 10px;">Nenhum metadado extra ainda.</p>';
+    });
+  }
+  function collectMetadados(){
+    return Array.from(document.querySelectorAll("#meta-editor .meta-row")).map(row => ({
+      property: row.querySelector(".meta-property").value.trim(),
+      content: row.querySelector(".meta-content").value.trim()
+    })).filter(m => m.property && m.content);
+  }
+
   async function uploadImage(file, idHint, target){
     if (!file) return;
     target = target || { inputId: "imagem_capa", previewId: "img-preview", statusId: "img-upload-status", emptyLabel: "Sem imagem" };
@@ -879,6 +931,7 @@
       classificacao: $("#classificacao").value,
       ordem_destaque: $("#ordem_destaque").value.trim() ? parseInt($("#ordem_destaque").value.trim(), 10) : null,
       meta_descricao: $("#meta_descricao").value.trim(),
+      metadados: collectMetadados(),
       fontes: collectFontes(),
       info_nao_oficial: $("#info_nao_oficial").checked,
       nota_nao_oficial: $("#nota_nao_oficial").value.trim()
