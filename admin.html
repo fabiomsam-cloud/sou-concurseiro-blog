@@ -457,7 +457,7 @@
       ["noticia","Notícia"],
       ["dica-de-estudo","Dica de estudo"]
     ]);
-    html += '<div class="hint">Isso decide se a matéria entra na seção "Notícias" ou "Dicas de Estudo" do menu novo (as duas ainda em construção). "Categoria" acima já controla a página "Carreiras", e "UF" já controla a página do estado (ex: Amazonas) — não precisa duplicar essa informação aqui.</div>';
+    html += '<div class="hint">Controla em qual seção do menu (Notícias/Dicas de Estudo) a matéria entra. Não mexe em Categoria nem UF.</div>';
     html += '<div class="row2" style="margin-top:14px;">';
     html += field_select("classificacao", "Destaque na home", post.classificacao || "recente", [
       ["manchete","Manchete (carrossel do topo)"],
@@ -470,9 +470,9 @@
     const manchCount = POSTS.filter(x => x.classificacao === "manchete" && x.id !== post.id).length;
     const destCount = POSTS.filter(x => x.classificacao === "destaque" && x.id !== post.id).length;
     html += '<div class="hint" id="destaque-count-hint">' +
-      '"Manchete" e "Destaque" mostram no máximo <strong>5 matérias</strong> cada um no site (o resto some da lista, mesmo marcado). Hoje: <strong>'+manchCount+' de 5</strong> em Manchete, <strong>'+destCount+' de 5</strong> em Destaque' +
-      (manchCount >= 5 || destCount >= 5 ? ' — <span style="color:var(--danger)">já no limite, marcar mais uma aqui só entra tirando outra matéria da lista (a de ordem mais alta sai primeiro).</span>' : '.') +
-      ' Sem nenhuma matéria marcada como Manchete ou Destaque, o site volta a escolher sozinho as mais recentes (comportamento de sempre) — então essa marcação é opcional, não obrigatória. "Recente" e "Normal" não mudam nada na exibição hoje (ambas caem na grade "Publicações recentes"); são só pra sua própria organização.' +
+      'Marque Manchete/Destaque só se quiser forçar essa matéria numa das 5 vagas (senão, deixe "Publicação recente"). Hoje: <strong>'+manchCount+'/5</strong> Manchete, <strong>'+destCount+'/5</strong> Destaque.' +
+      (manchCount >= 5 || destCount >= 5 ? ' <span style="color:var(--danger)">No limite — marcar tira outra da lista.</span>' : '') +
+      ' Sem nenhuma marcada, o site usa as mais recentes automaticamente.' +
     '</div>';
     html += '</div>';
 
@@ -481,7 +481,7 @@
     html += field_textarea("resumo", "Resumo (aparece nos cards e na home)", post.resumo, 3);
     html += field_textarea("conteudo", "Corpo da matéria", post.conteudo, 14, "mono");
     html += '<button class="btn btn-sm" id="btn-insert-link" type="button" style="margin-top:8px;">🔗 Inserir link</button>';
-    html += '<div class="hint">Formato: linha começando com "## " vira subtítulo · linha começando com "&lt;" é colada como HTML puro (ex: tabela) · qualquer outra linha não-vazia vira um parágrafo. Deixe uma linha em branco entre blocos. Pra linkar um trecho, selecione o texto no corpo acima e clique em "Inserir link" (ou clique sem selecionar nada pra inserir um link novo no cursor).</div>';
+    html += '<div class="hint">"## " vira subtítulo · linha com "&lt;" é HTML puro · resto vira parágrafo. Selecione um texto e clique "Inserir link" pra linkar.</div>';
     html += '<div class="row2" style="margin-top:14px;">';
     html += field_text("highlight_num", "Número de destaque (opcional)", post.highlight_num, "", "ex: 400");
     html += field_text("highlight_label", "Legenda do destaque", post.highlight_label, "", "ex: vagas previstas");
@@ -490,17 +490,17 @@
     html += '<div class="form-card"><h3>Transparência editorial</h3>';
     html += '<div class="checkbox-field"><input type="checkbox" id="info_nao_oficial"' + (post.info_nao_oficial ? ' checked' : '') + '>' +
       '<div><label for="info_nao_oficial">Contém informação ainda não oficial</label>' +
-      '<div class="hint">Marque quando a matéria traz previsão, estimativa ou dado baseado no último edital (ex: pré-edital). Isso mostra um aviso no topo da matéria no site.</div></div></div>';
+      '<div class="hint">Marque se a matéria traz previsão/estimativa (ex: pré-edital). Mostra um aviso no topo da matéria, no site.</div></div></div>';
     html += field_textarea("nota_nao_oficial", "Texto do aviso (opcional)", post.nota_nao_oficial, 2);
-    html += '<div class="hint" style="margin-top:-8px;margin-bottom:16px;">Se deixar em branco, o site usa um texto padrão. Só aparece se a caixa acima estiver marcada. Ex: "Vagas e valores são estimativas com base no edital de 2022; o edital 2026 ainda não foi publicado."</div>';
+    html += '<div class="hint" style="margin-top:-8px;margin-bottom:16px;">Em branco, usa texto padrão. Só aparece com a caixa acima marcada.</div>';
     html += '<div class="fonte-editor" id="fonte-editor">' + fonteRowsHtml(post.fontes) + '</div>';
     html += '<button class="btn btn-sm" id="fonte-add" type="button">+ Adicionar fonte</button>';
-    html += '<div class="hint" style="margin-top:10px;">Liste as fontes usadas na matéria. Priorize fontes oficiais (Diário Oficial, site do órgão, banca organizadora, governo, tribunal, documento oficial) — elas aparecem primeiro e com o selo "Fonte oficial" no site. Fontes secundárias (portais especializados etc.) também podem entrar, só marque o tipo certo.</div>';
+    html += '<div class="hint" style="margin-top:10px;">Liste de onde tirou a informação. Marque como "Oficial" (Diário Oficial, site do órgão) sempre que der — essas aparecem primeiro, com selo "Fonte oficial" no site.</div>';
     html += '</div>';
 
     html += '<div class="form-card"><h3>SEO (metadados)</h3>';
     html += field_textarea("meta_descricao", "Meta descrição / article:description", post.meta_descricao, 2);
-    html += '<div class="hint">Esse único campo alimenta tanto a meta description (o texto que aparece no resultado do Google) quanto a tag article:description (usada quando a matéria é compartilhada no WhatsApp e redes sociais) — o site usa o mesmo texto nas duas. Se deixar em branco, usamos o "Resumo" acima. Ideal: até 155 caracteres.</div>';
+    html += '<div class="hint">Usado no Google e ao compartilhar no WhatsApp/redes. Em branco, usa o Resumo. Ideal: até 155 caracteres.</div>';
     html += '</div>';
 
     html += '<div class="form-card"><h3>Publicação</h3><div class="row3">';
@@ -514,13 +514,12 @@
     html += '</div>';
 
     html += '<div class="form-card"><h3>Imagens</h3>';
-    html += '<div class="hint" style="margin-bottom:16px;">Três imagens diferentes, cada uma com seu próprio enquadramento — pode repetir a mesma foto nas três se não tiver versões diferentes, mas o ideal é uma foto/arte adaptada pra cada proporção abaixo.</div>';
     html += '<div class="img-upload">' +
       '<div class="img-preview" id="img-preview">' + (post.imagem_capa ? '<img src="'+esc(post.imagem_capa)+'" alt="">' : "Sem imagem") + '</div>' +
       '<div class="img-upload-controls">' +
         field_text("imagem_capa", "Imagem principal / capa", post.imagem_capa, "", "cole uma URL ou envie um arquivo abaixo") +
         '<input type="file" id="img-file" accept="image/*" style="margin-top:6px;font-size:12.5px;">' +
-        '<div class="hint">Aparece no topo da matéria quando o leitor abre pra ler, e nos cards da grade "Publicações recentes". Tamanho recomendado: horizontal, pelo menos <strong>1200×675px</strong> (proporção 16:9) — a imagem é cortada automaticamente pra preencher o espaço.</div>' +
+        '<div class="hint">Topo da matéria e cards da grade. Ideal: <strong>1200×675px</strong> (16:9).</div>' +
         '<div class="hint" id="img-upload-status"></div>' +
       '</div>' +
     '</div>';
@@ -529,7 +528,7 @@
       '<div class="img-upload-controls">' +
         field_text("imagem_manchete", "Banner da manchete (opcional)", post.imagem_manchete, "", "se deixar em branco, usamos a imagem principal") +
         '<input type="file" id="img-file-manchete" accept="image/*" style="margin-top:6px;font-size:12.5px;">' +
-        '<div class="hint">Só é usada quando a matéria está marcada como "Manchete" (carrossel do topo da home) — veja mais acima. É um recorte bem mais largo que a imagem principal, então uma foto vertical ou muito quadrada corta mal aqui. Tamanho recomendado: horizontal bem panorâmico, pelo menos <strong>1600×685px</strong> (proporção 21:9).</div>' +
+        '<div class="hint">Só aparece se a matéria for "Manchete". Ideal: <strong>1600×685px</strong> (21:9), bem panorâmica.</div>' +
         '<div class="hint" id="img-upload-status-manchete"></div>' +
       '</div>' +
     '</div>';
@@ -538,13 +537,13 @@
       '<div class="img-upload-controls">' +
         field_text("imagem_miniatura", "Imagem miniatura (opcional)", post.imagem_miniatura, "", "se deixar em branco, usamos a imagem de capa") +
         '<input type="file" id="img-file-thumb" accept="image/*" style="margin-top:6px;font-size:12.5px;">' +
-        '<div class="hint">Usada bem pequena, no card do card lateral "Concursos em destaque" e nas listas do painel. Ideal: quadrada, pelo menos <strong>300×300px</strong>. Só preencha se quiser um enquadramento diferente da imagem principal (ex: cortar mais de perto o rosto/logo).</div>' +
+        '<div class="hint">Card "Concursos em destaque" e listas do painel. Ideal: <strong>300×300px</strong>, quadrada.</div>' +
         '<div class="hint" id="img-upload-status-thumb"></div>' +
       '</div>' +
     '</div></div>';
 
     html += '<div class="form-card"><h3>Também nessa cobertura (relacionados)</h3>';
-    html += '<div class="rel-explainer"><span class="ico">🔗</span><div>Essa lista aparece dentro da matéria, num bloco "Também nessa cobertura", pra levar o leitor a outras matérias sobre o mesmo concurso ou tema (ex: a pilar e as satélites de um mesmo edital). Busque e selecione matérias já existentes no painel, ou adicione um item avulso (título + resumo) se a matéria relacionada ainda não estiver publicada aqui.</div></div>';
+    html += '<div class="rel-explainer"><span class="ico">🔗</span><div>Aparece na matéria em "Também nessa cobertura", levando pra outras matérias relacionadas (ex: a pilar e as satélites do mesmo concurso). Busque abaixo e clique pra vincular; se a matéria ainda não existir no blog, use "Adicionar item em branco".</div></div>';
     html += '<div class="rel-search-wrap">' +
       '<input type="text" id="rel-search" class="rel-search-input" placeholder="🔍 Buscar matéria existente por título, ID ou concurso...">' +
       '<div class="rel-search-results" id="rel-search-results"></div>' +
@@ -605,9 +604,9 @@
       const val = $("#classificacao").value;
       const mc = POSTS.filter(x => x.classificacao === "manchete" && x.id !== post.id).length + (val === "manchete" ? 1 : 0);
       const dc = POSTS.filter(x => x.classificacao === "destaque" && x.id !== post.id).length + (val === "destaque" ? 1 : 0);
-      $("#destaque-count-hint").innerHTML = '"Manchete" e "Destaque" mostram no máximo <strong>5 matérias</strong> cada um no site (o resto some da lista, mesmo marcado). Com essa escolha: <strong>'+mc+' de 5</strong> em Manchete, <strong>'+dc+' de 5</strong> em Destaque' +
-        (mc > 5 || dc > 5 ? ' — <span style="color:var(--danger)">passou do limite, a matéria de ordem mais alta fica de fora da lista.</span>' : '.') +
-        ' Sem nenhuma matéria marcada, o site volta a escolher sozinho as mais recentes. "Recente" e "Normal" não mudam nada na exibição hoje; são só pra sua própria organização.';
+      $("#destaque-count-hint").innerHTML = 'Marque Manchete/Destaque só se quiser forçar essa matéria numa das 5 vagas (senão, deixe "Publicação recente"). Com essa escolha: <strong>'+mc+'/5</strong> Manchete, <strong>'+dc+'/5</strong> Destaque.' +
+        (mc > 5 || dc > 5 ? ' <span style="color:var(--danger)">Passou do limite — a de ordem mais alta fica de fora.</span>' : '') +
+        ' Sem nenhuma marcada, o site usa as mais recentes automaticamente.';
     });
     $("#btn-insert-link").addEventListener("click", insertLinkIntoConteudo);
     $("#btn-save").addEventListener("click", () => savePost(isNew, post.id));
@@ -621,14 +620,14 @@
       '<button class="btn btn-sm" id="btn-config-back">← Voltar</button></div>';
 
     html += '<div class="form-card"><h3>Logo</h3>';
-    html += '<div class="hint" style="margin-bottom:16px;">Envie a marca em SVG (recomendado, se adapta a qualquer tamanho) ou PNG. Cadastre as duas variantes abaixo: uma pensada para ficar sobre fundo escuro (usada no cabeçalho azul do blog) e outra para fundo claro (usada aqui no painel e em qualquer lugar futuro com fundo branco/claro). Se um campo ficar vazio, o sistema mantém a logo atual como reserva — nada quebra.</div>';
+    html += '<div class="hint" style="margin-bottom:16px;">SVG (recomendado) ou PNG. Duas versões: uma pra fundo escuro (cabeçalho do blog), outra pra fundo claro. Campo vazio mantém a logo atual.</div>';
 
     html += '<div class="img-upload">' +
       '<div class="img-preview" id="logo-preview-dark" style="background:#1D4FA3;">' + (c.logo_dark_bg_url ? '<img src="'+esc(c.logo_dark_bg_url)+'" alt="" style="object-fit:contain;">' : '<span style="color:#fff;">Sem logo</span>') + '</div>' +
       '<div class="img-upload-controls">' +
         field_text("logo_dark_bg_url", "Logo para fundo escuro (branca/silhueta)", c.logo_dark_bg_url, "", "cole uma URL ou envie um arquivo abaixo") +
         '<input type="file" id="logo-file-dark" accept="image/*,.svg,image/svg+xml" style="margin-top:6px;font-size:12.5px;">' +
-        '<div class="hint">Usada no cabeçalho do blog público, sempre sobre o azul de marca. Ideal: SVG ou PNG com fundo transparente, na cor branca.</div>' +
+        '<div class="hint">Fundo azul do cabeçalho. SVG/PNG transparente, branco.</div>' +
         '<div class="hint" id="logo-upload-status-dark"></div>' +
       '</div>' +
     '</div>';
@@ -638,7 +637,7 @@
       '<div class="img-upload-controls">' +
         field_text("logo_light_bg_url", "Logo para fundo claro (colorida)", c.logo_light_bg_url, "", "cole uma URL ou envie um arquivo abaixo") +
         '<input type="file" id="logo-file-light" accept="image/*,.svg,image/svg+xml" style="margin-top:6px;font-size:12.5px;">' +
-        '<div class="hint">Usada em fundos brancos/claros — por exemplo o cabeçalho deste painel. Ideal: SVG ou PNG com fundo transparente, na cor da marca.</div>' +
+        '<div class="hint">Fundos claros (ex: este painel). SVG/PNG transparente, cor da marca.</div>' +
         '<div class="hint" id="logo-upload-status-light"></div>' +
       '</div>' +
     '</div></div>';
