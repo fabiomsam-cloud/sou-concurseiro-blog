@@ -1184,9 +1184,12 @@
       .sort((a,b) => (a.ordem_destaque ?? 999) - (b.ordem_destaque ?? 999))
       .slice(0, 5);
     const heroSlides = hasActiveFilter ? [] : (manchetePosts.length ? manchetePosts : sorted.slice(0, 5));
-    // Exclui por id (não por posição) porque a curadoria manual pode não ser
-    // contígua no array ordenado por data.
-    const heroIds = new Set(heroSlides.map(p => p.id));
+    // Exclui da grade "Publicações recentes" só quem foi curado manualmente
+    // como Manchete — os 5 mais recentes (fallback automático quando não há
+    // curadoria) continuam aparecendo no carrossel E na grade normal, senão
+    // toda matéria nova "some" da grade até ser empurrada pra fora do
+    // carrossel por posts mais novos ainda.
+    const heroIds = new Set(manchetePosts.length ? heroSlides.map(p => p.id) : []);
     const rest = hasActiveFilter ? sorted.filter(matchesFilters) : sorted.filter(p => !heroIds.has(p.id)).filter(matchesFilters);
 
     let html = "";
