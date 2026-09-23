@@ -310,6 +310,22 @@
   .cal-toolbar .filterbar{padding:0;}
   .cal-toolbar .searchbox{background:var(--paper);}
 
+  /* ---- depoimentos em vídeo (home, antes do rodapé) ---- */
+  .depo-video-section{margin:44px 0 0;padding-top:32px;border-top:2px solid var(--line-strong);}
+  .depo-video-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:16px;}
+  @media (max-width:900px){ .depo-video-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:480px){ .depo-video-grid{grid-template-columns:1fr;} }
+  .depo-video-card{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--paper-alt);}
+  .depo-video-thumb{position:relative;aspect-ratio:16/9;cursor:pointer;background:#000;display:block;}
+  .depo-video-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .depo-video-thumb iframe{width:100%;height:100%;border:0;display:block;}
+  .depo-video-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(rgba(0,0,0,.05),rgba(0,0,0,.35));}
+  .depo-video-play span{width:52px;height:52px;border-radius:999px;background:rgba(20,20,20,.68);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;transition:transform .15s,background .15s;}
+  .depo-video-thumb:hover .depo-video-play span{transform:scale(1.08);background:var(--accent);}
+  .depo-video-info{padding:11px 13px;}
+  .depo-video-info b{display:block;font-size:13.5px;margin-bottom:2px;}
+  .depo-video-info span{font-size:11.5px;color:var(--ink-soft);}
+
   /* ---- rodapé "navegue por carreira" (home) ---- */
   .topics-foot{border-top:2px solid var(--line-strong);margin-top:12px;padding:28px 0 6px;}
   .topics-foot .searchbox{max-width:360px;margin:0 0 16px;}
@@ -777,6 +793,22 @@
     }
   ];
 
+  // Depoimentos em vídeo de alunos aprovados: reaproveitados das próprias
+  // páginas de vendas das Mentorias Elite (extraídos em 22/09/2026 — nome e
+  // concurso vêm da legenda que já aparecia em cada página de origem; vale
+  // conferir se bate antes de publicar). Curadoria de 8, priorizando
+  // variedade de carreira/concurso em vez de repetir a mesma banca.
+  const DEPO_VIDEOS = [
+    { videoId: "LbMBfEitb5s", nome: "Marcos", concurso: "Aprovado — PRF 2025" },
+    { videoId: "oBqc8spOOFE", nome: "Vinícius", concurso: "Aprovado — Polícia Federal 2025" },
+    { videoId: "gQDzvJBybfc", nome: "Thiago", concurso: "Aprovado — Polícia Militar do Amazonas" },
+    { videoId: "5ZOY6WsgNaI", nome: "Ábramo", concurso: "Aprovado — Polícia Militar" },
+    { videoId: "wTda-7b5bcA", nome: "Erick Nobre", concurso: "Aprovado — Corpo de Bombeiros Militar do Amazonas" },
+    { videoId: "lutTuHuT5dE", nome: "Davilson Ferreira", concurso: "Aprovado — Guarda Municipal de Manaus 2023" },
+    { videoId: "CDE0Mx2a4L0", nome: "Henrique", concurso: "Aprovado — SEMED-Manaus" },
+    { videoId: "jOGHnLBSulk", nome: "Ana Paula", concurso: "Aprovada — SEMED-Manaus" }
+  ];
+
   // Autoria fixa das matérias do blog (crédito de fechamento + compartilhamento).
   const AUTHOR = { nome: "Vanessa Silva", cargo: "Jornalista", iniciais: "VS" };
 
@@ -1178,6 +1210,35 @@
     '</article>';
   }
 
+  // Grade de depoimentos em vídeo (home). Cada card mostra só a miniatura
+  // do YouTube (leve, sem carregar o player) — o iframe só entra quando a
+  // pessoa clica, pra não pesar a home com 8 players ao mesmo tempo.
+  function depoVideoCardHtml(v, idx){
+    return '<div class="depo-video-card">' +
+      '<div class="depo-video-thumb" data-video-id="'+v.videoId+'" data-idx="'+idx+'">' +
+        '<img src="https://img.youtube.com/vi/'+v.videoId+'/hqdefault.jpg" alt="Depoimento em vídeo de '+v.nome+'" loading="lazy">' +
+        '<div class="depo-video-play"><span>▶</span></div>' +
+      '</div>' +
+      '<div class="depo-video-info"><b>'+v.nome+'</b><span>'+v.concurso+'</span></div>' +
+    '</div>';
+  }
+  function depoVideosHtml(){
+    if (!DEPO_VIDEOS.length) return "";
+    let html = '<div class="wrap depo-video-section">';
+    html += '<div class="section-label">Depoimentos em vídeo de alunos aprovados</div>';
+    html += '<div class="depo-video-grid">' + DEPO_VIDEOS.map(depoVideoCardHtml).join("") + '</div>';
+    html += '</div>';
+    return html;
+  }
+  function wireDepoVideos(){
+    document.querySelectorAll(".depo-video-thumb").forEach(el => {
+      el.addEventListener("click", () => {
+        const id = el.dataset.videoId;
+        el.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&rel=0" title="Depoimento em vídeo" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+      }, { once: true });
+    });
+  }
+
   function renderHome(){
     setPageMeta();
     const cats = Array.from(new Set(POSTS.map(p => p.categoria))).sort();
@@ -1293,6 +1354,13 @@
     html += sidebarHtml(sorted);
     html += '</div>';
 
+    // Depoimentos em vídeo de alunos aprovados: some com filtro/busca ativo,
+    // igual à manchete e ao bloco do Amazonas, pra não competir com os
+    // resultados que a pessoa pediu.
+    if (!hasActiveFilter){
+      html += depoVideosHtml();
+    }
+
     // Rodapé "navegue por carreira": repete busca e tópicos lá embaixo, pra
     // quem rolou a página inteira não precisar voltar ao topo pra filtrar.
     html += '<div class="topics-foot">';
@@ -1306,6 +1374,7 @@
     app.innerHTML = html;
 
     wireHeroCarousel(heroSlides.length);
+    wireDepoVideos();
     document.querySelectorAll(".card").forEach(el => {
       el.addEventListener("click", () => { location.hash = "#/materia/" + el.dataset.id; });
     });
