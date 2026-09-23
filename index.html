@@ -92,6 +92,14 @@
   .theme-toggle{margin-left:auto;display:flex;align-items:center;gap:6px;background:var(--paper-alt);border:1px solid var(--line);color:var(--ink-soft);border-radius:999px;padding:7px 13px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
   .theme-toggle:hover{border-color:var(--accent);color:var(--accent);}
   .theme-toggle .icon{font-size:13px;line-height:1;}
+  /* ---- botão flutuante "voltar ao topo" (fica fora de #app, sobrevive
+     à troca de página no hash-router; só alterna opacidade/visibilidade
+     conforme o scroll) ---- */
+  .back-to-top{position:fixed;right:20px;bottom:20px;width:46px;height:46px;border-radius:999px;background:var(--paper);border:1px solid var(--line);color:var(--ink);font-size:19px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);z-index:40;opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .18s ease,transform .18s ease,border-color .15s,color .15s;}
+  .back-to-top.show{opacity:1;visibility:visible;transform:translateY(0);}
+  .back-to-top:hover{border-color:var(--accent);color:var(--accent);}
+  @media (max-width:640px){ .back-to-top{right:14px;bottom:14px;width:42px;height:42px;font-size:17px;} }
+  @media (prefers-reduced-motion: reduce){ .back-to-top{transition:opacity .01s linear;} }
 
   /* ---- hero / manchete: carrossel de 5 destaques, arrastável ---- */
   /* Rótulo "Destaques do dia" acima do carrossel de manchetes — marca essa
@@ -433,6 +441,9 @@
   .mentoria-footer-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:40px 0 0;}
   .mentoria-footer-btn{background:none;border:1.5px solid var(--line-strong);color:var(--ink);font-weight:700;font-size:13px;cursor:pointer;padding:11px 20px;border-radius:999px;transition:background .15s,border-color .15s,transform .15s;}
   .mentoria-footer-btn:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px);}
+  .mentoria-footer-btn-accent{background:var(--accent);border-color:var(--accent);color:var(--paper);}
+  .mentoria-footer-btn-accent:hover{background:var(--accent);color:var(--paper);opacity:.92;}
+  .article-footer-actions{border-top:1px solid var(--line);padding-top:28px;margin-top:36px;}
 
   .similar-posts{margin:38px 0 0;}
   .similar-posts h3{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin:0 0 16px;}
@@ -561,6 +572,8 @@
     <p class="u">Protótipo de redesign · Sou Concurseiro e Vou Passar · dados reais das matérias já publicadas no blog</p>
   </div>
 </footer>
+
+<button id="back-to-top" class="back-to-top" type="button" aria-label="Voltar ao topo" title="Voltar ao topo">↑</button>
 
 <script>
 (function(){
@@ -1537,6 +1550,16 @@
         similar.map(cardHtml).join("") + '</div></div>';
     }
 
+    // Botões de navegação no final da matéria: voltar pro topo DESTA matéria
+    // (diferente do botão flutuante global, que existe em toda página — este
+    // aqui é o CTA explícito de quem acabou de ler até o fim), voltar pra
+    // home do blog, e conhecer as mentorias (CTA em destaque, cor de acento).
+    html += '<div class="mentoria-footer-actions article-footer-actions">';
+    html += '<button class="mentoria-footer-btn" id="article-topo" type="button">↑ Voltar para o topo da matéria</button>';
+    html += '<button class="mentoria-footer-btn" id="article-home" type="button">🏠 Voltar para a home do blog</button>';
+    html += '<button class="mentoria-footer-btn mentoria-footer-btn-accent" id="article-mentorias" type="button">🎯 Conhecer as mentorias</button>';
+    html += '</div>';
+
     html += '</div>';
     app.innerHTML = html;
     // Tabelas dentro do corpo do post vêm de HTML colado por fora e podem ter
@@ -1563,6 +1586,12 @@
     document.querySelectorAll(".similar-posts .card").forEach(el => {
       el.addEventListener("click", () => { location.hash = "#/materia/" + el.dataset.id; window.scrollTo(0,0); });
     });
+    const btnArticleTopo = $("#article-topo");
+    if (btnArticleTopo){ btnArticleTopo.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" })); }
+    const btnArticleHome = $("#article-home");
+    if (btnArticleHome){ btnArticleHome.addEventListener("click", goHomeFresh); }
+    const btnArticleMentorias = $("#article-mentorias");
+    if (btnArticleMentorias){ btnArticleMentorias.addEventListener("click", () => { location.hash = "#/mentorias"; }); }
     window.scrollTo(0,0);
   }
 
@@ -1986,6 +2015,30 @@
     applyThemeLabel();
   });
   applyThemeLabel();
+
+  // ---- botão flutuante "voltar ao topo" (site inteiro: home, matéria,
+  // mentorias, calendário...) — fica fora de #app então essa configuração
+  // roda só uma vez, não a cada troca de página.
+  (function(){
+    const btn = $("#back-to-top");
+    if (!btn) return;
+    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let ticking = false;
+    function toggleVisibility(){
+      ticking = false;
+      if (window.scrollY > 480) btn.classList.add("show");
+      else btn.classList.remove("show");
+    }
+    window.addEventListener("scroll", () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(toggleVisibility);
+    }, { passive: true });
+    btn.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+    });
+    toggleVisibility();
+  })();
 
   updateDateline();
   window.addEventListener("hashchange", route);
