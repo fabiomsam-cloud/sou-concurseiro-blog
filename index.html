@@ -106,41 +106,6 @@
      área do topo como uma zona editorial própria (curadoria do dia), não
      só mais um bloco de posts. */
   .destaques-label{display:inline-flex;align-items:center;gap:7px;background:var(--amber-soft);color:var(--amber);border:1px solid var(--amber);font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:8px 15px;border-radius:999px;margin:22px 0 14px;}
-
-  /* ---- "site vivo": selo de tempo relativo (há X min/h/dias) com bolinha
-     pulsando nas primeiras 6h — usado no banner principal, na lista de
-     destaques secundários e nos cards da grade geral. ---- */
-  .live-badge{display:inline-flex;align-items:center;gap:6px;}
-  .live-dot{width:6px;height:6px;border-radius:999px;background:var(--ink-soft);flex:0 0 auto;}
-  .live-badge.is-live .live-dot{background:#2f9e5c;}
-  @keyframes liveDotPulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(47,158,92,.45); } 70%{ box-shadow:0 0 0 6px rgba(47,158,92,0); } }
-  .live-badge.is-live .live-dot{animation:liveDotPulse 1.8s ease-out infinite;}
-  @media (prefers-reduced-motion:reduce){ .live-badge.is-live .live-dot{animation:none;} }
-
-  /* ---- destaque principal (formato "banner") + secundários (formato
-     "lista") — a notícia mais relevante do dia ganha peso visual muito
-     maior que as demais, em vez do carrossel antigo tratar todo mundo do
-     mesmo tamanho. Em telas estreitas empilha: banner em cima, lista
-     embaixo. ---- */
-  .hero-split{display:grid;grid-template-columns:1.7fr 1fr;gap:26px;align-items:start;margin:18px 0 8px;}
-  @media (max-width:860px){ .hero-split{grid-template-columns:1fr;} }
-  .hero-banner{cursor:pointer;}
-  .hero-banner-img{aspect-ratio:16/9;border-radius:16px;overflow:hidden;border:1px solid var(--line);margin:0 0 18px;background:var(--paper-alt);}
-  .hero-banner-img img{width:100%;height:100%;object-fit:cover;display:block;}
-  .hero-banner h1{font-size:clamp(22px,3.2vw,34px);line-height:1.16;margin:0 0 10px;}
-  .hero-banner .lede{font-size:15.5px;color:var(--ink-soft);max-width:62ch;margin:0 0 14px;}
-  .hero-banner .hero-meta{display:flex;align-items:center;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--ink-soft);}
-  .hero-list{display:flex;flex-direction:column;border-top:1px solid var(--line);}
-  .hero-list-item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);cursor:pointer;}
-  .hero-list-item:hover .hero-list-title{color:var(--accent);}
-  .hero-list-thumb{flex:0 0 72px;width:72px;height:72px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:var(--paper-alt);}
-  .hero-list-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
-  .hero-list-body{min-width:0;}
-  .hero-list-kicker{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 3px;}
-  .hero-list-title{font-size:13.5px;font-weight:700;line-height:1.32;margin:0 0 4px;transition:color .15s;}
-  .hero-list-meta{font-size:11px;color:var(--ink-soft);}
-  @media (max-width:640px){ .hero-banner-img{aspect-ratio:4/3;} }
-
   .hero-carousel{position:relative;}
   /* .hero-viewport recorta o conteúdo que ultrapassa a largura visível.
      O carrossel move o .hero-track inteiro via transform (translateX)
@@ -246,18 +211,6 @@
   .side-item-title{font-size:13px;font-weight:700;line-height:1.32;margin:0 0 4px;color:var(--ink);}
   .side-item:hover .side-item-title{color:var(--accent);}
   .side-item-meta{font-size:11px;color:var(--amber);font-weight:700;}
-  /* ---- "Concursos em destaque" como tabela (formato "tabela"), em vez de
-     repetir o mesmo card de lista já usado em Mais Lidas logo acima. ---- */
-  .side-table{width:100%;border-collapse:collapse;}
-  .side-table tr{cursor:pointer;border-bottom:1px solid rgba(184,121,26,.25);}
-  .side-table tr:last-child{border-bottom:none;}
-  .side-table td{padding:10px 0;vertical-align:top;}
-  .side-table td.stt-num{width:22px;font-weight:800;color:var(--amber);font-size:12px;}
-  .side-table tr:hover td.stt-num{color:var(--accent);}
-  .stt-nome{font-size:13px;font-weight:700;line-height:1.3;color:var(--ink);margin:0 0 3px;}
-  .side-table tr:hover .stt-nome{color:var(--accent);}
-  .stt-meta{font-size:10.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
-  .side-table td.stt-destaque{text-align:right;font-size:11.5px;font-weight:700;color:var(--amber);white-space:nowrap;padding-left:8px;}
   .side-promo{border-radius:14px;padding:20px;background:var(--accent);color:var(--paper);}
   .side-promo .eyebrow{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--paper);opacity:.75;font-weight:700;margin-bottom:8px;}
   .side-promo h4{margin:0 0 8px;font-size:16.5px;font-weight:800;color:var(--paper);letter-spacing:-.005em;}
@@ -298,27 +251,6 @@
   .am-destaque-more{display:flex;justify-content:center;margin:4px 0 32px;}
   .am-destaque-all{background:none;border:1.5px solid var(--accent);color:var(--accent);font-weight:700;font-size:13px;cursor:pointer;padding:11px 22px;border-radius:999px;transition:background .15s,color .15s;}
   .am-destaque-all:hover{background:var(--accent);color:#fff;}
-  /* Formato "carrossel" (rolagem horizontal nativa, com snap) pra diferenciar
-     do grid estático de "Publicações recentes" logo abaixo — arrasta/rola
-     direto no touch, e os botões ‹ › são só um atalho pro mouse/desktop. */
-  .am-carrossel-wrap{position:relative;}
-  .am-carrossel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:thin;padding-bottom:8px;margin-bottom:8px;}
-  .am-carrossel .card{flex:0 0 250px;scroll-snap-align:start;margin-bottom:0;}
-  .am-carrossel-nav{display:flex;gap:8px;}
-  .am-nav-btn{width:34px;height:34px;border-radius:999px;background:var(--paper);border:1px solid var(--line);color:var(--ink);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
-  .am-nav-btn:hover{border-color:var(--accent);color:var(--accent);}
-  @media (max-width:640px){ .am-carrossel-nav{display:none;} }
-
-  /* ---- faixa de destaque pro menu "Dicas de Estudo" (ainda "em breve",
-     mas com apelo visual próprio em vez de só um link no menu) ---- */
-  .dicas-banner{display:flex;align-items:center;gap:16px;border:1px solid var(--line);border-radius:16px;padding:20px 24px;background:var(--paper-alt);cursor:pointer;margin:8px 0 8px;transition:border-color .15s;}
-  .dicas-banner:hover{border-color:var(--accent);}
-  .dicas-banner-ico{flex:0 0 auto;width:44px;height:44px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:21px;}
-  .dicas-banner-body{flex:1;min-width:0;}
-  .dicas-banner-body h4{margin:0 0 4px;font-size:14.5px;font-weight:800;color:var(--ink);}
-  .dicas-banner-body p{margin:0;font-size:12.5px;color:var(--ink-soft);}
-  .dicas-banner-cta{flex:0 0 auto;font-size:13px;font-weight:700;color:var(--accent);white-space:nowrap;}
-  @media (max-width:560px){ .dicas-banner{flex-wrap:wrap;} .dicas-banner-cta{width:100%;} }
 
   /* ---- Concursos por Carreira (grade de ícones) ---- */
   /* margin-top/bottom só (nunca a forma abreviada "margin") — essa div
@@ -986,40 +918,6 @@
     return parseInt(parts[2],10) + " " + meses[parseInt(parts[1],10)-1] + " " + parts[0];
   }
 
-  // Sensação de "site vivo": tempo relativo ("há 12 min", "há 3h") em vez de
-  // só a data, pra quem chega na home sentir que o conteúdo é fresco — sem
-  // inventar precisão que não existe: sem hora_publicacao cadastrada, só dá
-  // pra saber que foi "hoje" (não dá pra saber SE foram 10 min ou 20h atrás).
-  // Passado de ~6 dias, volta pra data normal (relativo deixa de ajudar e
-  // só fica estranho tipo "há 340 dias"). isLive (bolinha pulsando) só nas
-  // primeiras 6h, pra não parecer "ao vivo" uma matéria de ontem.
-  function relTimeParts(p){
-    if (!p.data_publicacao) return null;
-    const todayStr = new Date().toISOString().slice(0,10);
-    if (!p.hora_publicacao){
-      if (p.data_publicacao === todayStr) return { text: "Publicado hoje", isLive: false };
-      return null;
-    }
-    const hhmm = p.hora_publicacao.length === 5 ? p.hora_publicacao + ":00" : p.hora_publicacao;
-    const then = new Date(p.data_publicacao + "T" + hhmm);
-    if (isNaN(then.getTime())) return null;
-    const diffMin = Math.floor((Date.now() - then.getTime()) / 60000);
-    if (diffMin < 0) return null;
-    if (diffMin < 1) return { text: "Publicado agora", isLive: true };
-    if (diffMin < 60) return { text: "há " + diffMin + " min", isLive: true };
-    const diffH = Math.floor(diffMin / 60);
-    if (diffH < 6) return { text: "há " + diffH + "h", isLive: true };
-    if (diffH < 24) return { text: "há " + diffH + "h", isLive: false };
-    const diffD = Math.floor(diffH / 24);
-    if (diffD < 6) return { text: "há " + diffD + (diffD === 1 ? " dia" : " dias"), isLive: false };
-    return null;
-  }
-  function relTimeHtml(p){
-    const rt = relTimeParts(p);
-    if (!rt) return fmtDate(p.data_publicacao) + (p.hora_publicacao ? " às " + p.hora_publicacao : "");
-    return '<span class="live-badge'+(rt.isLive?" is-live":"")+'"><span class="live-dot"></span>'+rt.text+'</span>';
-  }
-
   // Título e meta description mudam por página/matéria (SEO + preview ao
   // compartilhar no WhatsApp/redes). Site é uma SPA de rota por hash então
   // isso não substitui pré-renderização de verdade, mas já ajuda o Google
@@ -1305,7 +1203,7 @@
         '<div class="card-kicker">'+(tipoLabel ? tipoLabel+' · ' : '')+p.categoria+' · '+(UF_NAMES[p.uf]||p.uf)+'</div>' +
         '<h3>'+p.titulo+'</h3>' +
         '<p class="excerpt">'+p.resumo+'</p>' +
-        '<div class="card-meta"><span class="mono">'+relTimeHtml(p)+'</span>' +
+        '<div class="card-meta"><span class="mono">'+fmtDate(p.data_publicacao)+(p.hora_publicacao ? ' às '+p.hora_publicacao : '')+'</span>' +
         (p.highlight_num && p.highlight_num !== "—" ? '<span>·</span><span class="num mono">'+p.highlight_num+'</span> <span>'+p.highlight_label+'</span>' : '') +
         '</div>' +
       '</div>' +
@@ -1370,59 +1268,39 @@
 
     let html = "";
     if (heroSlides.length){
-      // Formato "banner" (a notícia principal, bem maior) + formato "lista"
-      // (as secundárias, compactas) — em vez do carrossel antigo tratar as
-      // 5 manchetes todas do mesmo tamanho. A #1 é sempre a primeira do
-      // array (curadoria manual via ordem_destaque, ou a mais recente).
-      const [heroMain, ...heroRest] = heroSlides;
-      const mainImg = heroMain.imagem_manchete || heroMain.imagem_capa;
       html += '<div class="wrap">';
       html += '<div class="destaques-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4.5 14h6l-1 8L19 10h-6l1-8z"></path></svg>Destaques do dia</div>';
-      html += '<div class="hero-split">';
-      html += '<div class="hero-banner" data-id="'+heroMain.id+'">';
-      if (mainImg){
-        html += '<div class="hero-banner-img"><img src="'+mainImg+'" alt="" decoding="async" fetchpriority="high"></div>';
+      html += '<div class="hero-carousel">';
+      // As bolinhas ficam ACIMA do banner (sinalização de que há mais
+      // destaques), e o carrossel em si vive dentro de .hero-viewport, que
+      // é o elemento que recorta a lateral — .hero-track só cuida da rolagem.
+      if (heroSlides.length > 1){
+        html += '<div class="hero-dots" id="hero-dots">' +
+          heroSlides.map((p,i) => '<button class="hero-dot'+(i===0?" active":"")+'" data-i="'+i+'" type="button" aria-label="Ir para destaque '+(i+1)+'"></button>').join("") +
+        '</div>';
       }
-      html += '<div class="hero-eyebrow">'+heroMain.categoria+' · '+(UF_NAMES[heroMain.uf]||heroMain.uf)+' · manchete</div>';
-      html += '<h1>'+heroMain.titulo+'</h1>';
-      html += '<p class="lede">'+heroMain.resumo+'</p>';
-      html += '<div class="hero-meta">' +
-        (heroMain.highlight_num && heroMain.highlight_num !== "—" ? '<div class="stat-pill"><span class="num">'+heroMain.highlight_num+'</span><span class="lbl">'+heroMain.highlight_label+'</span></div>' : '') +
-        '<span class="mono">'+relTimeHtml(heroMain)+'</span>' +
-        '<span class="read-link">Ler matéria completa →</span>' +
-      '</div>';
-      html += '</div>'; // .hero-banner
-      if (heroRest.length){
-        html += '<div class="hero-list">' + heroRest.map(p => {
-          const thumbImg = p.imagem_miniatura || p.imagem_capa;
-          return '<div class="hero-list-item" data-id="'+p.id+'">' +
-            (thumbImg ? '<div class="hero-list-thumb"><img src="'+thumbImg+'" alt="" loading="lazy"></div>' : '') +
-            '<div class="hero-list-body">' +
-              '<div class="hero-list-kicker">'+p.categoria+' · '+(UF_NAMES[p.uf]||p.uf)+'</div>' +
-              '<div class="hero-list-title">'+p.titulo+'</div>' +
-              '<div class="hero-list-meta">'+relTimeHtml(p)+'</div>' +
-            '</div>' +
-          '</div>';
-        }).join("") + '</div>';
+      html += '<div class="hero-viewport">';
+      html += '<div class="hero-track" id="hero-track">' + heroSlides.map((p,i) => heroSlideHtml(p,i)).join("") + '</div>';
+      html += '</div>';
+      if (heroSlides.length > 1){
+        html += '<button class="hero-nav prev" id="hero-prev" type="button" aria-label="Destaque anterior">‹</button>';
+        html += '<button class="hero-nav next" id="hero-next" type="button" aria-label="Próximo destaque">›</button>';
       }
-      html += '</div></div>'; // .hero-split, .wrap
+      html += '</div></div>';
     }
 
     // Concursos no Amazonas: mercado principal da SCVP, então ganha destaque
     // próprio na home (some quando há busca/filtro ativo, igual à manchete).
-    // Formato "carrossel" (rolagem horizontal), diferente do grid estático
-    // de "Publicações recentes" mais abaixo.
-    const amPosts = hasActiveFilter ? [] : sorted.filter(p => p.uf === "AM").slice(0, 8);
+    const amPosts = hasActiveFilter ? [] : sorted.filter(p => p.uf === "AM").slice(0, 4);
     if (amPosts.length){
       const amTotal = sorted.filter(p => p.uf === "AM").length;
       html += '<div class="wrap">';
       html += '<div class="am-destaque-head">';
       html += '<div class="am-destaque-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"></path></svg>Concursos no Amazonas</div>';
-      html += '<div class="am-carrossel-nav"><button class="am-nav-btn" id="am-carrossel-prev" type="button" aria-label="Rolar pra esquerda">‹</button><button class="am-nav-btn" id="am-carrossel-next" type="button" aria-label="Rolar pra direita">›</button></div>';
       html += '</div>';
-      html += '<div class="am-carrossel-wrap"><div class="am-carrossel" id="am-carrossel">' + amPosts.map(cardHtml).join("") + '</div></div>';
-      // Some o botão só se houver mais matérias do AM além das exibidas no
-      // carrossel (evita um botão "Ver todas" que levaria pra uma lista idêntica à que já está na tela).
+      html += '<div class="grid">' + amPosts.map(cardHtml).join("") + '</div>';
+      // Some o botão só se houver mais matérias do AM além das 4 em destaque
+      // (evita um botão "Ver todas" que levaria pra uma lista idêntica à que já está na tela).
       if (amTotal > amPosts.length){
         html += '<div class="am-destaque-more"><button class="am-destaque-all" id="am-ver-todos" type="button">Ver todas as oportunidades no Amazonas →</button></div>';
       }
@@ -1455,19 +1333,6 @@
       if (filterCat){
         html += '<div class="am-destaque-more"><button class="am-destaque-all" id="carreira-clear" type="button">✕ Ver todas as carreiras</button></div>';
       }
-      html += '</div>';
-    }
-
-    // Destaque visual pro menu "Dicas de Estudo" — página ainda "em breve",
-    // mas ganha uma chamada própria na home em vez de só existir escondida
-    // no menu (pedido: dar mais peso a esse formato de conteúdo rápido).
-    if (!hasActiveFilter){
-      html += '<div class="wrap">';
-      html += '<div class="dicas-banner" id="dicas-banner">' +
-        '<div class="dicas-banner-ico">📘</div>' +
-        '<div class="dicas-banner-body"><h4>Dicas de Estudo</h4><p>Técnicas, planos de estudo e materiais rápidos pra turbinar sua preparação — em breve.</p></div>' +
-        '<div class="dicas-banner-cta">Ver mais →</div>' +
-      '</div>';
       html += '</div>';
     }
 
@@ -1508,28 +1373,11 @@
 
     app.innerHTML = html;
 
+    wireHeroCarousel(heroSlides.length);
     wireDepoVideos();
     document.querySelectorAll(".card").forEach(el => {
       el.addEventListener("click", () => { location.hash = "#/materia/" + el.dataset.id; });
     });
-    // Destaque principal (banner) + secundários (lista) — o carrossel antigo
-    // de manchetes deu lugar a esse layout fixo (ver hero-split acima),
-    // então só precisa de um clique simples por item, sem arraste/timer.
-    document.querySelectorAll(".hero-banner, .hero-list-item").forEach(el => {
-      el.addEventListener("click", () => { location.hash = "#/materia/" + el.dataset.id; window.scrollTo(0,0); });
-    });
-    const amPrev = $("#am-carrossel-prev"), amNext = $("#am-carrossel-next");
-    const amTrack = $("#am-carrossel");
-    if (amTrack && amPrev && amNext){
-      const scrollByCard = () => {
-        const card = amTrack.querySelector(".card");
-        return card ? card.getBoundingClientRect().width + 14 : 260;
-      };
-      amPrev.addEventListener("click", () => amTrack.scrollBy({ left: -scrollByCard(), behavior: "smooth" }));
-      amNext.addEventListener("click", () => amTrack.scrollBy({ left: scrollByCard(), behavior: "smooth" }));
-    }
-    const dicasBanner = $("#dicas-banner");
-    if (dicasBanner) dicasBanner.addEventListener("click", () => { location.hash = "#/dicas"; });
     document.querySelectorAll(".pill").forEach(el => {
       // Pills do rodapé ("Navegue por carreira") filtram a mesma grade lá
       // em cima, mas quem clica embaixo não vê nada mudar na tela (a grade
@@ -1548,7 +1396,7 @@
     });
     const ufSel = $("#uf-select");
     if (ufSel) ufSel.addEventListener("change", () => { filterUf = ufSel.value; renderHome(); });
-    document.querySelectorAll(".side-item, .side-table tr").forEach(el => {
+    document.querySelectorAll(".side-item").forEach(el => {
       el.addEventListener("click", () => { location.hash = "#/materia/" + el.dataset.id; });
     });
     const sideCal = $("#side-cal");
@@ -1641,18 +1489,17 @@
       .sort((a,b) => (a.ordem_destaque ?? 999) - (b.ordem_destaque ?? 999))
       .slice(0, 5);
     const destaqueList = destaquePosts.length ? destaquePosts : sortedPosts.slice(0, 5);
-    // Formato "tabela" — diferencia de Mais Lidas (ranking) logo acima, que
-    // já cobre o formato de lista numerada.
     html += '<div class="side-card"><h4>Concursos em destaque</h4>';
-    html += '<table class="side-table"><tbody>';
     destaqueList.forEach((p, i) => {
-      html += '<tr data-id="'+p.id+'">' +
-        '<td class="stt-num mono">'+(i+1)+'</td>' +
-        '<td><div class="stt-nome">'+p.titulo+'</div><div class="stt-meta">'+(UF_NAMES[p.uf]||p.uf)+' · '+p.categoria+'</div></td>' +
-        '<td class="stt-destaque mono">'+(p.highlight_num && p.highlight_num !== "—" ? p.highlight_num : '')+'</td>' +
-      '</tr>';
+      html += '<div class="side-item" data-id="'+p.id+'">' +
+        '<span class="side-rank mono">'+(i+1)+'</span>' +
+        '<div class="side-item-body">' +
+          '<div class="side-item-title">'+p.titulo+'</div>' +
+          (p.highlight_num && p.highlight_num !== "—" ? '<div class="side-item-meta mono">'+p.highlight_num+' · '+p.highlight_label+'</div>' : '') +
+        '</div>' +
+      '</div>';
     });
-    html += '</tbody></table></div>';
+    html += '</div>';
 
     // Nada de promo de produto aqui: um card de venda de um concurso
     // específico (ex: TJ-AM) não faz sentido pra quem tá vendo a home —
