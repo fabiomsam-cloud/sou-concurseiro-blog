@@ -89,6 +89,19 @@
   .post-actions{flex:0 0 auto;display:flex;gap:8px;}
   .empty{padding:50px 10px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
 
+  /* ---- métricas comerciais ---- */
+  .metric-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+  .metric-tab{font-size:12.5px;font-weight:700;padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);cursor:pointer;}
+  .metric-tab.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
+  .metric-row{display:flex;align-items:center;gap:14px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-bottom:8px;}
+  .metric-rank{flex:0 0 auto;width:28px;height:28px;border-radius:999px;background:var(--amber-soft);color:var(--amber);font-weight:800;font-size:12.5px;display:flex;align-items:center;justify-content:center;}
+  .metric-body{flex:1 1 auto;min-width:0;}
+  .metric-title{font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .metric-sub{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .metric-count{flex:0 0 auto;text-align:right;}
+  .metric-count .num{font-size:20px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;}
+  .metric-count .lbl{font-size:10.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;}
+
   /* ---- form ---- */
   .form-card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:18px;}
   .form-card h3{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--line);}
@@ -167,6 +180,7 @@
       </button>
       <span id="logged-in-actions" hidden>
         <a class="btn btn-sm" href="index.html" target="_blank" rel="noopener">Ver blog ↗</a>
+        <button class="btn btn-sm" id="btn-metrics" type="button">📊 Métricas comerciais</button>
         <button class="btn btn-sm" id="btn-config" type="button">Identidade visual</button>
         <button class="btn btn-sm" id="btn-logout" type="button">Sair</button>
       </span>
@@ -230,6 +244,7 @@
   let POSTS = [];
   let editingId = null; // null = lista; "__new__" = criando; senão = id em edição
   let showConfig = false; // true = tela de Identidade visual
+  let showMetrics = false; // true = tela de Métricas comerciais
   let CONFIG = {};        // linha atual de public.blog_config (id="default")
 
   // ---------------------------------------------------------------- sessão
@@ -368,6 +383,7 @@
     $("#logged-in-actions").hidden = !loggedIn;
     if (!loggedIn) return;
     if (showConfig) renderConfig();
+    else if (showMetrics) renderMetrics();
     else if (editingId) renderForm(editingId);
     else renderList();
   }
@@ -707,6 +723,98 @@
     $("#btn-config-save").addEventListener("click", saveConfig);
   }
 
+  // ------------------------------------------------------- métricas comerciais
+  // Cliques reais em CTAs de mentoria (banner dentro da matéria + vitrine),
+  // gravados pelo template.html em public.product_clicks a cada clique. A
+  // leitura aqui passa pelas funções RPC get_top_product_clicks /
+  // get_top_product_clicks_by_mentoria (mesmo padrão de get_top_viewed_posts
+  // já usado pra "Mais Lidas" no blog) — a tabela crua não é legível direto.
+  let metricsPeriod = "30"; // "7" | "30" | "all"
+  const METRICS_PERIOD_LABEL = { "7": "Últimos 7 dias", "30": "Últimos 30 dias", "all": "Desde o início" };
+
+  function metricsSinceIso(period){
+    if (period === "all") return "2000-01-01T00:00:00.000Z";
+    const d = new Date();
+    d.setDate(d.getDate() - parseInt(period, 10));
+    return d.toISOString();
+  }
+
+  function renderMetrics(){
+    let html = '<div class="toolbar"><h1>Métricas comerciais</h1>' +
+      '<button class="btn btn-sm" id="btn-metrics-back">← Voltar</button></div>';
+    html += '<div class="hint" style="margin:-10px 0 16px;">Ranking real de cliques nos botões de mentoria (banner dentro da matéria e cards da vitrine). Cada clique é gravado no momento em que acontece — sem estimativa.</div>';
+    html += '<div class="metric-tabs">' + ["7","30","all"].map(p =>
+      '<button class="metric-tab'+(metricsPeriod===p?" active":"")+'" data-period="'+p+'" type="button">'+METRICS_PERIOD_LABEL[p]+'</button>'
+    ).join("") + '</div>';
+    html += '<div class="form-card"><h3>Matérias que mais geram interesse comercial</h3><div id="metrics-by-post">Carregando…</div></div>';
+    html += '<div class="form-card"><h3>Mentorias com mais cliques (soma matéria + vitrine)</h3><div id="metrics-by-mentoria">Carregando…</div></div>';
+
+    $("#main-app").innerHTML = html;
+    $("#btn-metrics-back").addEventListener("click", () => { showMetrics = false; render(); });
+    document.querySelectorAll(".metric-tab").forEach(btn => {
+      btn.addEventListener("click", () => { metricsPeriod = btn.dataset.period; renderMetrics(); });
+    });
+    loadMetrics();
+  }
+
+  async function loadMetrics(){
+    const since = metricsSinceIso(metricsPeriod);
+    try {
+      const [resPost, resMentoria] = await Promise.all([
+        authFetch("/rest/v1/rpc/get_top_product_clicks", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ since: since, limit_n: 15 })
+        }),
+        authFetch("/rest/v1/rpc/get_top_product_clicks_by_mentoria", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ since: since, limit_n: 15 })
+        })
+      ]);
+      paintMetricsByPost(resPost.ok ? await resPost.json() : []);
+      paintMetricsByMentoria(resMentoria.ok ? await resMentoria.json() : []);
+    } catch (e){
+      const elP = $("#metrics-by-post"); if (elP) elP.innerHTML = '<div class="empty">Não foi possível carregar agora. Tente de novo em instantes.</div>';
+      const elM = $("#metrics-by-mentoria"); if (elM) elM.innerHTML = "";
+    }
+  }
+
+  function paintMetricsByPost(rows){
+    const el = $("#metrics-by-post");
+    if (!el) return;
+    if (!rows.length){
+      el.innerHTML = '<div class="empty">Nenhum clique registrado nesse período ainda.</div>';
+      return;
+    }
+    el.innerHTML = rows.map((r, i) => {
+      const p = POSTS.find(x => x.id === r.post_id);
+      const titulo = p ? p.titulo : r.post_id;
+      const sub = p ? (esc(p.categoria) + (p.uf ? " · " + esc(UF_NAMES[p.uf] || p.uf) : "")) : "matéria não encontrada (pode ter sido excluída)";
+      return '<div class="metric-row">' +
+        '<div class="metric-rank">'+(i+1)+'</div>' +
+        '<div class="metric-body"><div class="metric-title">'+esc(titulo)+'</div><div class="metric-sub">'+sub+'</div></div>' +
+        '<div class="metric-count"><div class="num mono">'+r.clicks+'</div><div class="lbl">cliques</div></div>' +
+      '</div>';
+    }).join("");
+  }
+
+  function paintMetricsByMentoria(rows){
+    const el = $("#metrics-by-mentoria");
+    if (!el) return;
+    if (!rows.length){
+      el.innerHTML = '<div class="empty">Nenhum clique registrado nesse período ainda.</div>';
+      return;
+    }
+    el.innerHTML = rows.map((r, i) =>
+      '<div class="metric-row">' +
+        '<div class="metric-rank">'+(i+1)+'</div>' +
+        '<div class="metric-body"><div class="metric-title">'+esc(r.mentoria_nome)+'</div></div>' +
+        '<div class="metric-count"><div class="num mono">'+r.clicks+'</div><div class="lbl">cliques</div></div>' +
+      '</div>'
+    ).join("");
+  }
+
   async function saveConfig(){
     const statusEl = $("#config-save-status");
     const payload = {
@@ -1024,6 +1132,7 @@
   $("#login-password").addEventListener("keydown", (e) => { if (e.key === "Enter") $("#btn-login").click(); });
   $("#btn-logout").addEventListener("click", logout);
   $("#btn-config").addEventListener("click", () => { showConfig = true; editingId = null; render(); });
+  $("#btn-metrics").addEventListener("click", () => { showMetrics = true; editingId = null; render(); });
 
   function applyThemeLabel(){
     const isDark = document.documentElement.getAttribute("data-theme") === "dark" ||
