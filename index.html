@@ -177,6 +177,10 @@
 
   /* ---- grid / seal cards ---- */
   .section-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;border-bottom:1px solid var(--line);padding-bottom:9px;margin-bottom:18px;}
+  .section-label-row{display:flex;align-items:baseline;justify-content:space-between;gap:14px;border-bottom:1px solid var(--line);padding-bottom:9px;margin-bottom:18px;flex-wrap:wrap;}
+  .section-label-row .section-label{border:0;padding:0;margin:0;}
+  .section-link{font-size:12.5px;font-weight:700;color:var(--accent);text-decoration:none;white-space:nowrap;}
+  .section-link:hover{text-decoration:underline;}
   .section-label-lg{font-size:22px;letter-spacing:-.01em;text-transform:none;color:var(--ink);font-weight:800;border-bottom:2px solid var(--accent);padding-bottom:12px;margin-bottom:20px;}
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:40px;}
   @media (max-width:720px){ .grid{grid-template-columns:1fr;} }
@@ -572,6 +576,7 @@
       <a class="home-link" id="nav-calendario">Concursos por Estado</a>
       <a class="home-link" id="nav-dicas">Dicas de Estudo</a>
       <a class="home-link" id="nav-mentorias">Mentorias</a>
+      <a class="home-link" id="nav-aprovados">Aprovados</a>
     </div>
     <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Alternar modo claro ou escuro">
       <span class="icon" id="theme-icon">☾</span><span id="theme-label">Modo escuro</span>
@@ -804,16 +809,26 @@
   // concurso vêm da legenda que já aparecia em cada página de origem; vale
   // conferir se bate antes de publicar). Curadoria de 8, priorizando
   // variedade de carreira/concurso em vez de repetir a mesma banca.
-  const DEPO_VIDEOS = [
-    { videoId: "LbMBfEitb5s", nome: "Marcos", concurso: "Aprovado — PRF 2025" },
-    { videoId: "oBqc8spOOFE", nome: "Vinícius", concurso: "Aprovado — Polícia Federal 2025" },
-    { videoId: "gQDzvJBybfc", nome: "Thiago", concurso: "Aprovado — Polícia Militar do Amazonas" },
-    { videoId: "5ZOY6WsgNaI", nome: "Ábramo", concurso: "Aprovado — Polícia Militar" },
-    { videoId: "wTda-7b5bcA", nome: "Erick Nobre", concurso: "Aprovado — Corpo de Bombeiros Militar do Amazonas" },
-    { videoId: "lutTuHuT5dE", nome: "Davilson Ferreira", concurso: "Aprovado — Guarda Municipal de Manaus 2023" },
-    { videoId: "CDE0Mx2a4L0", nome: "Henrique", concurso: "Aprovado — SEMED-Manaus" },
-    { videoId: "jOGHnLBSulk", nome: "Ana Paula", concurso: "Aprovada — SEMED-Manaus" }
-  ];
+  // Depoimentos (prova social) agora vêm do Supabase (tabela depoimentos),
+  // não mais de uma lista fixa no código — assim ela cadastra/edita pelo
+  // admin sem precisar de um novo deploy. mentoria_nome liga o depoimento a
+  // um produto específico (mesmo valor de MENTORIAS.nome); fica nulo quando
+  // é um depoimento geral, sem produto vinculado.
+  async function fetchDepoimentos(mentoriaNome, limitN){
+    try {
+      const ctrl = new AbortController();
+      const timeout = setTimeout(() => ctrl.abort(), 4000);
+      let url = SUPABASE_URL + "/rest/v1/depoimentos?select=*&status=eq.ativo&order=ordem.asc.nullslast,id.asc&limit=" + limitN;
+      if (mentoriaNome) url += "&mentoria_nome=eq." + encodeURIComponent(mentoriaNome);
+      const res = await fetch(url, {
+        headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY },
+        signal: ctrl.signal
+      });
+      clearTimeout(timeout);
+      if (!res.ok) return [];
+      return await res.json();
+    } catch (e){ return []; }
+  }
 
   // Autoria fixa das matérias do blog (crédito de fechamento + compartilhamento).
   const AUTHOR = { nome: "Vanessa Silva", cargo: "Jornalista", iniciais: "VS" };
@@ -1219,30 +1234,52 @@
   // Grade de depoimentos em vídeo (home). Cada card mostra só a miniatura
   // do YouTube (leve, sem carregar o player) — o iframe só entra quando a
   // pessoa clica, pra não pesar a home com 8 players ao mesmo tempo.
-  function depoVideoCardHtml(v, idx){
+  function depoVideoCardHtml(v){
     return '<div class="depo-video-card">' +
-      '<div class="depo-video-thumb" data-video-id="'+v.videoId+'" data-idx="'+idx+'">' +
-        '<img src="https://img.youtube.com/vi/'+v.videoId+'/hqdefault.jpg" alt="Depoimento em vídeo de '+v.nome+'" loading="lazy">' +
+      '<div class="depo-video-thumb" data-video-id="'+v.youtube_id+'">' +
+        '<img src="https://img.youtube.com/vi/'+v.youtube_id+'/hqdefault.jpg" alt="Depoimento em vídeo de '+v.aluno_nome+'" loading="lazy">' +
         '<div class="depo-video-play"><span>▶</span></div>' +
       '</div>' +
-      '<div class="depo-video-info"><b>'+v.nome+'</b><span>'+v.concurso+'</span></div>' +
+      '<div class="depo-video-info"><b>'+v.aluno_nome+'</b><span>'+(v.aluno_contexto||"")+'</span></div>' +
     '</div>';
   }
+  // Estado "carregando" (null) é diferente de "carregou e não tem nada"
+  // ([]) — mesmo espírito honesto do Mais Lidas: nunca mostra vazio antes
+  // da resposta do Supabase chegar.
+  function depoVideosListHtml(rows){
+    if (rows === null) return '<div class="ml-empty">Carregando…</div>';
+    if (!rows.length) return '<div class="ml-empty">Em breve: depoimentos em vídeo de alunos aprovados.</div>';
+    return '<div class="depo-video-grid">' + rows.map(depoVideoCardHtml).join("") + '</div>';
+  }
   function depoVideosHtml(){
-    if (!DEPO_VIDEOS.length) return "";
     let html = '<div class="wrap depo-video-section">';
-    html += '<div class="section-label">Depoimentos em vídeo de alunos aprovados</div>';
-    html += '<div class="depo-video-grid">' + DEPO_VIDEOS.map(depoVideoCardHtml).join("") + '</div>';
+    html += '<div class="section-label-row"><div class="section-label">Depoimentos em vídeo de alunos aprovados</div><a class="section-link" id="depo-ver-todos" href="#/aprovados">Ver todos os aprovados →</a></div>';
+    html += '<div id="depo-video-list">' + depoVideosListHtml(depoCache) + '</div>';
     html += '</div>';
     return html;
   }
-  function wireDepoVideos(){
-    document.querySelectorAll(".depo-video-thumb").forEach(el => {
+  function wireDepoVideoThumbs(scopeSelector){
+    document.querySelectorAll(scopeSelector + " .depo-video-thumb").forEach(el => {
       el.addEventListener("click", () => {
         const id = el.dataset.videoId;
         el.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&rel=0" title="Depoimento em vídeo" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
       }, { once: true });
     });
+  }
+  function wireDepoVideos(){
+    wireDepoVideoThumbs(".depo-video-section");
+  }
+  // Prévia da home: carrega uma vez no início (fora do ciclo de re-render
+  // da home) e só repinta o pedacinho #depo-video-list quando a resposta
+  // chega — igual ao padrão do Mais Lidas (loadMaisLidas/paintMaisLidas).
+  let depoCache = null;
+  async function loadDepoimentosHome(){
+    depoCache = await fetchDepoimentos(null, 8);
+    const el = $("#depo-video-list");
+    if (el){
+      el.innerHTML = depoVideosListHtml(depoCache);
+      wireDepoVideoThumbs(".depo-video-section");
+    }
   }
 
   function renderHome(){
@@ -1847,6 +1884,53 @@
     window.scrollTo(0,0);
   }
 
+  // ---- Aprovados (#/aprovados): mural único de depoimentos em vídeo, sem
+  // filtro por mentoria/produto — pedido dela: filtrar por concurso passava
+  // sensação de "poucos aprovados" pra quem tem poucos depoimentos
+  // cadastrados ainda. A ideia agora é o oposto, um mural geral que
+  // reforça volume ("N aprovados"), não um recorte por produto.
+  let aprovadosCache = null;
+  async function renderAprovados(){
+    clearHeroAutoTimer();
+    setPageMeta("Aprovados | Sou Concurseiro", "Depoimentos em vídeo de alunos aprovados com o Sou Concurseiro e Vou Passar.");
+    let html = '<div class="wrap cal-page">';
+    html += '<div class="hero-eyebrow">Prova social</div>';
+    html += '<h1 style="font-size:clamp(24px,3.6vw,34px);margin:0 0 10px;">Aprovados</h1>';
+    html += '<p class="lede" style="margin:0 0 18px;max-width:62ch;">Depoimentos reais de quem estudou com a gente e foi aprovado.</p>';
+    html += '<div id="aprovados-stat"></div>';
+    html += '<div id="aprovados-list">' + (aprovadosCache === null ? '<div class="ml-empty">Carregando…</div>' : '') + '</div>';
+    html += '<div class="mentoria-footer-actions">';
+    html += '<button class="mentoria-footer-btn" id="aprovados-inicio" type="button">🏠 Voltar para o início</button>';
+    html += '</div>';
+    html += '</div>';
+    app.innerHTML = html;
+    const btnInicio = $("#aprovados-inicio");
+    if (btnInicio){ btnInicio.addEventListener("click", goHomeFresh); }
+    window.scrollTo(0,0);
+
+    if (aprovadosCache === null){
+      aprovadosCache = await fetchDepoimentos(null, 300);
+    }
+    paintAprovados();
+  }
+  function paintAprovados(){
+    const listEl = $("#aprovados-list");
+    if (!listEl) return; // saiu da página antes da resposta do Supabase chegar
+    const statEl = $("#aprovados-stat");
+    const rows = aprovadosCache || [];
+
+    if (statEl){
+      statEl.innerHTML = rows.length
+        ? '<div class="hero-meta" style="margin-bottom:20px;"><div class="stat-pill"><span class="num">'+rows.length+'</span><span class="lbl">'+(rows.length===1?"aprovado contando a história":"aprovados contando a história")+'</span></div></div>'
+        : '';
+    }
+
+    listEl.innerHTML = rows.length
+      ? '<div class="depo-video-grid">' + rows.map(depoVideoCardHtml).join("") + '</div>'
+      : '<div class="empty">Ainda não temos depoimentos cadastrados. Volte em breve.</div>';
+    wireDepoVideoThumbs("#aprovados-list");
+  }
+
   const COMING_SOON_PAGES = {
     dicas: { eyebrow: "Portal de concursos", titulo: "Dicas de Estudo", texto: "Em breve: técnicas de estudo, planos e materiais pra turbinar sua preparação." }
   };
@@ -1869,13 +1953,15 @@
     const h = location.hash || "#/";
     const m = /^#\/materia\/(.+)$/.exec(h);
     const comingSoonMatch = /^#\/(dicas)$/.exec(h);
-    $("#nav-home").classList.toggle("active", !m && h !== "#/calendario" && h !== "#/mentorias" && !comingSoonMatch);
+    $("#nav-home").classList.toggle("active", !m && h !== "#/calendario" && h !== "#/mentorias" && h !== "#/aprovados" && !comingSoonMatch);
     $("#nav-calendario").classList.toggle("active", h === "#/calendario");
     $("#nav-dicas").classList.toggle("active", h === "#/dicas");
     $("#nav-mentorias").classList.toggle("active", h === "#/mentorias");
+    $("#nav-aprovados").classList.toggle("active", h === "#/aprovados");
     if (m) renderArticle(decodeURIComponent(m[1]));
     else if (h === "#/calendario") renderConcursosPorEstado(true);
     else if (h === "#/mentorias") renderMentorias();
+    else if (h === "#/aprovados") renderAprovados();
     else if (comingSoonMatch) renderComingSoon(comingSoonMatch[1]);
     else renderHome();
   }
@@ -2090,6 +2176,7 @@
   $("#nav-calendario").addEventListener("click", () => { location.hash = "#/calendario"; });
   $("#nav-dicas").addEventListener("click", () => { location.hash = "#/dicas"; });
   $("#nav-mentorias").addEventListener("click", () => { location.hash = "#/mentorias"; });
+  $("#nav-aprovados").addEventListener("click", () => { location.hash = "#/aprovados"; });
   $("#search").addEventListener("input", (e) => { query = e.target.value.trim(); renderHome(); });
   $("#brand-hook").addEventListener("click", () => {
     const id = $("#brand-hook").dataset.id;
@@ -2153,6 +2240,7 @@
   updateDateline();
   window.addEventListener("hashchange", route);
   loadPosts().then(loadMaisLidas);
+  loadDepoimentosHome();
   loadBrandConfig();
 })();
 </script>
