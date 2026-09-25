@@ -181,6 +181,7 @@
       <span id="logged-in-actions" hidden>
         <a class="btn btn-sm" href="index.html" target="_blank" rel="noopener">Ver blog ↗</a>
         <button class="btn btn-sm" id="btn-metrics" type="button">📊 Métricas comerciais</button>
+        <button class="btn btn-sm" id="btn-depoimentos" type="button">🎬 Depoimentos</button>
         <button class="btn btn-sm" id="btn-config" type="button">Identidade visual</button>
         <button class="btn btn-sm" id="btn-logout" type="button">Sair</button>
       </span>
@@ -384,6 +385,7 @@
     if (!loggedIn) return;
     if (showConfig) renderConfig();
     else if (showMetrics) renderMetrics();
+    else if (showDepoimentos) renderDepoimentos();
     else if (editingId) renderForm(editingId);
     else renderList();
   }
@@ -740,13 +742,14 @@
   }
 
   function renderMetrics(){
-    let html = '<div class="toolbar"><h1>Métricas comerciais</h1>' +
+    let html = '<div class="toolbar"><h1>Métricas do blog</h1>' +
       '<button class="btn btn-sm" id="btn-metrics-back">← Voltar</button></div>';
-    html += '<div class="hint" style="margin:-10px 0 16px;">Ranking real de cliques nos botões de mentoria (banner dentro da matéria e cards da vitrine). Cada clique é gravado no momento em que acontece — sem estimativa.</div>';
+    html += '<div class="hint" style="margin:-10px 0 16px;">Dado real, gravado no momento em que acontece — sem estimativa. "Mais lidas" cobre toda matéria (com ou sem mentoria); os rankings de clique só valem pra quem tem CTA de mentoria vinculado.</div>';
     html += '<div class="metric-tabs">' + ["7","30","all"].map(p =>
       '<button class="metric-tab'+(metricsPeriod===p?" active":"")+'" data-period="'+p+'" type="button">'+METRICS_PERIOD_LABEL[p]+'</button>'
     ).join("") + '</div>';
-    html += '<div class="form-card"><h3>Matérias que mais geram interesse comercial</h3><div id="metrics-by-post">Carregando…</div></div>';
+    html += '<div class="form-card"><h3>Matérias mais lidas</h3><div id="metrics-by-views">Carregando…</div></div>';
+    html += '<div class="form-card"><h3>Matérias que mais geram interesse comercial (clique em mentoria)</h3><div id="metrics-by-post">Carregando…</div></div>';
     html += '<div class="form-card"><h3>Mentorias com mais cliques (soma matéria + vitrine)</h3><div id="metrics-by-mentoria">Carregando…</div></div>';
 
     $("#main-app").innerHTML = html;
@@ -760,7 +763,12 @@
   async function loadMetrics(){
     const since = metricsSinceIso(metricsPeriod);
     try {
-      const [resPost, resMentoria] = await Promise.all([
+      const [resViews, resPost, resMentoria] = await Promise.all([
+        authFetch("/rest/v1/rpc/get_top_viewed_posts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ since: since, limit_n: 15 })
+        }),
         authFetch("/rest/v1/rpc/get_top_product_clicks", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -772,12 +780,33 @@
           body: JSON.stringify({ since: since, limit_n: 15 })
         })
       ]);
+      paintMetricsByViews(resViews.ok ? await resViews.json() : []);
       paintMetricsByPost(resPost.ok ? await resPost.json() : []);
       paintMetricsByMentoria(resMentoria.ok ? await resMentoria.json() : []);
     } catch (e){
-      const elP = $("#metrics-by-post"); if (elP) elP.innerHTML = '<div class="empty">Não foi possível carregar agora. Tente de novo em instantes.</div>';
+      const elV = $("#metrics-by-views"); if (elV) elV.innerHTML = '<div class="empty">Não foi possível carregar agora. Tente de novo em instantes.</div>';
+      const elP = $("#metrics-by-post"); if (elP) elP.innerHTML = "";
       const elM = $("#metrics-by-mentoria"); if (elM) elM.innerHTML = "";
     }
+  }
+
+  function paintMetricsByViews(rows){
+    const el = $("#metrics-by-views");
+    if (!el) return;
+    if (!rows.length){
+      el.innerHTML = '<div class="empty">Nenhuma leitura registrada nesse período ainda.</div>';
+      return;
+    }
+    el.innerHTML = rows.map((r, i) => {
+      const p = POSTS.find(x => x.id === r.post_id);
+      const titulo = p ? p.titulo : r.post_id;
+      const sub = p ? (esc(p.categoria) + (p.uf ? " · " + esc(UF_NAMES[p.uf] || p.uf) : "")) : "matéria não encontrada (pode ter sido excluída)";
+      return '<div class="metric-row">' +
+        '<div class="metric-rank">'+(i+1)+'</div>' +
+        '<div class="metric-body"><div class="metric-title">'+esc(titulo)+'</div><div class="metric-sub">'+sub+'</div></div>' +
+        '<div class="metric-count"><div class="num mono">'+r.views+'</div><div class="lbl">leituras</div></div>' +
+      '</div>';
+    }).join("");
   }
 
   function paintMetricsByPost(rows){
@@ -813,6 +842,156 @@
         '<div class="metric-count"><div class="num mono">'+r.clicks+'</div><div class="lbl">cliques</div></div>' +
       '</div>'
     ).join("");
+  }
+
+  // ------------------------------------------------------------ depoimentos
+  // Prova social ligada a uma mentoria específica (ou geral, sem produto).
+  // Ela cadastra o ID do vídeo do YouTube por aqui; o público lê pelo
+  // template.html (tabela depoimentos, RLS: anon só vê status=ativo).
+  let showDepoimentos = false; // true = tela de Depoimentos
+  let DEPOIMENTOS = [];
+  let depoEditingId = null; // null = lista; "__new__" = criando; senão = id em edição
+
+  async function loadDepoimentos(){
+    const res = await authFetch("/rest/v1/depoimentos?select=*&order=ordem.asc.nullslast,id.asc");
+    if (!res.ok) throw new Error("Não foi possível carregar os depoimentos.");
+    DEPOIMENTOS = await res.json();
+  }
+
+  function renderDepoimentos(){
+    if (depoEditingId) renderDepoimentoForm(depoEditingId);
+    else renderDepoimentosList();
+  }
+
+  function renderDepoimentosList(){
+    let html = '<div class="toolbar"><h1>Depoimentos ('+DEPOIMENTOS.length+')</h1>' +
+      '<button class="btn btn-sm" id="btn-depo-back">← Voltar</button>' +
+      '<button class="btn btn-primary" id="btn-depo-new">+ Novo depoimento</button></div>';
+    html += '<div class="hint" style="margin:-8px 0 16px;">Aparecem no blog em "Aprovados" e numa prévia na home. Ligue a uma mentoria pra esse depoimento só contar pra prova social daquele produto, ou deixe geral.</div>';
+
+    if (!DEPOIMENTOS.length){
+      html += '<div class="empty">Nenhum depoimento cadastrado ainda.</div>';
+    } else {
+      DEPOIMENTOS.forEach(d => {
+        const isAtivo = d.status === "ativo";
+        html += '<div class="post-row">' +
+          '<div class="post-thumb">' + (d.youtube_id ? '<img src="https://img.youtube.com/vi/'+esc(d.youtube_id)+'/default.jpg" alt="">' : "▶") + '</div>' +
+          '<div class="post-body">' +
+            '<div class="post-title">'+esc(d.aluno_nome)+'</div>' +
+            '<div class="post-meta">' +
+              '<span class="badge '+(isAtivo?"badge-pub":"badge-draft")+'">'+esc(d.status)+'</span>' +
+              '<span>'+esc(d.mentoria_nome || "Depoimento geral")+'</span>' +
+              (d.aluno_contexto ? '<span>'+esc(d.aluno_contexto)+'</span>' : '') +
+            '</div>' +
+          '</div>' +
+          '<div class="post-actions">' +
+            '<button class="btn btn-sm" data-depo-edit="'+d.id+'">Editar</button>' +
+            '<button class="btn btn-sm btn-danger" data-depo-del="'+d.id+'">Excluir</button>' +
+          '</div>' +
+        '</div>';
+      });
+    }
+    $("#main-app").innerHTML = html;
+    $("#btn-depo-back").addEventListener("click", () => { showDepoimentos = false; render(); });
+    $("#btn-depo-new").addEventListener("click", () => { depoEditingId = "__new__"; renderDepoimentos(); });
+    document.querySelectorAll("[data-depo-edit]").forEach(el => {
+      el.addEventListener("click", () => { depoEditingId = parseInt(el.dataset.depoEdit, 10); renderDepoimentos(); });
+    });
+    document.querySelectorAll("[data-depo-del]").forEach(el => {
+      el.addEventListener("click", () => deleteDepoimento(parseInt(el.dataset.depoDel, 10)));
+    });
+  }
+
+  async function deleteDepoimento(id){
+    const d = DEPOIMENTOS.find(x => x.id === id);
+    if (!confirm('Excluir o depoimento de "'+(d?d.aluno_nome:id)+'"? Essa ação não pode ser desfeita.')) return;
+    try {
+      const res = await authFetch("/rest/v1/depoimentos?id=eq." + id, { method: "DELETE" });
+      if (!res.ok) throw new Error("Falha ao excluir (HTTP " + res.status + ")");
+      await loadDepoimentos();
+      toast("Depoimento excluído.");
+      renderDepoimentos();
+    } catch(e){ toast(e.message, true); }
+  }
+
+  function blankDepoimento(){
+    return { mentoria_nome: "", aluno_nome: "", aluno_contexto: "", youtube_id: "", ordem: "", status: "ativo" };
+  }
+
+  function renderDepoimentoForm(id){
+    const isNew = id === "__new__";
+    const d = isNew ? blankDepoimento() : (DEPOIMENTOS.find(x => x.id === id) || blankDepoimento());
+    let html = '<div class="toolbar"><h1>'+(isNew ? "Novo depoimento" : "Editar depoimento")+'</h1>' +
+      '<button class="btn btn-sm" id="btn-depo-form-back">← Voltar</button></div>';
+
+    html += '<div class="form-card"><h3>Depoimento em vídeo</h3>';
+    html += field_text("depo_aluno_nome", "Nome do aluno", d.aluno_nome, "", "ex: Marcos");
+    html += field_text("depo_aluno_contexto", "Contexto (opcional)", d.aluno_contexto, "", "ex: Aprovado — PRF 2025");
+    html += '<div class="hint" style="margin-top:-8px;margin-bottom:16px;">Aparece embaixo do nome no card.</div>';
+    html += field_text("depo_youtube_id", "ID do vídeo no YouTube", d.youtube_id, "", "ex: LbMBfEitb5s");
+    html += '<div class="hint" style="margin-top:-8px;margin-bottom:16px;">Pega da URL do vídeo: youtube.com/watch?v=<b>ESSEID</b> — cole só o código depois do "v=", não o link inteiro.</div>';
+    html += field_select("depo_mentoria_nome", "Mentoria/produto vinculado", d.mentoria_nome || "", [
+      ["", "Depoimento geral (sem produto vinculado)"]
+    ].concat(MENTORIAS_CATALOGO.map(m => [m.nome, m.cat + " — " + m.nome])));
+    html += '<div class="hint">Ligando a uma mentoria, esse depoimento passa a contar pro filtro daquele produto na aba Aprovados do blog. Deixe geral se não for sobre um produto específico.</div>';
+    html += field_text("depo_ordem", "Ordem de exibição (opcional)", d.ordem, 'type="number"', "ex: 1");
+    html += '<div class="hint" style="margin-top:-8px;margin-bottom:16px;">Menor número aparece primeiro. Em branco, ordena pelos mais recentes.</div>';
+    html += field_select("depo_status", "Status", d.status || "ativo", [
+      ["ativo", "Ativo (aparece no blog)"],
+      ["rascunho", "Rascunho (não aparece)"]
+    ]);
+    html += '</div>';
+
+    html += '<div class="form-footer"><button class="btn btn-primary" id="btn-depo-save">Salvar depoimento</button><span class="hint" id="depo-save-status"></span></div>';
+
+    $("#main-app").innerHTML = html;
+    $("#btn-depo-form-back").addEventListener("click", () => { depoEditingId = null; renderDepoimentos(); });
+    $("#btn-depo-save").addEventListener("click", () => saveDepoimento(isNew, id));
+  }
+
+  async function saveDepoimento(isNew, originalId){
+    const statusEl = $("#depo-save-status");
+    const alunoNome = $("#depo_aluno_nome").value.trim();
+    const youtubeId = $("#depo_youtube_id").value.trim();
+    if (!alunoNome || !youtubeId){ toast("Nome do aluno e ID do vídeo são obrigatórios.", true); return; }
+
+    const ordemVal = $("#depo_ordem").value.trim();
+    const payload = {
+      aluno_nome: alunoNome,
+      aluno_contexto: $("#depo_aluno_contexto").value.trim(),
+      youtube_id: youtubeId,
+      mentoria_nome: $("#depo_mentoria_nome").value || null,
+      ordem: ordemVal ? parseInt(ordemVal, 10) : null,
+      status: $("#depo_status").value
+    };
+
+    $("#btn-depo-save").disabled = true;
+    if (statusEl) statusEl.textContent = "Salvando...";
+    try {
+      let res;
+      if (isNew){
+        res = await authFetch("/rest/v1/depoimentos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Prefer": "return=minimal" },
+          body: JSON.stringify(payload)
+        });
+      } else {
+        res = await authFetch("/rest/v1/depoimentos?id=eq." + originalId, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", "Prefer": "return=minimal" },
+          body: JSON.stringify(payload)
+        });
+      }
+      if (!res.ok) throw new Error("Falha ao salvar (HTTP " + res.status + ")");
+      await loadDepoimentos();
+      toast(isNew ? "Depoimento criado." : "Alterações salvas.");
+      depoEditingId = null;
+      renderDepoimentos();
+    } catch(e){
+      toast(e.message, true);
+      if (statusEl) statusEl.textContent = "";
+      $("#btn-depo-save").disabled = false;
+    }
   }
 
   async function saveConfig(){
@@ -1133,6 +1312,11 @@
   $("#btn-logout").addEventListener("click", logout);
   $("#btn-config").addEventListener("click", () => { showConfig = true; editingId = null; render(); });
   $("#btn-metrics").addEventListener("click", () => { showMetrics = true; editingId = null; render(); });
+  $("#btn-depoimentos").addEventListener("click", () => {
+    showDepoimentos = true; editingId = null; depoEditingId = null;
+    render();
+    loadDepoimentos().then(() => { if (showDepoimentos) renderDepoimentos(); }).catch(e => toast(e.message, true));
+  });
 
   function applyThemeLabel(){
     const isDark = document.documentElement.getAttribute("data-theme") === "dark" ||
