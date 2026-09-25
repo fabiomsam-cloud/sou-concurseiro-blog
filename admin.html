@@ -882,6 +882,7 @@
               '<span class="badge '+(isAtivo?"badge-pub":"badge-draft")+'">'+esc(d.status)+'</span>' +
               '<span>'+esc(d.mentoria_nome || "Depoimento geral")+'</span>' +
               (d.aluno_contexto ? '<span>'+esc(d.aluno_contexto)+'</span>' : '') +
+              (d.citacao ? '' : '<span style="color:var(--amber);">Sem citação</span>') +
             '</div>' +
           '</div>' +
           '<div class="post-actions">' +
@@ -915,7 +916,7 @@
   }
 
   function blankDepoimento(){
-    return { mentoria_nome: "", aluno_nome: "", aluno_contexto: "", youtube_id: "", ordem: "", status: "ativo" };
+    return { mentoria_nome: "", aluno_nome: "", aluno_contexto: "", youtube_id: "", citacao: "", ordem: "", status: "ativo" };
   }
 
   function renderDepoimentoForm(id){
@@ -930,10 +931,12 @@
     html += '<div class="hint" style="margin-top:-8px;margin-bottom:16px;">Aparece embaixo do nome no card.</div>';
     html += field_text("depo_youtube_id", "ID do vídeo no YouTube", d.youtube_id, "", "ex: LbMBfEitb5s");
     html += '<div class="hint" style="margin-top:-8px;margin-bottom:16px;">Pega da URL do vídeo: youtube.com/watch?v=<b>ESSEID</b> — cole só o código depois do "v=", não o link inteiro.</div>';
+    html += field_textarea("depo_citacao", "Citação em destaque (opcional)", d.citacao, 3);
+    html += '<div class="hint" style="margin-top:-8px;margin-bottom:16px;">Uma frase forte que a pessoa fala no vídeo. Aparece junto do card, ao lado/embaixo do vídeo, pra dar contexto de cara. Assista o vídeo e cole aqui a frase — nem toda transcrição automática pega certo, então vale conferir. Deixe em branco se não tiver uma frase de destaque ainda.</div>';
     html += field_select("depo_mentoria_nome", "Mentoria/produto vinculado", d.mentoria_nome || "", [
       ["", "Depoimento geral (sem produto vinculado)"]
     ].concat(MENTORIAS_CATALOGO.map(m => [m.nome, m.cat + " — " + m.nome])));
-    html += '<div class="hint">Ligando a uma mentoria, esse depoimento passa a contar pro filtro daquele produto na aba Aprovados do blog. Deixe geral se não for sobre um produto específico.</div>';
+    html += '<div class="hint">Uso interno/organização — a aba Aprovados do blog mostra todos os depoimentos juntos, sem filtrar por produto. Ligar a uma mentoria aqui não muda o que aparece lá.</div>';
     html += field_text("depo_ordem", "Ordem de exibição (opcional)", d.ordem, 'type="number"', "ex: 1");
     html += '<div class="hint" style="margin-top:-8px;margin-bottom:16px;">Menor número aparece primeiro. Em branco, ordena pelos mais recentes.</div>';
     html += field_select("depo_status", "Status", d.status || "ativo", [
@@ -960,6 +963,7 @@
       aluno_nome: alunoNome,
       aluno_contexto: $("#depo_aluno_contexto").value.trim(),
       youtube_id: youtubeId,
+      citacao: $("#depo_citacao").value.trim() || null,
       mentoria_nome: $("#depo_mentoria_nome").value || null,
       ordem: ordemVal ? parseInt(ordemVal, 10) : null,
       status: $("#depo_status").value
