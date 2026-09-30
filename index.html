@@ -7,6 +7,8 @@
 <meta name="description" id="meta-description" content="Sou Concurseiro e Vou Passar: notícias, editais e guias completos de concursos públicos no Brasil.">
 <meta property="og:description" id="og-description" content="Sou Concurseiro e Vou Passar: notícias, editais e guias completos de concursos públicos no Brasil.">
 <meta property="og:title" id="og-title" content="Sou Concurseiro">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
 <style>
   :root{
@@ -86,10 +88,15 @@
   .navrow a.home-link{font-weight:700;font-size:13.5px;text-decoration:none;color:var(--ink);cursor:pointer;padding:10px 18px;border-radius:999px;background:var(--paper-alt);border:1px solid var(--line);transition:border-color .15s,color .15s,background .15s;}
   .navrow a.home-link:hover{border-color:var(--accent);color:var(--accent);}
   .navrow a.home-link.active{background:var(--accent);border-color:var(--accent);color:var(--paper);}
-  .searchbox{display:flex;align-items:center;gap:6px;background:var(--paper-alt);border:1px solid var(--line);border-radius:999px;padding:7px 14px;min-width:240px;}
-  .searchbox input{border:none;background:none;outline:none;font-family:"Inter",sans-serif;font-size:12.5px;color:var(--ink);width:100%;}
+  /* padding fica no input, não no container: se ficasse no container, tocar
+     na "almofada" em cima/embaixo do texto (visualmente parece parte do
+     campo) não focava o campo — precisava acertar exatamente a linha fina
+     do texto. Com o padding no próprio input, o toque funciona no campo
+     inteiro. */
+  .searchbox{display:flex;align-items:center;gap:6px;background:var(--paper-alt);border:1px solid var(--line);border-radius:999px;padding:0 14px;min-width:240px;}
+  .searchbox input{border:none;background:none;outline:none;font-family:"Inter",sans-serif;font-size:12.5px;color:var(--ink);width:100%;padding:9px 0;}
   .searchbox input::placeholder{color:var(--ink-soft);}
-  .theme-toggle{margin-left:auto;display:flex;align-items:center;gap:6px;background:var(--paper-alt);border:1px solid var(--line);color:var(--ink-soft);border-radius:999px;padding:7px 13px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  .theme-toggle{margin-left:auto;display:flex;align-items:center;gap:6px;background:var(--paper-alt);border:1px solid var(--line);color:var(--ink-soft);border-radius:999px;padding:10px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
   .theme-toggle:hover{border-color:var(--accent);color:var(--accent);}
   .theme-toggle .icon{font-size:13px;line-height:1;}
   /* ---- botão flutuante "voltar ao topo" (fica fora de #app, sobrevive
@@ -179,7 +186,7 @@
   .section-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;border-bottom:1px solid var(--line);padding-bottom:9px;margin-bottom:18px;}
   .section-label-row{display:flex;align-items:baseline;justify-content:space-between;gap:14px;border-bottom:1px solid var(--line);padding-bottom:9px;margin-bottom:18px;flex-wrap:wrap;}
   .section-label-row .section-label{border:0;padding:0;margin:0;}
-  .section-link{font-size:12.5px;font-weight:700;color:var(--accent);text-decoration:none;white-space:nowrap;}
+  .section-link{font-size:12.5px;font-weight:700;color:var(--accent);text-decoration:none;white-space:nowrap;display:inline-block;padding:6px 0;}
   .section-link:hover{text-decoration:underline;}
   .section-label-lg{font-size:22px;letter-spacing:-.01em;text-transform:none;color:var(--ink);font-weight:800;border-bottom:2px solid var(--accent);padding-bottom:12px;margin-bottom:20px;}
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:40px;}
@@ -291,8 +298,8 @@
   /* ---- sidebar: Mais Lidas (contador real de visualizações) ---- */
   .side-mais-lidas{border:1px solid var(--line);border-radius:14px;padding:18px 18px 6px;}
   .side-mais-lidas h4{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin:0 0 12px;}
-  .ml-tabs{display:flex;gap:6px;margin-bottom:14px;}
-  .ml-tab{font-size:11px;font-weight:700;border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);border-radius:999px;padding:5px 12px;cursor:pointer;}
+  .ml-tabs{display:flex;gap:10px;margin-bottom:14px;}
+  .ml-tab{font-size:12.5px;font-weight:700;border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);border-radius:999px;padding:8px 14px;cursor:pointer;}
   .ml-tab.active{background:var(--ink);border-color:var(--ink);color:var(--paper);}
   .ml-empty{font-size:12px;color:var(--ink-soft);padding:2px 0 16px;line-height:1.5;}
 
@@ -304,7 +311,7 @@
   .coming-soon .ico{font-size:26px;margin-bottom:14px;}
   .coming-soon h3{margin:0 0 8px;font-size:16px;font-weight:800;}
   .coming-soon p{margin:0 0 18px;color:var(--ink-soft);font-size:13.5px;}
-  .coming-soon a.btn-back{font-weight:700;font-size:12.5px;color:var(--accent);text-decoration:none;border-bottom:2px solid var(--accent);padding-bottom:1px;cursor:pointer;}
+  .coming-soon a.btn-back{font-weight:700;font-size:13px;color:var(--accent);text-decoration:none;border-bottom:2px solid var(--accent);padding:8px 0 9px;cursor:pointer;display:inline-block;}
 
   /* ---- concursos por estado ---- */
   .cal-page{padding:34px 0 64px;}
@@ -338,7 +345,7 @@
 
   /* ---- detail / article ---- */
   .article{padding:36px 0 64px;max-width:680px;margin:0 auto;}
-  .back-link{font-size:12px;font-weight:700;color:var(--ink-soft);text-decoration:none;cursor:pointer;display:inline-block;margin-bottom:22px;}
+  .back-link{font-size:13px;font-weight:700;color:var(--ink-soft);text-decoration:none;cursor:pointer;display:inline-block;padding:6px 0;margin-bottom:16px;}
   .back-link:hover{color:var(--accent);}
   .article-eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:10px;}
   .article h1{font-size:clamp(24px,3.8vw,34px);font-weight:800;line-height:1.18;margin:0 0 14px;}
@@ -540,6 +547,40 @@
        empilha e deixa o botão ocupar a largura toda (área de toque maior). */
     .mentoria-foot{flex-direction:column;align-items:stretch;}
     .mentoria-cta{justify-content:center;}
+
+    /* Textos pequenos: no desktop essas legendas/etiquetas (categoria,
+       estado, data, contadores) ficam discretas de propósito — mas em
+       celular, com a tela mais perto do olho e sem mouse pra "confirmar"
+       o que é o quê, ficavam apertadas demais pra ler. Sobe todas pra um
+       piso confortável (~12.5-13px), sem mudar o desktop. */
+    .dateline{font-size:12.5px;}
+    .destaques-label{font-size:12.5px;}
+    .hero-eyebrow{font-size:12.5px;}
+    .stat-pill .lbl{font-size:12.5px;}
+    .pill{font-size:13px;}
+    .uf-select{font-size:13px;}
+    .section-label{font-size:12.5px;}
+    .side-card h4{font-size:12.5px;}
+    .side-item-meta{font-size:12.5px;}
+    .side-promo .eyebrow{font-size:12px;}
+    .side-cal p{font-size:13px;}
+    .card-kicker{font-size:12.5px;}
+    .card-meta{font-size:12.5px;}
+    .am-destaque-label{font-size:12.5px;}
+    .carreira-tile .nome{font-size:13px;}
+    .carreira-tile .count{font-size:12px;}
+    .side-editorias h4{font-size:12.5px;}
+    .editoria-item .count{font-size:12.5px;}
+    .side-mais-lidas h4{font-size:12.5px;}
+    .ml-empty{font-size:13px;}
+    .depo-video-info span{font-size:12.5px;}
+    .article-eyebrow{font-size:12.5px;}
+    .article-dateline{font-size:13px;}
+    .pullstat .lbl{font-size:12.5px;}
+    .fonte-tag{font-size:11px;}
+    .mentoria-badge{font-size:12px;}
+    .mentoria-garantia{font-size:13px;}
+    footer p{font-size:12.5px;}
   }
 </style>
 
@@ -1823,17 +1864,17 @@
     if (!l) return '';
     if (l.light && l.dark){
       return '<span class="mentoria-logo-wrap">' +
-        '<img class="mentoria-logo mentoria-logo-light" src="'+l.light+'" alt="">' +
-        '<img class="mentoria-logo mentoria-logo-dark" src="'+l.dark+'" alt="">' +
+        '<img class="mentoria-logo mentoria-logo-light" src="'+l.light+'" alt="" loading="lazy">' +
+        '<img class="mentoria-logo mentoria-logo-dark" src="'+l.dark+'" alt="" loading="lazy">' +
       '</span>';
     }
     if (l.darkChip){
-      return '<span class="mentoria-logo-wrap mentoria-logo-chip"><img class="mentoria-logo" src="'+l.single+'" alt=""></span>';
+      return '<span class="mentoria-logo-wrap mentoria-logo-chip"><img class="mentoria-logo" src="'+l.single+'" alt="" loading="lazy"></span>';
     }
     if (l.lightChip){
-      return '<span class="mentoria-logo-wrap mentoria-logo-chip-light"><img class="mentoria-logo" src="'+l.single+'" alt=""></span>';
+      return '<span class="mentoria-logo-wrap mentoria-logo-chip-light"><img class="mentoria-logo" src="'+l.single+'" alt="" loading="lazy"></span>';
     }
-    return '<span class="mentoria-logo-wrap"><img class="mentoria-logo" src="'+l.single+'" alt=""></span>';
+    return '<span class="mentoria-logo-wrap"><img class="mentoria-logo" src="'+l.single+'" alt="" loading="lazy"></span>';
   }
   function mentoriaCardHtml(m){
     // Card inteiro é o link (pedido dela: "deixe todo o botão clicável, não só
