@@ -1184,25 +1184,50 @@
     });
 
     // ---- Touch (celular) ----
-    let touchStartY = 0, touchAxis = null; // touchAxis: null (ainda não decidido) | "x" | "y"
+    // Relato real (celular, Chrome): conseguia arrastar só nos 1-2
+    // primeiros banners, depois "travava" (parava de responder ao
+    // arraste) mas o avanço automático continuava rolando sozinho. Isso
+    // bate com o gesto sendo classificado como rolagem vertical (eixo
+    // "y") por engano — no toque real o dedo raramente entra 100% reto,
+    // sempre tem um pouco de deriva vertical, e quanto mais rápido o
+    // gesto, maior essa deriva inicial. Duas mudanças pra tornar a
+    // detecção de eixo mais tolerante a isso: (1) espera um pouco mais
+    // de movimento antes de decidir (10px em vez de 6, filtra o
+    // "chacoalho" inicial do dedo); (2) dentro do carrossel a intenção
+    // mais comum É arrastar de lado, então só classifica como rolagem
+    // vertical se o movimento vertical for claramente maior que o
+    // horizontal (e não só "um pouco maior") — dá o benefício da dúvida
+    // pro arraste horizontal.
+    let touchStartY = 0, touchAxis = null, touchStartedAt = 0; // touchAxis: null (ainda não decidido) | "x" | "y"
     track.addEventListener("touchstart", (e) => {
       if (e.touches.length !== 1) return;
       isDown = true; moved = false; touchAxis = null;
       startX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
+      touchStartedAt = Date.now();
       dragDx = 0;
     }, {passive:true});
 
     track.addEventListener("touchmove", (e) => {
       if (!isDown) return;
+      // Trava de segurança: se por algum motivo touchend/touchcancel
+      // nunca chegou de um gesto anterior (visto em navegadores mobile
+      // específicos), um toque "preso" há mais de 8s é claramente lixo
+      // de um gesto antigo — solta e recomeça limpo neste.
+      if (Date.now() - touchStartedAt > 8000){
+        isDown = true; touchAxis = null; moved = false;
+        startX = e.touches[0].clientX; touchStartY = e.touches[0].clientY;
+        touchStartedAt = Date.now();
+        dragDx = 0;
+      }
       const t = e.touches[0];
       const dx = t.clientX - startX;
       const dy = t.clientY - touchStartY;
       if (touchAxis === null){
         // Só decide a direção depois de um mínimo de movimento — um
         // toque quase parado não deve "travar" o gesto num eixo ainda.
-        if (Math.abs(dx) > 6 || Math.abs(dy) > 6){
-          touchAxis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+        if (Math.abs(dx) > 10 || Math.abs(dy) > 10){
+          touchAxis = Math.abs(dy) > Math.abs(dx) * 1.2 ? "y" : "x";
           if (touchAxis === "x") track.classList.add("dragging");
         }
       }
