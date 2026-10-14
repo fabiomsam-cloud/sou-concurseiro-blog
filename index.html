@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Sou Concurseiro</title>
 <meta name="description" id="meta-description" content="Sou Concurseiro e Vou Passar: notícias, editais e guias completos de concursos públicos no Brasil.">
 <meta property="og:description" id="og-description" content="Sou Concurseiro e Vou Passar: notícias, editais e guias completos de concursos públicos no Brasil.">
@@ -249,12 +249,6 @@
   .card-meta .num{color:var(--amber);font-weight:700;}
 
   /* ---- gancho de marca (faixa fixa acima do masthead) ---- */
-  .brand-hook{background:var(--amber);}
-  .brand-hook-inner{display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 22px;text-align:center;}
-  .brand-hook-badge{font-size:14px;line-height:1;}
-  .brand-hook-text{font-size:12.5px;font-weight:700;color:#fff;letter-spacing:.005em;}
-  .brand-hook.is-link{cursor:pointer;}
-  .brand-hook.is-link:hover .brand-hook-inner{opacity:.9;}
 
   /* ---- destaque Concursos no Amazonas ---- */
   .am-destaque-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:28px 0 16px;flex-wrap:wrap;}
@@ -592,13 +586,6 @@
     if (savedTheme === "dark") document.documentElement.setAttribute("data-theme", "dark");
   } catch (e) {}
 </script>
-
-<div class="brand-hook" id="brand-hook">
-  <div class="wrap brand-hook-inner">
-    <span class="brand-hook-badge">🔥</span>
-    <span class="brand-hook-text" id="brand-hook-text">Sua aprovação começa aqui: confira os concursos que estão bombando</span>
-  </div>
-</div>
 
 <div class="masthead-band">
   <div class="wrap masthead">
@@ -2142,21 +2129,6 @@
     if (el) el.innerHTML = maisLidasListHtml(maisLidasCache[maisLidasTab]);
   }
 
-  // Alimenta o "gancho de marca" no topo da página com a matéria mais lida
-  // de hoje, assim que existir dado real — antes disso, mantém a frase de
-  // marca padrão já escrita no HTML (nunca inventa "mais lido hoje").
-  function updateBrandHook(hojeRows){
-    const top = hojeRows && hojeRows[0];
-    const p = top && POSTS.find(x => x.id === top.post_id);
-    if (!p) return;
-    const textEl = $("#brand-hook-text");
-    const wrapEl = $("#brand-hook");
-    if (!textEl || !wrapEl) return;
-    textEl.textContent = "Mais lido hoje: " + p.titulo;
-    wrapEl.dataset.id = p.id;
-    wrapEl.classList.add("is-link");
-  }
-
   async function loadMaisLidas(){
     const [hoje, semana] = await Promise.all([
       fetchTopViewed(startOfTodayIso(), 5),
@@ -2165,7 +2137,6 @@
     maisLidasCache.hoje = hoje;
     maisLidasCache.semana = semana;
     paintMaisLidas();
-    updateBrandHook(hoje);
   }
 
   // Carrega a identidade visual (logo) cadastrada no painel admin, se houver.
@@ -2239,10 +2210,6 @@
   $("#nav-mentorias").addEventListener("click", () => { location.hash = "#/mentorias"; });
   $("#nav-aprovados").addEventListener("click", () => { location.hash = "#/aprovados"; });
   $("#search").addEventListener("input", (e) => { query = e.target.value.trim(); renderHome(); });
-  $("#brand-hook").addEventListener("click", () => {
-    const id = $("#brand-hook").dataset.id;
-    if (id) location.hash = "#/materia/" + id;
-  });
 
   function applyThemeLabel(){
     const isDark = document.documentElement.getAttribute("data-theme") === "dark";
