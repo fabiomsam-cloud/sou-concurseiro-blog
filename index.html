@@ -1467,12 +1467,9 @@
     html += sidebarHtml(sorted);
     html += '</div>';
 
-    // Depoimentos em vídeo de alunos aprovados: some com filtro/busca ativo,
-    // igual à manchete e ao bloco do Amazonas, pra não competir com os
-    // resultados que a pessoa pediu.
-    if (!hasActiveFilter){
-      html += depoVideosHtml();
-    }
+    // Depoimentos em vídeo de alunos aprovados: removido da tela inicial a
+    // pedido da Vanessa — a seção continua normalmente na página /aprovados,
+    // só não aparece mais aqui na home.
 
     // Rodapé "navegue por carreira": repete busca e tópicos lá embaixo, pra
     // quem rolou a página inteira não precisar voltar ao topo pra filtrar.
