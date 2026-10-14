@@ -1487,6 +1487,34 @@
     // pedido da Vanessa — a seção continua normalmente na página /aprovados,
     // só não aparece mais aqui na home.
 
+    // Teaser de Mentorias no fim da home (pedido dela, 10/2026): quem rolou a
+    // página inteira e ainda não clicou em nada no topo ganha um último
+    // convite, sem parecer banner de venda — por isso o tom é de pergunta
+    // (não "COMPRE AGORA"), o selo de preço vira garantia (igual ao resto do
+    // mentoria-card) e o botão de baixo é o mesmo outline discreto do "Ver
+    // todas as oportunidades no Amazonas", não um botão cheio chamativo. Some
+    // junto com busca/filtro ativo (igual à manchete e ao bloco do Amazonas)
+    // porque quem tá filtrando resultados quer respostas, não uma vitrine.
+    // Curadoria: 1 produto AM (mercado principal) + 2 nacionais bem
+    // reconhecidos, pra não parecer promoção só de uma região pra quem
+    // entrou lendo uma matéria de outro estado. Reaproveita o mesmo
+    // mentoriaCardHtml() da vitrine de /mentorias — zero duplicação de
+    // marcação — só com posicao="home-final" pra ela conseguir comparar o
+    // desempenho desse lugar separado do da vitrine no admin.
+    if (!hasActiveFilter){
+      const vitrineHomeNomes = ["Mentoria Elite TJ-AM", "Mentoria Elite PRF", "Mentoria Elite INSS"];
+      const vitrineHome = vitrineHomeNomes.map(n => MENTORIAS.find(m => m.nome === n)).filter(Boolean);
+      if (vitrineHome.length){
+        html += '<div class="wrap" style="margin-top:12px;">';
+        html += '<div class="hero-eyebrow">Mentorias Elite</div>';
+        html += '<div class="section-label-lg" style="border-bottom:none;padding-bottom:0;margin-bottom:8px;">Já pensou em ter um plano de estudos sob medida?</div>';
+        html += '<p style="font-size:14.5px;color:var(--ink-soft);max-width:60ch;margin:0 0 20px;">Nossas Mentorias Elite usam inteligência artificial pra montar seu plano de estudos com base no tempo livre que você tem, focado só no que cai na prova.</p>';
+        html += '<div class="mentoria-grid">' + vitrineHome.map(m => mentoriaCardHtml(m, "home-final")).join("") + '</div>';
+        html += '<div class="am-destaque-more"><button class="am-destaque-all" id="home-mentorias-ver-todas" type="button">Ver todas as mentorias →</button></div>';
+        html += '</div>';
+      }
+    }
+
     // Rodapé "navegue por carreira": repete busca e tópicos lá embaixo, pra
     // quem rolou a página inteira não precisar voltar ao topo pra filtrar.
     html += '<div class="topics-foot">';
@@ -1536,6 +1564,8 @@
         if (results) results.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     }
+    const homeMentoriasVerTodas = $("#home-mentorias-ver-todas");
+    if (homeMentoriasVerTodas){ homeMentoriasVerTodas.addEventListener("click", () => { location.hash = "#/mentorias"; }); }
     document.querySelectorAll(".carreira-tile, .editoria-item").forEach(el => {
       el.addEventListener("click", () => {
         // Clicar na carreira já ativa limpa o filtro (equivalente ao antigo "Todas").
@@ -1914,17 +1944,22 @@
     }
     return '<span class="mentoria-logo-wrap"><img class="mentoria-logo" src="'+l.single+'" alt="" loading="lazy"></span>';
   }
-  function mentoriaCardHtml(m){
+  function mentoriaCardHtml(m, posicao){
     // Card inteiro é o link (pedido dela: "deixe todo o botão clicável, não só
     // o 'conhecer a mentoria'") — o "botão" visual é só um <span>, não um <a>
     // aninhado. O preço saiu do rodapé e virou um selo de garantia (mais
     // gatilho de confiança do que número de preço nesse estágio de teaser).
     const cor = CAT_COLOR[m.cat] || "#1D4FA3";
+    // posicao identifica de onde veio o clique (vitrine da página /mentorias
+    // por padrão, ou "home-final" quando o mesmo card é reaproveitado no
+    // teaser do fim da home) — assim dá pra comparar o desempenho dos dois
+    // lugares separadamente no admin, sem duplicar o componente.
+    posicao = posicao || "vitrine";
     // Selo de cima mostra a área (Saúde, Policial etc.) em vez de "Mentoria
     // Elite" — isso já está no nome do produto logo abaixo, então repetir
     // ali ficava redundante. A área também já orienta o candidato mais rápido
     // que o nome genérico.
-    return '<a class="mentoria-card" href="'+m.link+mentoriaUtm(m.campanha)+'" target="_blank" rel="noopener" data-track-click="produto" data-track-mentoria="'+m.nome+'" data-track-posicao="vitrine" data-track-post="">' +
+    return '<a class="mentoria-card" href="'+m.link+mentoriaUtm(m.campanha)+'" target="_blank" rel="noopener" data-track-click="produto" data-track-mentoria="'+m.nome+'" data-track-posicao="'+posicao+'" data-track-post="">' +
       '<div class="mentoria-top">' +
         '<div class="mentoria-badge" style="background:'+cor+'1F;color:'+cor+';">'+(m.cat||"")+'</div>' +
       '</div>' +
