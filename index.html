@@ -82,7 +82,7 @@
   /* Agrupa a edição e o botão de tema no lado direito do masthead, um
      embaixo do outro (pedido dela: o botão ficar sob o "BLOG OFICIAL",
      em vez de ocupar uma linha própria logo abaixo do cabeçalho). */
-  .masthead-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
+  .masthead-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
   .dateline{font-size:11.5px;color:rgba(255,255,255,.75);text-align:right;}
   .dateline b{color:#fff;}
 
@@ -101,12 +101,14 @@
   .searchbox input{border:none;background:none;outline:none;font-family:"Inter",sans-serif;font-size:12.5px;color:var(--ink);width:100%;padding:9px 0;}
   .searchbox input::placeholder{color:var(--ink-soft);}
   /* Agora mora no masthead-band (sempre azul, não acompanha o tema do
-     site — igual ao "Blog oficial" ao lado): fundo translúcido branco em
-     vez de var(--paper-alt)/var(--line), senão ficaria invisível sobre o
-     azul. Tamanho enxuto de propósito — não é a ação principal do
-     cabeçalho, só um controle utilitário. */
-  .theme-toggle{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
-  .theme-toggle:hover{background:rgba(255,255,255,.24);border-color:#fff;}
+     site — igual ao "Blog oficial" ao lado). Fundo BRANCO SÓLIDO (não
+     translúcido) de propósito: a primeira versão (branco-fosco sobre
+     azul) ficou parecendo um selo/etiqueta, não um botão — sólido +
+     sombra lê como "isto é clicável" à primeira vista, igual às outras
+     pill-buttons preenchidas do site (ex.: aba ativa do menu). Tamanho
+     enxuto continua de propósito — não é a ação principal do cabeçalho. */
+  .theme-toggle{display:flex;align-items:center;gap:6px;background:#fff;border:none;color:var(--brand-blue);border-radius:999px;padding:7px 13px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .12s ease,box-shadow .12s ease;}
+  .theme-toggle:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.3);}
   .theme-toggle .icon{font-size:12px;line-height:1;}
   /* ---- botão flutuante "voltar ao topo" (fica fora de #app, sobrevive
      à troca de página no hash-router; só alterna opacidade/visibilidade
@@ -573,6 +575,12 @@
        que distribuir com 1 item por linha) — força largura total pra
        align-items:flex-end valer de verdade aqui. */
     .masthead-right{width:100%;}
+    /* Logo um pouco menor e masthead com menos respiro vertical no
+       celular: dá mais chance da edição+botão caberem do lado da marca
+       em telas um pouco mais largas, e deixa a faixa azul menos "pesada"
+       quando precisam quebrar linha mesmo assim. */
+    .masthead{padding:13px 0;gap:10px;}
+    .brand-logo{height:38px;}
     .destaques-label{font-size:12.5px;}
     .hero-eyebrow{font-size:12.5px;}
     .stat-pill .lbl{font-size:12.5px;}
