@@ -79,11 +79,10 @@
   .brand-sep{width:1px;align-self:stretch;background:rgba(255,255,255,.3);}
   .wordmark{display:flex;flex-direction:column;justify-content:center;}
   .wordmark .kicker{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:#fff;font-weight:700;}
-  /* Agrupa a edição e o botão de tema no lado direito do masthead, um
-     embaixo do outro (pedido dela: o botão ficar sob o "BLOG OFICIAL",
-     em vez de ocupar uma linha própria logo abaixo do cabeçalho). */
-  .masthead-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
-  .dateline{font-size:11.5px;color:rgba(255,255,255,.75);text-align:right;}
+  /* A edição fica numa linha própria, embaixo da marca, alinhada à
+     esquerda (pedido dela: evita competir por espaço com o botão de tema
+     no topo e dá mais respiro pro "BLOG OFICIAL" não ficar espremido). */
+  .dateline{font-size:11.5px;color:rgba(255,255,255,.75);text-align:left;padding:2px 0 14px;}
   .dateline b{color:#fff;}
 
   .topline{background:var(--paper);border-bottom:2px solid var(--line-strong);}
@@ -107,7 +106,7 @@
      sombra lê como "isto é clicável" à primeira vista, igual às outras
      pill-buttons preenchidas do site (ex.: aba ativa do menu). Tamanho
      enxuto continua de propósito — não é a ação principal do cabeçalho. */
-  .theme-toggle{display:flex;align-items:center;gap:6px;background:#fff;border:none;color:var(--brand-blue);border-radius:999px;padding:7px 13px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .12s ease,box-shadow .12s ease;}
+  .theme-toggle{margin-left:auto;display:flex;align-items:center;gap:6px;background:#fff;border:none;color:var(--brand-blue);border-radius:999px;padding:7px 13px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .12s ease,box-shadow .12s ease;}
   .theme-toggle:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.3);}
   .theme-toggle .icon{font-size:12px;line-height:1;}
   /* ---- botão flutuante "voltar ao topo" (fica fora de #app, sobrevive
@@ -570,17 +569,10 @@
        o que é o quê, ficavam apertadas demais pra ler. Sobe todas pra um
        piso confortável (~12.5-13px), sem mudar o desktop. */
     .dateline{font-size:12.5px;}
-    /* Numa linha só (brand), o masthead-right "sozinho" na sua própria
-       linha quebrada ficaria colado à esquerda (space-between não tem o
-       que distribuir com 1 item por linha) — força largura total pra
-       align-items:flex-end valer de verdade aqui. */
-    .masthead-right{width:100%;}
-    /* Logo um pouco menor e masthead com menos respiro vertical no
-       celular: dá mais chance da edição+botão caberem do lado da marca
-       em telas um pouco mais largas, e deixa a faixa azul menos "pesada"
-       quando precisam quebrar linha mesmo assim. */
-    .masthead{padding:13px 0;gap:10px;}
-    .brand-logo{height:38px;}
+    /* Com a edição numa linha própria abaixo (fora do masthead flex),
+       sobra bem mais espaço aqui: volta ao respiro original, sem precisar
+       espremer logo/padding só pra caber tudo numa linha. */
+    .masthead{padding:16px 0;}
     .destaques-label{font-size:12.5px;}
     .hero-eyebrow{font-size:12.5px;}
     .stat-pill .lbl{font-size:12.5px;}
@@ -629,12 +621,12 @@
         <span class="kicker">Blog oficial</span>
       </div>
     </a>
-    <div class="masthead-right">
-      <div class="dateline" id="dateline"></div>
-      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Alternar modo claro ou escuro">
-        <span class="icon" id="theme-icon">☾</span><span id="theme-label">Modo escuro</span>
-      </button>
-    </div>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Alternar modo claro ou escuro">
+      <span class="icon" id="theme-icon">☾</span><span id="theme-label">Modo escuro</span>
+    </button>
+  </div>
+  <div class="wrap">
+    <div class="dateline" id="dateline"></div>
   </div>
 </div>
 <div class="topline">
