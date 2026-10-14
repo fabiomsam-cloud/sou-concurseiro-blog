@@ -28,6 +28,32 @@
        adapta ao tema). Isso garante que o cabeçalho nunca troque de cor ao alternar tema. */
     --brand-blue:#1D4FA3;
   }
+  /* Bug real reportado pela Vanessa (10/2026): com o celular no modo escuro
+     do sistema, o site deveria abrir escuro de cara (sem ela precisar tocar
+     no botão), mas ficava só meio-trocado — porque as cores do tema escuro
+     só existiam aqui embaixo, presas a [data-theme="dark"] (que só a JS seta,
+     depois que ela clica no botão). Sem esse "modo escuro automático" via
+     @media, um visitante com o sistema em escuro e que nunca tocou no botão
+     sempre caía no claro por padrão, ao contrário do que o aparelho dele já
+     diz preferir. Esse bloco cobre exatamente esse caso (prefere escuro, mas
+     ainda não escolheu nada no próprio site) — :not([data-theme="light"])
+     deixa a escolha manual por "claro" vencer o sistema, igual ao mesmo
+     padrão já usado pra trocar a logo clara/escura das mentorias. */
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#10141C;
+      --paper-alt:#181D28;
+      --ink:#ECF0F6;
+      --ink-soft:#9AA5B6;
+      --accent:#6C9BEA;
+      --accent-soft:#1D2A42;
+      --amber:#E7B366;
+      --amber-soft:#332612;
+      --line:#262D3C;
+      --line-strong:#3A465F;
+      --shadow: 0 1px 2px rgba(0,0,0,.35), 0 10px 26px -14px rgba(0,0,0,.6);
+    }
+  }
   :root[data-theme="dark"]{
     --paper:#10141C;
     --paper-alt:#181D28;
@@ -620,7 +646,11 @@
 <script>
   try {
     var savedTheme = localStorage.getItem("scvp-theme");
-    if (savedTheme === "dark") document.documentElement.setAttribute("data-theme", "dark");
+    // "dark" e "light" são escolhas explícitas da pessoa (gravadas quando ela
+    // clica no botão) e sempre ganham do sistema. Sem nada salvo, não mexe no
+    // atributo — view sistema no modo escuro já pega o tema escuro sozinho
+    // via @media (prefers-color-scheme), sem precisar de JS pra isso.
+    if (savedTheme === "dark" || savedTheme === "light") document.documentElement.setAttribute("data-theme", savedTheme);
   } catch (e) {}
 </script>
 
@@ -2293,15 +2323,27 @@
   $("#nav-aprovados").addEventListener("click", () => { location.hash = "#/aprovados"; });
   $("#search").addEventListener("input", (e) => { query = e.target.value.trim(); renderHome(); });
 
+  // Estado "escuro" de verdade: tema explícito (data-theme) manda quando
+  // existe; sem escolha explícita, segue a preferência do sistema — mesma
+  // regra que o CSS usa (@media prefers-color-scheme + :not([data-theme="light"])),
+  // só que em JS, pra saber pra qual lado o botão deve alternar.
+  function isDarkNow(){
+    const theme = document.documentElement.getAttribute("data-theme");
+    if (theme === "dark") return true;
+    if (theme === "light") return false;
+    return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  }
   function applyThemeLabel(){
-    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    const isDark = isDarkNow();
     $("#theme-icon").textContent = isDark ? "☀" : "☾";
     $("#theme-label").textContent = isDark ? "Modo claro" : "Modo escuro";
   }
   $("#theme-toggle").addEventListener("click", () => {
-    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-    if (isDark){
-      document.documentElement.removeAttribute("data-theme");
+    // Sempre grava uma escolha EXPLÍCITA (nunca remove o atributo) — uma
+    // pessoa que escolhe "claro" no sistema escuro precisa continuar clara
+    // mesmo com o @media de sistema ativo, e vice-versa.
+    if (isDarkNow()){
+      document.documentElement.setAttribute("data-theme", "light");
       try { localStorage.setItem("scvp-theme", "light"); } catch (e){}
     } else {
       document.documentElement.setAttribute("data-theme", "dark");
