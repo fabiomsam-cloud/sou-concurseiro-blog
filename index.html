@@ -475,6 +475,18 @@
   .mentoria-cta{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:var(--paper);font-weight:800;font-size:13px;padding:10px 16px;border-radius:9px;white-space:nowrap;transition:transform .18s ease,box-shadow .18s ease;}
   .mentoria-card:hover .mentoria-cta{transform:translateY(-3px);box-shadow:0 10px 22px -8px rgba(0,0,0,.4);}
 
+  /* Banner compacto de mentoria (teaser do fim da home): uma linha só, logo +
+     headline + seta — bem mais leve que o mentoria-card completo (sem
+     teaser/preço/botão), pra não empilhar 3 "cartões de venda" seguidos. */
+  .mentoria-banner-list{display:flex;flex-direction:column;gap:10px;margin:0 0 24px;}
+  .mentoria-banner{display:flex;align-items:center;gap:14px;padding:13px 16px;border-radius:12px;border:1px solid var(--line);border-left-width:4px;background:var(--paper);text-decoration:none;color:inherit;cursor:pointer;transition:border-color .15s,transform .15s ease,box-shadow .15s ease;}
+  .mentoria-banner:hover{transform:translateY(-2px);box-shadow:0 10px 22px -14px rgba(20,24,31,.3);}
+  .mentoria-banner-logo{flex:0 0 auto;display:inline-flex;align-items:center;height:28px;}
+  .mentoria-banner-logo .mentoria-logo-wrap{height:28px;}
+  .mentoria-banner-headline{flex:1;min-width:0;font-size:14.5px;font-weight:800;color:var(--ink);letter-spacing:-.01em;}
+  .mentoria-banner-arrow{flex:0 0 auto;color:var(--accent);font-weight:800;font-size:17px;}
+  @media (max-width:640px){ .mentoria-banner{padding:12px 14px;gap:11px;} .mentoria-banner-headline{font-size:13.5px;} }
+
   .mentoria-footer-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:40px 0 0;}
   .mentoria-footer-btn{background:none;border:1.5px solid var(--line-strong);color:var(--ink);font-weight:700;font-size:13px;cursor:pointer;padding:11px 20px;border-radius:999px;transition:background .15s,border-color .15s,transform .15s;}
   .mentoria-footer-btn:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px);}
@@ -1487,29 +1499,30 @@
     // pedido da Vanessa — a seção continua normalmente na página /aprovados,
     // só não aparece mais aqui na home.
 
-    // Teaser de Mentorias no fim da home (pedido dela, 10/2026): quem rolou a
-    // página inteira e ainda não clicou em nada no topo ganha um último
-    // convite, sem parecer banner de venda — por isso o tom é de pergunta
-    // (não "COMPRE AGORA"), o selo de preço vira garantia (igual ao resto do
-    // mentoria-card) e o botão de baixo é o mesmo outline discreto do "Ver
-    // todas as oportunidades no Amazonas", não um botão cheio chamativo. Some
-    // junto com busca/filtro ativo (igual à manchete e ao bloco do Amazonas)
-    // porque quem tá filtrando resultados quer respostas, não uma vitrine.
-    // Curadoria: 1 produto AM (mercado principal) + 2 nacionais bem
-    // reconhecidos, pra não parecer promoção só de uma região pra quem
-    // entrou lendo uma matéria de outro estado. Reaproveita o mesmo
-    // mentoriaCardHtml() da vitrine de /mentorias — zero duplicação de
-    // marcação — só com posicao="home-final" pra ela conseguir comparar o
-    // desempenho desse lugar separado do da vitrine no admin.
+    // Teaser de Mentorias no fim da home (pedido dela, 10/2026 — revisado pra
+    // versão em banner compacto depois que ela viu os 3 cards completos
+    // empilhados e achou pesado demais / "parece venda"). Cada linha agora é
+    // só logo + headline de efeito + seta, sem teaser/preço/botão — convite
+    // rápido, não cartão de venda repetido 3x. O botão "Ver todas as
+    // mentorias" continua (ela pediu pra manter). Some junto com busca/filtro
+    // ativo (igual à manchete e ao bloco do Amazonas) porque quem tá
+    // filtrando resultados quer respostas, não uma vitrine. Curadoria: 1
+    // produto AM (mercado principal) + 2 nacionais bem reconhecidos, pra não
+    // parecer promoção só de uma região pra quem entrou lendo uma matéria de
+    // outro estado. Headlines seguem o mesmo molde ("Libere seu plano de
+    // estudos pra/pro/para X") que ela sugeriu pro TJ-AM, só repetido de
+    // forma consistente pros outros dois.
     if (!hasActiveFilter){
-      const vitrineHomeNomes = ["Mentoria Elite TJ-AM", "Mentoria Elite PRF", "Mentoria Elite INSS"];
-      const vitrineHome = vitrineHomeNomes.map(n => MENTORIAS.find(m => m.nome === n)).filter(Boolean);
+      const vitrineHome = [
+        { nome: "Mentoria Elite TJ-AM", headline: "Libere seu plano de estudos para o TJ-AM" },
+        { nome: "Mentoria Elite PRF", headline: "Libere seu plano de estudos pra PRF" },
+        { nome: "Mentoria Elite INSS", headline: "Libere seu plano de estudos pro INSS" }
+      ].map(v => ({ m: MENTORIAS.find(x => x.nome === v.nome), headline: v.headline })).filter(v => v.m);
       if (vitrineHome.length){
         html += '<div class="wrap" style="margin-top:12px;">';
         html += '<div class="hero-eyebrow">Mentorias Elite</div>';
-        html += '<div class="section-label-lg" style="border-bottom:none;padding-bottom:0;margin-bottom:8px;">Já pensou em ter um plano de estudos sob medida?</div>';
-        html += '<p style="font-size:14.5px;color:var(--ink-soft);max-width:60ch;margin:0 0 20px;">Nossas Mentorias Elite usam inteligência artificial pra montar seu plano de estudos com base no tempo livre que você tem, focado só no que cai na prova.</p>';
-        html += '<div class="mentoria-grid">' + vitrineHome.map(m => mentoriaCardHtml(m, "home-final")).join("") + '</div>';
+        html += '<div class="section-label-lg" style="border-bottom:none;padding-bottom:0;margin-bottom:16px;">Já pensou em ter um plano de estudos sob medida?</div>';
+        html += '<div class="mentoria-banner-list">' + vitrineHome.map(v => mentoriaBannerHtml(v.m, v.headline, "home-final")).join("") + '</div>';
         html += '<div class="am-destaque-more"><button class="am-destaque-all" id="home-mentorias-ver-todas" type="button">Ver todas as mentorias →</button></div>';
         html += '</div>';
       }
@@ -1944,6 +1957,21 @@
     }
     return '<span class="mentoria-logo-wrap"><img class="mentoria-logo" src="'+l.single+'" alt="" loading="lazy"></span>';
   }
+  // Banner compacto de mentoria (teaser leve, usado no fim da home): logo +
+  // headline curta e de efeito, sem teaser/preço/botão — o oposto do
+  // mentoria-card completo (feito de propósito pra parecer convite rápido,
+  // não um cartão de venda empilhado 3x). Mesmo data-track-click/posicao do
+  // mentoria-card, então entra na mesma métrica de cliques por posição.
+  function mentoriaBannerHtml(m, headline, posicao){
+    posicao = posicao || "home-final";
+    const cor = CAT_COLOR[m.cat] || "#1D4FA3";
+    return '<a class="mentoria-banner" style="border-left:4px solid '+cor+';" href="'+m.link+mentoriaUtm(m.campanha)+'" target="_blank" rel="noopener" data-track-click="produto" data-track-mentoria="'+m.nome+'" data-track-posicao="'+posicao+'" data-track-post="">' +
+      '<span class="mentoria-banner-logo">'+mentoriaLogoHtml(m.logoKey)+'</span>' +
+      '<span class="mentoria-banner-headline">'+headline+'</span>' +
+      '<span class="mentoria-banner-arrow">→</span>' +
+    '</a>';
+  }
+
   function mentoriaCardHtml(m, posicao){
     // Card inteiro é o link (pedido dela: "deixe todo o botão clicável, não só
     // o 'conhecer a mentoria'") — o "botão" visual é só um <span>, não um <a>
