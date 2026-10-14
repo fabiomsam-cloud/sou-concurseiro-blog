@@ -1382,7 +1382,6 @@
 
   function renderHome(){
     setPageMeta();
-    const cats = Array.from(new Set(POSTS.map(p => p.categoria))).sort();
     const ufs = Array.from(new Set(POSTS.map(p => p.uf))).sort();
     const sorted = POSTS.slice().sort((a,b) => (b.data_publicacao > a.data_publicacao ? 1 : -1));
     // Manchete vira um carrossel com os 5 concursos/notícias mais recentes
@@ -1528,13 +1527,15 @@
       }
     }
 
-    // Rodapé "navegue por carreira": repete busca e tópicos lá embaixo, pra
-    // quem rolou a página inteira não precisar voltar ao topo pra filtrar.
-    html += '<div class="topics-foot">';
-    html += '<div class="section-label">Navegue por carreira</div>';
-    html += '<div class="searchbox" id="foot-searchbox"><span class="u" style="font-size:12px;color:var(--ink-soft)">🔍</span><input type="text" id="foot-search" placeholder="Buscar concurso, órgão, banca, estado, assunto..." value="'+query.replace(/"/g,"&quot;")+'"></div>';
-    html += '<div class="filterbar" style="padding:0;">' + pillsHtml(cats) + '</div>';
-    html += '</div>';
+    // Rodapé "navegue por carreira": removido a pedido da Vanessa (10/2026) —
+    // ela notou que, no mobile, ele só repetia funções que já existem mais
+    // acima na própria home (busca do topo + o mesmo filtro por carreira que
+    // a grade "Concursos por Carreira" já oferece, só que em pill em vez de
+    // tile), então virou duplicação sem necessidade, ainda mais agora que a
+    // home ficou mais longa com a seção de mentorias. Quem quer voltar pro
+    // topo pra buscar/filtrar de novo já tem o botão flutuante "voltar ao
+    // topo". pillsHtml() fica definida (só sem call site aqui), caso essa
+    // navegação volte a fazer sentido em outro lugar no futuro.
 
     html += '</div>';
 
@@ -1604,17 +1605,6 @@
       mlList.addEventListener("click", (e) => {
         const item = e.target.closest(".side-item");
         if (item) location.hash = "#/materia/" + item.dataset.id;
-      });
-    }
-    const footSearch = $("#foot-search");
-    if (footSearch){
-      footSearch.addEventListener("input", () => {
-        query = footSearch.value;
-        const topSearch = $("#search");
-        if (topSearch) topSearch.value = query;
-        renderHome();
-        const el2 = $("#foot-search");
-        if (el2){ el2.focus(); el2.setSelectionRange(el2.value.length, el2.value.length); }
       });
     }
   }
