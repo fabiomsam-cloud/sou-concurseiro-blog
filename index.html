@@ -2091,9 +2091,11 @@
     wireDepoVideoThumbs("#aprovados-list");
   }
 
-  const COMING_SOON_PAGES = {
-    dicas: { eyebrow: "Portal de concursos", titulo: "Dicas de Estudo", texto: "Em breve: técnicas de estudo, planos e materiais pra turbinar sua preparação." }
-  };
+  // Sistema genérico de "página em construção" — fica aqui sem nenhuma
+  // entrada (Dicas de Estudo saiu daqui no round 23, quando virou uma seção
+  // de verdade) pra reaproveitar rápido se outra aba do menu precisar de um
+  // placeholder provisório no futuro.
+  const COMING_SOON_PAGES = {};
   function renderComingSoon(key){
     clearHeroAutoTimer();
     const p = COMING_SOON_PAGES[key];
@@ -2108,12 +2110,39 @@
     window.scrollTo(0,0);
   }
 
+  // Dicas de Estudo (#/dicas): ativada no round 23 — pedido dela. Já existia
+  // suporte pra isso desde sempre (campo "Seção do portal" no admin, com a
+  // opção "Dica de estudo", e TIPO_LABEL já mostrava o selo "📘 Dica de
+  // estudo" nos cards) — só faltava essa página de verdade pra mostrar essas
+  // matérias; até aqui elas não tinham pra onde ir. É uma matéria normal
+  // (mesmo cardHtml/#/materia da home), só filtrada por tipo_conteudo —
+  // não é uma coleção à parte como os depoimentos. Enquanto ela não publicar
+  // a primeira, mostra um aviso amigável em vez de uma grade vazia.
+  function renderDicas(){
+    clearHeroAutoTimer();
+    setPageMeta("Dicas de Estudo | Sou Concurseiro", "Técnicas de estudo, planos e materiais pra turbinar sua preparação pra concursos públicos.");
+    const dicas = POSTS.filter(p => p.tipo_conteudo === "dica-de-estudo")
+      .sort((a,b) => (b.data_publicacao > a.data_publicacao ? 1 : -1));
+    let html = '<div class="wrap cal-page">';
+    html += '<div class="hero-eyebrow">Portal de concursos</div>';
+    html += '<h1 style="font-size:clamp(24px,3.6vw,34px);margin:0 0 10px;">Dicas de Estudo</h1>';
+    html += '<p class="lede" style="margin:0 0 24px;max-width:62ch;">Técnicas de estudo, planos e materiais pra turbinar sua preparação.</p>';
+    html += dicas.length
+      ? '<div class="grid">' + dicas.map(cardHtml).join("") + '</div>'
+      : '<div class="empty">As primeiras dicas de estudo chegam em breve por aqui.</div>';
+    html += '</div>';
+    app.innerHTML = html;
+    document.querySelectorAll(".card").forEach(el => {
+      el.addEventListener("click", () => { location.hash = "#/materia/" + el.dataset.id; });
+    });
+    window.scrollTo(0,0);
+  }
+
   function route(){
     if (!POSTS.length){ return; }
     const h = location.hash || "#/";
     const m = /^#\/materia\/(.+)$/.exec(h);
-    const comingSoonMatch = /^#\/(dicas)$/.exec(h);
-    $("#nav-home").classList.toggle("active", !m && h !== "#/calendario" && h !== "#/mentorias" && h !== "#/aprovados" && !comingSoonMatch);
+    $("#nav-home").classList.toggle("active", !m && h !== "#/calendario" && h !== "#/mentorias" && h !== "#/aprovados" && h !== "#/dicas");
     $("#nav-calendario").classList.toggle("active", h === "#/calendario");
     $("#nav-dicas").classList.toggle("active", h === "#/dicas");
     $("#nav-mentorias").classList.toggle("active", h === "#/mentorias");
@@ -2122,7 +2151,7 @@
     else if (h === "#/calendario") renderConcursosPorEstado(true);
     else if (h === "#/mentorias") renderMentorias();
     else if (h === "#/aprovados") renderAprovados();
-    else if (comingSoonMatch) renderComingSoon(comingSoonMatch[1]);
+    else if (h === "#/dicas") renderDicas();
     else renderHome();
   }
 
