@@ -315,6 +315,19 @@
   .carreira-tile.active{border-color:var(--accent);background:var(--accent-soft);}
   .carreira-tile.active .ico{background:var(--accent);color:#fff;}
 
+  /* ---- Navegação por região (home) ---- */
+  .regiao-nav-section{margin-top:8px;margin-bottom:8px;}
+  .region-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;margin-bottom:14px;}
+  .region-pill{font-weight:700;font-size:13px;color:var(--ink);background:var(--paper-alt);border:1px solid var(--line);border-radius:999px;padding:9px 16px;cursor:pointer;transition:border-color .15s,color .15s,background .15s;font-family:"Inter",sans-serif;}
+  .region-pill:hover{border-color:var(--accent);color:var(--accent);}
+  .region-pill.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .uf-grid{display:grid;grid-template-columns:repeat(9,1fr);gap:7px;}
+  @media (max-width:760px){ .uf-grid{grid-template-columns:repeat(6,1fr);} }
+  @media (max-width:420px){ .uf-grid{grid-template-columns:repeat(5,1fr);} }
+  .uf-chip{font-family:"Inter",sans-serif;font-variant-numeric:tabular-nums;font-weight:700;font-size:12px;color:var(--ink-soft);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 0;text-align:center;cursor:pointer;transition:border-color .15s,color .15s,background .15s;}
+  .uf-chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
+  .uf-chip.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
   /* ---- sidebar: Editorias (navegação por carreira, ref. Gran Cursos) ---- */
   .side-editorias{border:1px solid var(--line);border-radius:14px;padding:16px 16px 4px;}
   .side-editorias h4{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin:0 0 12px;}
@@ -355,6 +368,23 @@
   .cal-toolbar .filterbar{padding:0;}
   .cal-toolbar .searchbox{background:var(--paper);}
 
+  /* ---- calendário de concursos (timeline por data/status) ---- */
+  .timeline{display:flex;flex-direction:column;gap:10px;margin:16px 0 36px;}
+  .timeline-item{display:flex;align-items:center;gap:16px;background:var(--paper-alt);border:1px solid var(--line);border-radius:14px;padding:14px 16px;text-decoration:none;color:inherit;transition:border-color .15s,transform .12s;}
+  .timeline-item:hover{border-color:var(--accent);transform:translateY(-1px);}
+  .timeline-date{flex:0 0 auto;width:118px;font-size:13px;font-weight:700;color:var(--ink);display:flex;flex-direction:column;gap:3px;}
+  .timeline-days{font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.02em;}
+  .timeline-days.urgente{color:var(--amber);}
+  .timeline-body{flex:1 1 auto;min-width:0;}
+  .timeline-tipo{font-size:12px;color:var(--ink-soft);font-weight:600;margin-bottom:2px;}
+  .timeline-concurso{font-size:14.5px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .status-badge{flex:0 0 auto;font-size:11px;font-weight:700;border:1px solid;border-radius:999px;padding:4px 10px;white-space:nowrap;}
+  @media (max-width:560px){
+    .timeline-item{flex-wrap:wrap;}
+    .timeline-date{width:auto;flex-direction:row;align-items:baseline;gap:8px;}
+    .status-badge{order:3;width:100%;text-align:center;}
+  }
+
   /* ---- depoimentos em vídeo (home, antes do rodapé) ---- */
   .depo-video-section{margin:44px 0 0;padding-top:32px;border-top:2px solid var(--line-strong);}
   .depo-video-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:16px;}
@@ -389,6 +419,17 @@
   .article-nao-oficial{display:flex;gap:10px;align-items:flex-start;background:var(--amber-soft);border:1px solid var(--amber);border-radius:10px;padding:14px 16px;margin:0 0 24px;font-size:13.5px;line-height:1.55;color:var(--ink);}
   .article-nao-oficial .ico{flex:0 0 auto;font-size:15px;line-height:1.4;}
   .article-nao-oficial b{color:var(--amber);}
+  /* Widget "Calendário do concurso" dentro da matéria — status + próximas
+     datas, só aparece quando preenchido no painel. */
+  .article-calendario{background:var(--paper-alt);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:0 0 24px;}
+  .article-calendario-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
+  .article-calendario-head h3{margin:0;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);}
+  .article-calendario-list{display:flex;flex-direction:column;gap:7px;}
+  .article-calendario-item{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13.5px;color:var(--ink);padding:6px 0;border-top:1px solid var(--line);}
+  .article-calendario-item:first-child{border-top:none;}
+  .article-calendario-item .mono{color:var(--ink-soft);font-size:12.5px;}
+  .article-calendario-link{display:inline-block;margin-top:12px;font-size:12.5px;font-weight:700;color:var(--accent);text-decoration:none;}
+  .article-calendario-link:hover{text-decoration:underline;}
   /* Lista de fontes no fim do corpo — selo azul (mesma cor de confiança do
      resto do site) marca as fontes oficiais entre as demais. */
   .article-fontes{margin:32px 0 0;padding-top:20px;border-top:1px solid var(--line);}
@@ -512,6 +553,16 @@
   .mentoria-banner-headline{flex:1;min-width:0;font-size:14.5px;font-weight:800;color:var(--ink);letter-spacing:-.01em;}
   .mentoria-banner-arrow{flex:0 0 auto;color:var(--accent);font-weight:800;font-size:17px;}
   @media (max-width:640px){ .mentoria-banner{padding:12px 14px;gap:11px;} .mentoria-banner-headline{font-size:13.5px;} }
+
+  /* ---- Garantias (vitrine de Mentorias) ---- */
+  .garantias-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:40px;}
+  @media (max-width:640px){ .garantias-row{grid-template-columns:1fr;} }
+  .garantia-card{display:flex;align-items:center;gap:16px;border-radius:16px;padding:20px 22px;background:var(--accent);color:#fff;}
+  .garantia-selo{flex:0 0 auto;width:54px;height:54px;border-radius:999px;background:rgba(255,255,255,.16);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:19px;line-height:1;}
+  .garantia-selo span{font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-top:2px;}
+  .garantia-selo-icon{font-size:24px;}
+  .garantia-texto h4{margin:0 0 4px;font-size:14.5px;font-weight:800;}
+  .garantia-texto p{margin:0;font-size:12.5px;line-height:1.5;color:rgba(255,255,255,.88);}
 
   .mentoria-footer-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:40px 0 0;}
   .mentoria-footer-btn{background:none;border:1.5px solid var(--line-strong);color:var(--ink);font-weight:700;font-size:13px;cursor:pointer;padding:11px 20px;border-radius:999px;transition:background .15s,border-color .15s,transform .15s;}
@@ -677,6 +728,7 @@
       <div class="nav-links">
         <a class="home-link" id="nav-home">Início</a>
         <a class="home-link" id="nav-calendario">Concursos por Estado</a>
+        <a class="home-link" id="nav-datas">Calendário</a>
         <a class="home-link" id="nav-mentorias">Mentorias</a>
         <a class="home-link" id="nav-dicas">Dicas de Estudo</a>
         <a class="home-link" id="nav-aprovados">Aprovados</a>
@@ -944,11 +996,25 @@
     "RR":"Roraima","MA":"Maranhão","RJ":"Rio de Janeiro","PA":"Pará","Nacionais/Federais":"Nacional"
   };
 
+  // Navegação por região (home, "Opção A" aprovada por ela) — agrupa os 27
+  // estados nas 5 regiões do Brasil só pra facilitar achar o estado; o clique
+  // na UF reaproveita o MESMO filtro que o <select> de estado já usa (não
+  // navega pra outra página), pra ficar consistente com o resto da home.
+  const REGIOES = [
+    { slug:"norte", nome:"Norte", ufs:["AC","AM","AP","PA","RO","RR","TO"] },
+    { slug:"nordeste", nome:"Nordeste", ufs:["AL","BA","CE","MA","PB","PE","PI","RN","SE"] },
+    { slug:"centro-oeste", nome:"Centro-Oeste", ufs:["DF","GO","MS","MT"] },
+    { slug:"sudeste", nome:"Sudeste", ufs:["ES","MG","RJ","SP"] },
+    { slug:"sul", nome:"Sul", ufs:["PR","RS","SC"] }
+  ];
+  const TODAS_UFS = ["AC","AL","AM","AP","BA","CE","DF","ES","GO","MA","MG","MS","MT","PA","PB","PE","PI","PR","RJ","RN","RO","RR","RS","SC","SE","SP","TO"];
+
   let filterCat = "";
   let filterUf = "";
   let query = "";
   let calUf = "";
   let calQuery = "";
+  let homeRegiao = "";
 
   function catAbbr(cat){
     return CAT_ABBR[cat] || (cat || "").slice(0,4).toUpperCase();
@@ -1038,6 +1104,65 @@
     if (parts.length !== 3) return d || "";
     const meses = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
     return parseInt(parts[2],10) + " " + meses[parseInt(parts[1],10)-1] + " " + parts[0];
+  }
+
+  // ---- Calendário de concursos: status + datas (edital, inscrição, prova, resultado) ----
+  const STATUS_CONCURSO_LABEL = {
+    "previsto": "Previsto",
+    "autorizado": "Autorizado",
+    "comissao-formada": "Comissão formada",
+    "edital-publicado": "Edital publicado",
+    "inscricoes-abertas": "Inscrições abertas",
+    "inscricoes-encerradas": "Inscrições encerradas",
+    "prova-realizada": "Prova realizada",
+    "resultado-divulgado": "Resultado divulgado"
+  };
+  // Cor por fase: cinza/azul pra fases de espera, âmbar pra "aja agora"
+  // (inscrições abertas é a fase que mais exige ação imediata do leitor),
+  // verde pra concluído.
+  const STATUS_CONCURSO_COLOR = {
+    "previsto": "var(--ink-soft)",
+    "autorizado": "var(--accent)",
+    "comissao-formada": "var(--accent)",
+    "edital-publicado": "var(--accent)",
+    "inscricoes-abertas": "var(--amber)",
+    "inscricoes-encerradas": "var(--ink-soft)",
+    "prova-realizada": "var(--ink-soft)",
+    "resultado-divulgado": "#2E9E5B"
+  };
+  function todayStr(){ return new Date().toISOString().slice(0,10); }
+  // Diferença em dias (arredondada) entre hoje e uma data "YYYY-MM-DD".
+  // Positivo = no futuro, negativo = no passado.
+  function diasAte(dateStr){
+    if (!dateStr) return null;
+    const hoje = new Date(todayStr()+"T00:00:00");
+    const alvo = new Date(dateStr+"T00:00:00");
+    return Math.round((alvo - hoje) / 86400000);
+  }
+  function diasLabel(n){
+    if (n === 0) return "é hoje";
+    if (n === 1) return "amanhã";
+    if (n > 1) return "em " + n + " dias";
+    if (n === -1) return "ontem";
+    return "há " + Math.abs(n) + " dias";
+  }
+  function statusBadgeHtml(p){
+    if (!p.status_concurso || !STATUS_CONCURSO_LABEL[p.status_concurso]) return "";
+    const cor = STATUS_CONCURSO_COLOR[p.status_concurso] || "var(--accent)";
+    return '<span class="status-badge" style="color:'+cor+';border-color:'+cor+';">'+STATUS_CONCURSO_LABEL[p.status_concurso]+'</span>';
+  }
+  // Monta a lista de "próximos eventos" de uma matéria (edital, início/fim de
+  // inscrição, prova, resultado) — usada tanto no widget da própria matéria
+  // quanto pra alimentar a timeline geral do Calendário de Concursos.
+  function eventosDoPost(p){
+    const eventos = [];
+    if (p.data_edital) eventos.push({ tipo:"Edital", data:p.data_edital, icone:"📄" });
+    else if (p.previsao_edital) eventos.push({ tipo:"Previsão de edital", dataTexto:p.previsao_edital, icone:"📄" });
+    if (p.data_inscricao_inicio) eventos.push({ tipo:"Início das inscrições", data:p.data_inscricao_inicio, icone:"📝" });
+    if (p.data_inscricao_fim) eventos.push({ tipo:"Fim das inscrições", data:p.data_inscricao_fim, icone:"⏳" });
+    if (p.data_prova) eventos.push({ tipo:"Prova", data:p.data_prova, icone:"✏️" });
+    if (p.data_resultado) eventos.push({ tipo:"Resultado", data:p.data_resultado, icone:"🏁" });
+    return eventos;
   }
 
   // Título e meta description mudam por página/matéria (SEO + preview ao
@@ -1410,6 +1535,50 @@
     }
   }
 
+  function regiaoNavHtml(){
+    const regiaoAtual = REGIOES.find(r => r.slug === homeRegiao);
+    const ufsToShow = regiaoAtual ? regiaoAtual.ufs : TODAS_UFS;
+    let html = '<div class="wrap regiao-nav-section">';
+    html += '<div class="section-label">Encontre concursos por região</div>';
+    html += '<div class="region-pills">';
+    html += '<button class="region-pill'+(homeRegiao===""?" active":"")+'" data-regiao="" type="button">Todas as regiões</button>';
+    REGIOES.forEach(r => {
+      html += '<button class="region-pill'+(homeRegiao===r.slug?" active":"")+'" data-regiao="'+r.slug+'" type="button">'+r.nome+'</button>';
+    });
+    html += '</div>';
+    html += '<div class="uf-grid">';
+    ufsToShow.forEach(uf => {
+      html += '<button class="uf-chip'+(filterUf===uf?" active":"")+'" data-uf="'+uf+'" type="button">'+uf+'</button>';
+    });
+    html += '</div>';
+    html += '</div>';
+    return html;
+  }
+
+  function wireRegiaoNav(){
+    document.querySelectorAll(".region-pill").forEach(el => {
+      el.addEventListener("click", () => { homeRegiao = el.dataset.regiao; paintRegiaoNav(); });
+    });
+    document.querySelectorAll(".uf-chip").forEach(el => {
+      el.addEventListener("click", () => {
+        filterUf = (filterUf === el.dataset.uf) ? "" : el.dataset.uf;
+        renderHome();
+        const results = $("#pub-recentes");
+        if (results) results.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+  }
+
+  // Repinta só a seção de região (sem re-renderizar a home inteira) quando
+  // o filtro de região muda — evita perder a posição de rolagem/piscar o
+  // carrossel por causa de um clique que só reorganiza a grade de UFs.
+  function paintRegiaoNav(){
+    const el = document.querySelector(".regiao-nav-section");
+    if (!el) return;
+    el.outerHTML = regiaoNavHtml();
+    wireRegiaoNav();
+  }
+
   function renderHome(){
     setPageMeta();
     const ufs = Array.from(new Set(POSTS.map(p => p.uf))).sort();
@@ -1457,6 +1626,13 @@
         html += '<button class="hero-nav next" id="hero-next" type="button" aria-label="Próximo destaque">›</button>';
       }
       html += '</div></div>';
+    }
+
+    // Navegação por região: logo depois dos Destaques do dia (não antes,
+    // pra não disputar com o carrossel curado), some com busca/filtro ativo
+    // igual às outras seções de navegação da home.
+    if (!hasActiveFilter){
+      html += regiaoNavHtml();
     }
 
     // Concursos no Amazonas: mercado principal da SCVP, então ganha destaque
@@ -1594,6 +1770,7 @@
     });
     const ufSel = $("#uf-select");
     if (ufSel) ufSel.addEventListener("change", () => { filterUf = ufSel.value; renderHome(); });
+    wireRegiaoNav();
     document.querySelectorAll(".side-item").forEach(el => {
       el.addEventListener("click", () => { location.hash = "#/materia/" + el.dataset.id; });
     });
@@ -1731,6 +1908,23 @@
       html += '<div class="article-nao-oficial"><span class="ico">⚠️</span><span><b>Informação ainda não oficial:</b> ' +
         (p.nota_nao_oficial && p.nota_nao_oficial.trim() ? p.nota_nao_oficial : 'Parte do conteúdo abaixo é previsão ou estimativa e ainda não foi confirmada em edital ou documento oficial.') +
       '</span></div>';
+    }
+    // Widget de calendário: status do concurso + próximas datas (edital,
+    // inscrição, prova, resultado), só aparece quando algum desses campos
+    // foi preenchido no painel. Conecta a matéria com a página geral de
+    // Calendário de Concursos (link no rodapé do widget).
+    const eventosConcurso = eventosDoPost(p);
+    if (p.status_concurso || eventosConcurso.length){
+      html += '<div class="article-calendario">';
+      html += '<div class="article-calendario-head"><h3>Calendário do concurso</h3>' + statusBadgeHtml(p) + '</div>';
+      if (eventosConcurso.length){
+        html += '<div class="article-calendario-list">' + eventosConcurso.map(ev => {
+          const quando = ev.data ? fmtDate(ev.data) + ' · ' + diasLabel(diasAte(ev.data)) : ev.dataTexto;
+          return '<div class="article-calendario-item"><span>'+ev.icone+' '+ev.tipo+'</span><span class="mono">'+quando+'</span></div>';
+        }).join("") + '</div>';
+      }
+      html += '<a class="article-calendario-link" href="#/datas">Ver calendário completo de concursos →</a>';
+      html += '</div>';
     }
     if (p.imagem_capa){
       html += '<div class="article-img"><img src="'+p.imagem_capa+'" alt="" decoding="async" fetchpriority="high"></div>';
@@ -1992,6 +2186,23 @@
     '</a>';
   }
 
+  // Garantias oferecidas pra quem compra uma Mentoria Elite — conteúdo real
+  // confirmado por ela (reembolso de 7 dias + atualização pós-edital), não
+  // copiado de concorrente. Aparece uma vez na vitrine de Mentorias (é
+  // política da empresa, não varia por mentoria individual).
+  function garantiasHtml(){
+    return '<div class="garantias-row">' +
+      '<div class="garantia-card">' +
+        '<div class="garantia-selo">7<span>dias</span></div>' +
+        '<div class="garantia-texto"><h4>Garantia de reembolso integral</h4><p>Teste por 7 dias, sem compromisso. Se não gostar, devolvemos 100% do valor investido.</p></div>' +
+      '</div>' +
+      '<div class="garantia-card">' +
+        '<div class="garantia-selo garantia-selo-icon">🔄</div>' +
+        '<div class="garantia-texto"><h4>Garantia de atualização pós-edital</h4><p>Se o edital for publicado durante a sua mentoria, o conteúdo é atualizado conforme o edital, sem custo adicional.</p></div>' +
+      '</div>' +
+    '</div>';
+  }
+
   function mentoriaCardHtml(m, posicao){
     // Card inteiro é o link (pedido dela: "deixe todo o botão clicável, não só
     // o 'conhecer a mentoria'") — o "botão" visual é só um <span>, não um <a>
@@ -2037,6 +2248,7 @@
       html += '<div class="section-label-lg" style="margin-top:36px;">Mentorias em outros estados</div>';
       html += '<div class="mentoria-grid">' + outras.map(mentoriaCardHtml).join("") + '</div>';
     }
+    html += garantiasHtml();
     html += '<div class="mentoria-footer-actions">';
     html += '<button class="mentoria-footer-btn" id="mentorias-topo" type="button">↑ Voltar para o topo</button>';
     html += '<button class="mentoria-footer-btn" id="mentorias-inicio" type="button">🏠 Voltar para o início</button>';
@@ -2138,17 +2350,93 @@
     window.scrollTo(0,0);
   }
 
+  // Calendário de Concursos: timeline de próximos eventos (edital, início/fim
+  // de inscrição, prova, resultado) de todas as matérias, mais a lista de
+  // concursos aguardando edital sem data definida ainda. Diferente de
+  // "Concursos por Estado" (que organiza por UF) — essa página organiza por
+  // tempo/status, pra responder "o que tá chegando" de cara.
+  function renderCalendarioDeConcursos(){
+    clearHeroAutoTimer();
+    setPageMeta("Calendário de Concursos | Sou Concurseiro", "Edital, inscrições, prova e resultado dos principais concursos públicos, organizados por data.");
+    const hoje = todayStr();
+
+    // Uma linha por evento (não por matéria) — uma matéria com prova E
+    // resultado cadastrados entra duas vezes na timeline, uma pra cada data.
+    const eventos = [];
+    POSTS.forEach(p => {
+      eventosDoPost(p).forEach(ev => {
+        if (!ev.data) return; // ignora "previsão" em texto livre aqui — timeline é só datas reais
+        eventos.push(Object.assign({ post:p }, ev));
+      });
+    });
+    const proximos = eventos.filter(ev => diasAte(ev.data) >= 0).sort((a,b) => a.data < b.data ? -1 : 1).slice(0,24);
+
+    const aguardandoEdital = POSTS.filter(p =>
+      ["previsto","autorizado","comissao-formada"].indexOf(p.status_concurso) !== -1 && !p.data_edital
+    ).sort((a,b) => (a.concurso||"").localeCompare(b.concurso||"", "pt-BR"));
+
+    let html = '<div class="wrap cal-page">';
+    html += '<div class="hero-eyebrow">Organização por data</div>';
+    html += '<h1 style="font-size:clamp(24px,3.6vw,34px);margin:0 0 10px;">Calendário de Concursos</h1>';
+    html += '<p class="lede" style="margin:0 0 24px;max-width:62ch;">Edital, inscrições, prova e resultado dos principais concursos, do mais próximo pro mais distante.</p>';
+
+    html += '<h2 class="article-h2" style="margin-top:0;">Próximos eventos</h2>';
+    if (proximos.length){
+      html += '<div class="timeline">';
+      proximos.forEach(ev => {
+        const n = diasAte(ev.data);
+        const urgente = n <= 7;
+        html += '<a class="timeline-item" href="#/materia/'+ev.post.id+'" data-id="'+ev.post.id+'">' +
+          '<div class="timeline-date mono">' + fmtDate(ev.data).replace(" "," ") + '<span class="timeline-days'+(urgente?' urgente':'')+'">'+diasLabel(n)+'</span></div>' +
+          '<div class="timeline-body">' +
+            '<div class="timeline-tipo">'+ev.icone+' '+ev.tipo+'</div>' +
+            '<div class="timeline-concurso">'+(ev.post.concurso||ev.post.titulo)+(ev.post.uf ? ' · '+(UF_NAMES[ev.post.uf]||ev.post.uf) : '')+'</div>' +
+          '</div>' +
+          statusBadgeHtml(ev.post) +
+        '</a>';
+      });
+      html += '</div>';
+    } else {
+      html += '<div class="empty">Nenhuma data cadastrada ainda pros próximos dias. Assim que o calendário dos concursos for preenchido no painel, os eventos aparecem aqui.</div>';
+    }
+
+    if (aguardandoEdital.length){
+      html += '<h2 class="article-h2">Concursos aguardando edital</h2>';
+      html += '<div class="timeline">';
+      aguardandoEdital.forEach(p => {
+        html += '<a class="timeline-item" href="#/materia/'+p.id+'" data-id="'+p.id+'">' +
+          '<div class="timeline-date mono">'+(p.previsao_edital ? p.previsao_edital : "Sem previsão")+'</div>' +
+          '<div class="timeline-body">' +
+            '<div class="timeline-tipo">📄 Edital</div>' +
+            '<div class="timeline-concurso">'+(p.concurso||p.titulo)+(p.uf ? ' · '+(UF_NAMES[p.uf]||p.uf) : '')+'</div>' +
+          '</div>' +
+          statusBadgeHtml(p) +
+        '</a>';
+      });
+      html += '</div>';
+    }
+
+    html += '</div>';
+    app.innerHTML = html;
+    document.querySelectorAll(".timeline-item").forEach(el => {
+      el.addEventListener("click", (e) => { e.preventDefault(); location.hash = "#/materia/" + el.dataset.id; window.scrollTo(0,0); });
+    });
+    window.scrollTo(0,0);
+  }
+
   function route(){
     if (!POSTS.length){ return; }
     const h = location.hash || "#/";
     const m = /^#\/materia\/(.+)$/.exec(h);
-    $("#nav-home").classList.toggle("active", !m && h !== "#/calendario" && h !== "#/mentorias" && h !== "#/aprovados" && h !== "#/dicas");
+    $("#nav-home").classList.toggle("active", !m && h !== "#/calendario" && h !== "#/datas" && h !== "#/mentorias" && h !== "#/aprovados" && h !== "#/dicas");
     $("#nav-calendario").classList.toggle("active", h === "#/calendario");
+    $("#nav-datas").classList.toggle("active", h === "#/datas");
     $("#nav-dicas").classList.toggle("active", h === "#/dicas");
     $("#nav-mentorias").classList.toggle("active", h === "#/mentorias");
     $("#nav-aprovados").classList.toggle("active", h === "#/aprovados");
     if (m) renderArticle(decodeURIComponent(m[1]));
     else if (h === "#/calendario") renderConcursosPorEstado(true);
+    else if (h === "#/datas") renderCalendarioDeConcursos();
     else if (h === "#/mentorias") renderMentorias();
     else if (h === "#/aprovados") renderAprovados();
     else if (h === "#/dicas") renderDicas();
@@ -2347,6 +2635,7 @@
   $("#nav-home").addEventListener("click", goHomeFresh);
   $("#brand-home").addEventListener("click", goHomeFresh);
   $("#nav-calendario").addEventListener("click", () => { location.hash = "#/calendario"; });
+  $("#nav-datas").addEventListener("click", () => { location.hash = "#/datas"; });
   $("#nav-dicas").addEventListener("click", () => { location.hash = "#/dicas"; });
   $("#nav-mentorias").addEventListener("click", () => { location.hash = "#/mentorias"; });
   $("#nav-aprovados").addEventListener("click", () => { location.hash = "#/aprovados"; });
