@@ -93,6 +93,10 @@
   .metric-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
   .metric-tab{font-size:12.5px;font-weight:700;padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);cursor:pointer;}
   .metric-tab.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
+  .metric-custom-range{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:-6px 0 16px;}
+  .metric-custom-range .field{margin-bottom:0;min-width:150px;}
+  .metric-custom-range .btn{height:39px;}
+  @media (max-width:480px){ .metric-custom-range{flex-direction:column;align-items:stretch;} .metric-custom-range .field{min-width:0;} }
   .metric-row{display:flex;align-items:center;gap:14px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-bottom:8px;}
   .metric-rank{flex:0 0 auto;width:28px;height:28px;border-radius:999px;background:var(--amber-soft);color:var(--amber);font-weight:800;font-size:12.5px;display:flex;align-items:center;justify-content:center;}
   .metric-body{flex:1 1 auto;min-width:0;}
@@ -809,11 +813,44 @@
   // leitura aqui passa pelas funções RPC get_top_product_clicks /
   // get_top_product_clicks_by_mentoria (mesmo padrão de get_top_viewed_posts
   // já usado pra "Mais Lidas" no blog) — a tabela crua não é legível direto.
-  let metricsPeriod = "30"; // "7" | "30" | "all"
-  const METRICS_PERIOD_LABEL = { "7": "Últimos 7 dias", "30": "Últimos 30 dias", "all": "Desde o início" };
+  let metricsPeriod = "30"; // "7" | "30" | "all" | "custom"
+  const METRICS_PERIOD_LABEL = { "7": "Últimos 7 dias", "30": "Últimos 30 dias", "all": "Desde o início", "custom": "Personalizado" };
+  // Datas escolhidas no período "Personalizado" (string "YYYY-MM-DD", como
+  // vem do <input type="date">). Ficam null até ela escolher pela primeira vez.
+  let customSince = null;
+  let customUntil = null;
+
+  function todayIso(){ return new Date().toISOString().slice(0, 10); }
+
+  // Padrão pra quando ela abre "Personalizado" por bem primeira vez: últimos
+  // 30 dias, só pra já ter algo preenchido nos campos de data.
+  function defaultCustomRange(){
+    const today = new Date();
+    const since = new Date(today); since.setDate(since.getDate() - 29);
+    return { since: since.toISOString().slice(0, 10), until: today.toISOString().slice(0, 10) };
+  }
+
+  // Garante que sempre existe uma data escolhida (usa o padrão na primeira
+  // vez) e devolve o intervalo já em ISO completo, cobrindo o dia final
+  // inteiro (até 23:59:59.999) — senão o dia escolhido como "até" ficaria
+  // de fora da busca. Corrige sozinho se ela inverter as datas no calendário.
+  function customRangeIso(){
+    if (!customSince || !customUntil){
+      const def = defaultCustomRange();
+      customSince = customSince || def.since;
+      customUntil = customUntil || def.until;
+    }
+    let since = customSince, until = customUntil;
+    if (since > until){ const tmp = since; since = until; until = tmp; }
+    return {
+      since: new Date(since + "T00:00:00.000Z").toISOString(),
+      until: new Date(until + "T23:59:59.999Z").toISOString()
+    };
+  }
 
   function metricsSinceIso(period){
     if (period === "all") return "2000-01-01T00:00:00.000Z";
+    if (period === "custom") return customRangeIso().since;
     const d = new Date();
     d.setDate(d.getDate() - parseInt(period, 10));
     return d.toISOString();
@@ -821,9 +858,22 @@
 
   // Janela atual + janela anterior de mesmo tamanho, pra comparação "vs
   // período anterior". Sem comparação em "all" (não há um "antes" simétrico).
+  // Em "custom" a janela anterior é o mesmo número de dias, imediatamente
+  // antes da data de início escolhida.
   function metricsRanges(period){
     const now = new Date();
     if (period === "all") return { curSince: metricsSinceIso("all"), curUntil: now.toISOString(), prev: null };
+    if (period === "custom"){
+      const cr = customRangeIso();
+      const curSince = new Date(cr.since), curUntil = new Date(cr.until);
+      const spanMs = curUntil.getTime() - curSince.getTime();
+      const prevUntil = new Date(curSince.getTime() - 1);
+      const prevSince = new Date(prevUntil.getTime() - spanMs);
+      return {
+        curSince: cr.since, curUntil: cr.until,
+        prev: { since: prevSince.toISOString(), until: prevUntil.toISOString() }
+      };
+    }
     const days = parseInt(period, 10);
     const curSince = new Date(now); curSince.setDate(curSince.getDate() - days);
     const prevSince = new Date(curSince); prevSince.setDate(prevSince.getDate() - days);
@@ -837,9 +887,17 @@
     let html = '<div class="toolbar"><h1>Métricas do blog</h1>' +
       '<button class="btn btn-sm" id="btn-metrics-back">← Voltar</button></div>';
     html += '<div class="hint" style="margin:-10px 0 16px;">Dado real, gravado no momento em que acontece — sem estimativa. "Mais lidas" cobre toda matéria (com ou sem mentoria); os rankings de clique só valem pra quem tem CTA de mentoria vinculado. "Lead" aqui é um clique num CTA de mentoria (ainda não temos formulário de captura no blog). As comparações são sempre contra o período anterior de mesmo tamanho.</div>';
-    html += '<div class="metric-tabs">' + ["7","30","all"].map(p =>
+    html += '<div class="metric-tabs">' + ["7","30","all","custom"].map(p =>
       '<button class="metric-tab'+(metricsPeriod===p?" active":"")+'" data-period="'+p+'" type="button">'+METRICS_PERIOD_LABEL[p]+'</button>'
     ).join("") + '</div>';
+    if (metricsPeriod === "custom"){
+      customRangeIso(); // garante customSince/customUntil preenchidos (padrão na 1ª vez)
+      html += '<div class="metric-custom-range">' +
+        '<div class="field"><label for="metrics-custom-since">De</label><input type="date" id="metrics-custom-since" value="'+customSince+'" max="'+todayIso()+'"></div>' +
+        '<div class="field"><label for="metrics-custom-until">Até</label><input type="date" id="metrics-custom-until" value="'+customUntil+'" max="'+todayIso()+'"></div>' +
+        '<button class="btn btn-sm btn-primary" id="btn-metrics-custom-apply" type="button">Aplicar período</button>' +
+      '</div>';
+    }
     html += '<div id="metrics-summary" class="stat-grid"></div>';
     html += '<div class="form-card"><h3>Leads por dia (cliques em mentoria)</h3><div id="metrics-leads-total" class="leads-total">—</div><div id="metrics-leads-total-sub" class="leads-total-sub"></div><div id="metrics-leads-chart">Carregando…</div></div>';
     html += '<div class="metrics-grid-2col">';
@@ -854,6 +912,16 @@
     document.querySelectorAll(".metric-tab").forEach(btn => {
       btn.addEventListener("click", () => { metricsPeriod = btn.dataset.period; renderMetrics(); });
     });
+    const btnCustomApply = $("#btn-metrics-custom-apply");
+    if (btnCustomApply){
+      btnCustomApply.addEventListener("click", () => {
+        const sinceInput = $("#metrics-custom-since");
+        const untilInput = $("#metrics-custom-until");
+        if (sinceInput && sinceInput.value) customSince = sinceInput.value;
+        if (untilInput && untilInput.value) customUntil = untilInput.value;
+        renderMetrics();
+      });
+    }
     loadMetrics();
   }
 
@@ -952,8 +1020,24 @@
     if (period === "all") return rows.map(r => ({ dia: r.dia, clicks: r.clicks }));
     const map = {};
     rows.forEach(r => { map[r.dia] = r.clicks; });
-    const days = parseInt(period, 10);
     const out = [];
+    if (period === "custom"){
+      // Mesma lógica de preencher dia-a-dia com 0, mas entre as datas que
+      // ela escolheu (em vez de "hoje menos N dias"). Meio-dia local evita
+      // o dia pular por causa do fuso horário na conversão pra ISO.
+      const cr = customRangeIso();
+      const cursor = new Date(cr.since.slice(0, 10) + "T12:00:00");
+      const end = new Date(cr.until.slice(0, 10) + "T12:00:00");
+      let guard = 0; // teto de segurança caso ela escolha um intervalo gigante
+      while (cursor.getTime() <= end.getTime() && guard < 1000){
+        const iso = cursor.toISOString().slice(0, 10);
+        out.push({ dia: iso, clicks: map[iso] || 0 });
+        cursor.setDate(cursor.getDate() + 1);
+        guard++;
+      }
+      return out;
+    }
+    const days = parseInt(period, 10);
     const today = new Date();
     for (let i = days - 1; i >= 0; i--){
       const d = new Date(today);
