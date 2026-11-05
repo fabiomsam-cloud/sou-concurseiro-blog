@@ -940,7 +940,7 @@
     el.innerHTML =
       '<div class="stat-tile"><div class="stat-lbl">Visualizações</div><div class="stat-num mono">'+views+'</div>' + trendChip(views, prevViews) + '</div>' +
       '<div class="stat-tile"><div class="stat-lbl">Leads (cliques em mentoria)</div><div class="stat-num mono">'+clicks+'</div>' + trendChip(clicks, prevClicks) + '</div>' +
-      '<div class="stat-tile"><div class="stat-lbl">Taxa de conversão</div><div class="stat-num mono">'+conv.toFixed(1)+'%</div><div class="stat-sub">visualização → clique em mentoria</div>' + (prevConv !== null ? trendChip(Math.round(conv*10), Math.round(prevConv*10)) : "") + '</div>' +
+      '<div class="stat-tile"><div class="stat-lbl">Taxa de clique em mentoria</div><div class="stat-num mono">'+conv.toFixed(1)+'%</div><div class="stat-sub">de quem leu, clicou pra conhecer uma mentoria (não é venda — ainda não medimos isso)</div>' + (prevConv !== null ? trendChip(Math.round(conv*10), Math.round(prevConv*10)) : "") + '</div>' +
       '<div class="stat-tile"><div class="stat-lbl">Matérias com leitura</div><div class="stat-num mono">'+postsWithViews+'<span style="font-size:15px;color:var(--ink-soft);font-weight:700;"> / '+totalPosts+'</span></div><div class="stat-sub">tiveram pelo menos 1 leitura no período</div></div>';
   }
 
