@@ -229,7 +229,6 @@
       <span id="logged-in-actions" hidden>
         <a class="btn btn-sm" href="index.html" target="_blank" rel="noopener">Ver blog ↗</a>
         <button class="btn btn-sm" id="btn-metrics" type="button">📊 Métricas comerciais</button>
-        <button class="btn btn-sm" id="btn-leads" type="button">📱 Leads capturados</button>
         <button class="btn btn-sm" id="btn-depoimentos" type="button">🎬 Depoimentos</button>
         <button class="btn btn-sm" id="btn-config" type="button">Identidade visual</button>
         <button class="btn btn-sm" id="btn-logout" type="button">Sair</button>
@@ -295,7 +294,6 @@
   let editingId = null; // null = lista; "__new__" = criando; senão = id em edição
   let showConfig = false; // true = tela de Identidade visual
   let showMetrics = false; // true = tela de Métricas comerciais
-  let showLeads = false;   // true = tela de Leads capturados (WhatsApp)
   let CONFIG = {};        // linha atual de public.blog_config (id="default")
 
   // ---------------------------------------------------------------- sessão
@@ -435,7 +433,6 @@
     if (!loggedIn) return;
     if (showConfig) renderConfig();
     else if (showMetrics) renderMetrics();
-    else if (showLeads) renderLeads();
     else if (showDepoimentos) renderDepoimentos();
     else if (editingId) renderForm(editingId);
     else renderList();
@@ -1170,76 +1167,6 @@
     ).join("");
   }
 
-  // --------------------------------------------------------- leads (WhatsApp)
-  // Contato real (nome + WhatsApp) que a pessoa deixou de propósito no
-  // formulário "Prefere que a gente te chame no WhatsApp?" — sempre junto do
-  // product-cta em cada matéria (template.html, leadCaptureHtml). Diferente
-  // do clique em mentoria (Métricas): aqui é alguém que preencheu os dados.
-  // Tabela leads_whatsapp: anon só insere, admin autenticado lê tudo (mesmo
-  // padrão de segurança das outras tabelas públicas).
-  let LEADS = null; // null = ainda não carregado
-
-  function fmtWhatsapp(digits){
-    let d = String(digits || "");
-    if (d.length > 11 && d.indexOf("55") === 0) d = d.slice(2);
-    if (d.length === 11) return "(" + d.slice(0,2) + ") " + d.slice(2,7) + "-" + d.slice(7);
-    if (d.length === 10) return "(" + d.slice(0,2) + ") " + d.slice(2,6) + "-" + d.slice(6);
-    return digits;
-  }
-  function waLink(digits){
-    let d = String(digits || "");
-    if (!(d.length > 11 && d.indexOf("55") === 0)) d = "55" + d;
-    return "https://wa.me/" + d;
-  }
-
-  function renderLeads(){
-    let html = '<div class="toolbar"><h1>Leads capturados (WhatsApp)</h1>' +
-      '<button class="btn btn-sm" id="btn-leads-back">← Voltar</button></div>';
-    html += '<div class="hint" style="margin:-10px 0 16px;">Contato de verdade, que a pessoa deixou de propósito pedindo retorno — diferente do clique em mentoria que aparece nas Métricas. Vem do formulário "Prefere que a gente te chame no WhatsApp?" logo abaixo do CTA de mentoria em cada matéria.</div>';
-    html += '<div id="leads-list">Carregando…</div>';
-    $("#main-app").innerHTML = html;
-    $("#btn-leads-back").addEventListener("click", () => { showLeads = false; render(); });
-    loadLeadsAndPaint();
-  }
-
-  async function loadLeadsAndPaint(){
-    const el = $("#leads-list");
-    try {
-      const res = await authFetch("/rest/v1/leads_whatsapp?select=*&order=created_at.desc&limit=300");
-      if (!res.ok) throw new Error("Falha ao carregar.");
-      LEADS = await res.json();
-      paintLeads();
-    } catch(e){
-      if (el) el.innerHTML = '<div class="empty">Não foi possível carregar agora. Tente de novo em instantes.</div>';
-    }
-  }
-
-  function paintLeads(){
-    const el = $("#leads-list");
-    if (!el || !LEADS) return;
-    if (!LEADS.length){
-      el.innerHTML = '<div class="empty">Nenhum contato capturado ainda.</div>';
-      return;
-    }
-    el.innerHTML = '<div class="hint" style="margin:0 0 16px;">' + LEADS.length + (LEADS.length === 1 ? ' contato capturado.' : ' contatos capturados.') + '</div>' +
-      LEADS.map(lead => {
-        const posicaoLabel = lead.posicao === "meio" ? "meio da matéria" : (lead.posicao === "final" ? "fim da matéria" : esc(lead.posicao));
-        return '<div class="post-row">' +
-          '<div class="post-thumb">📱</div>' +
-          '<div class="post-body">' +
-            '<div class="post-title">' + esc(lead.nome || "Sem nome informado") + '</div>' +
-            '<div class="post-meta">' +
-              '<span>' + esc(fmtWhatsapp(lead.whatsapp)) + '</span>' +
-              '<span>·</span><span>' + esc(lead.mentoria_nome) + '</span>' +
-              '<span>·</span><span>' + posicaoLabel + '</span>' +
-              '<span>·</span><span>' + fmtDateTime(lead.created_at) + '</span>' +
-            '</div>' +
-          '</div>' +
-          '<a class="btn btn-sm btn-primary" href="' + waLink(lead.whatsapp) + '" target="_blank" rel="noopener">Chamar no WhatsApp</a>' +
-        '</div>';
-      }).join("");
-  }
-
   // ------------------------------------------------------------ depoimentos
   // Prova social ligada a uma mentoria específica (ou geral, sem produto).
   // Ela cadastra o ID do vídeo do YouTube por aqui; o público lê pelo
@@ -1718,18 +1645,17 @@
   $("#login-password").addEventListener("keydown", (e) => { if (e.key === "Enter") $("#btn-login").click(); });
   $("#btn-logout").addEventListener("click", logout);
 
-  // Só uma tela de topo (Identidade visual / Métricas / Leads / Depoimentos /
-  // lista) fica ativa por vez. Antes cada botão do menu só ligava a SUA
-  // própria flag sem desligar as outras — então, se você já tivesse entrado
-  // em "Métricas comerciais" e clicasse em outro botão do menu sem passar
-  // pelo "← Voltar" primeiro, a tela de Métricas continuava presa na tela
-  // (ela tem prioridade mais alta no render()), mesmo com o botão certo
+  // Só uma tela de topo (Identidade visual / Métricas / Depoimentos / lista)
+  // fica ativa por vez. Antes cada botão do menu só ligava a SUA própria
+  // flag sem desligar as outras — então, se você já tivesse entrado em
+  // "Métricas comerciais" e clicasse em outro botão do menu sem passar pelo
+  // "← Voltar" primeiro, a tela de Métricas continuava presa na tela (ela
+  // tem prioridade mais alta no render()), mesmo com o botão certo
   // destacado como ativo no menu. Esse helper garante que trocar de tela
   // sempre desliga todas as outras.
   function goToScreen(which){
     showConfig = which === "config";
     showMetrics = which === "metrics";
-    showLeads = which === "leads";
     showDepoimentos = which === "depoimentos";
     editingId = null;
     if (which !== "depoimentos") depoEditingId = null;
@@ -1737,7 +1663,6 @@
 
   $("#btn-config").addEventListener("click", () => { goToScreen("config"); render(); });
   $("#btn-metrics").addEventListener("click", () => { goToScreen("metrics"); render(); });
-  $("#btn-leads").addEventListener("click", () => { goToScreen("leads"); render(); });
   $("#btn-depoimentos").addEventListener("click", () => {
     goToScreen("depoimentos");
     render();
