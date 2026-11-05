@@ -98,16 +98,53 @@
   .metric-body{flex:1 1 auto;min-width:0;}
   .metric-title{font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .metric-sub{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .metric-bar-track{height:5px;border-radius:999px;background:var(--paper-alt);margin-top:7px;overflow:hidden;}
+  .metric-bar-fill{height:100%;border-radius:999px;background:var(--accent);min-width:3px;}
   .metric-count{flex:0 0 auto;text-align:right;}
   .metric-count .num{font-size:20px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;}
   .metric-count .lbl{font-size:10.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;}
 
-  .leads-total{font-size:26px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;margin-bottom:14px;}
-  .leads-chart{display:flex;align-items:flex-end;gap:3px;height:120px;padding-top:8px;border-bottom:1px solid var(--line);overflow-x:auto;}
-  .leads-bar{flex:1 1 0;min-width:4px;max-width:26px;background:var(--accent);border-radius:4px 4px 0 0;position:relative;cursor:default;opacity:.85;transition:opacity .15s;}
+  /* visão geral: tiles de resumo com comparação ao período anterior */
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+  @media (max-width:880px){ .stat-grid{grid-template-columns:1fr 1fr;} }
+  @media (max-width:480px){ .stat-grid{grid-template-columns:1fr;} }
+  .stat-tile{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px 18px;}
+  .stat-tile .stat-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin-bottom:9px;}
+  .stat-tile .stat-num{font-size:27px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.1;}
+  .stat-tile .stat-sub{font-size:11.5px;color:var(--ink-soft);margin-top:4px;}
+  .stat-trend{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;margin-top:9px;padding:3px 9px;border-radius:999px;font-variant-numeric:tabular-nums;}
+  .stat-trend.up{background:var(--ok-soft);color:var(--ok);}
+  .stat-trend.down{background:var(--danger-soft);color:var(--danger);}
+  .stat-trend.flat{background:var(--paper-alt);color:var(--ink-soft);}
+
+  /* gráfico de leads por dia: grid de colunas = sempre cabe, nunca "vaza" */
+  .leads-total{font-size:26px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;margin-bottom:2px;}
+  .leads-total-sub{font-size:12px;color:var(--ink-soft);margin-bottom:16px;}
+  /* overflow:hidden + padding-top reservam espaço pra tooltip da barra mais
+     alta "estourar" pra cima sem quebrar a largura da página (era a causa
+     da barra de rolagem estranha) — só corta tooltip de barra na borda
+     extrema, nunca o gráfico em si. */
+  .leads-chart-wrap{position:relative;overflow:hidden;padding-top:38px;}
+  .leads-chart{
+    position:relative;z-index:1;display:grid;column-gap:3px;align-items:end;height:120px;padding-top:4px;
+    background-image:linear-gradient(var(--line),var(--line)),linear-gradient(var(--line),var(--line)),linear-gradient(var(--line),var(--line));
+    background-size:100% 1px,100% 1px,100% 1px;background-position:0 25%,0 50%,0 75%;background-repeat:no-repeat;
+  }
+  .leads-bar-col{height:116px;display:flex;align-items:flex-end;justify-content:center;}
+  .leads-bar{width:100%;max-width:22px;background:var(--accent);border-radius:4px 4px 0 0;position:relative;cursor:default;opacity:.85;transition:opacity .15s;}
+  .leads-bar.zero{background:var(--line);border-radius:2px 2px 0 0;opacity:1;}
   .leads-bar:hover{opacity:1;}
   .leads-bar .tip{position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);font-size:11px;font-weight:700;padding:4px 9px;border-radius:7px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .1s;z-index:5;}
   .leads-bar:hover .tip{opacity:1;}
+  .leads-axis{display:grid;column-gap:3px;margin-top:6px;border-top:1px solid var(--line);padding-top:6px;}
+  .leads-axis span{font-size:10px;color:var(--ink-soft);text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap;position:relative;z-index:1;}
+
+  .metrics-grid-2col{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media (max-width:880px){ .metrics-grid-2col{grid-template-columns:1fr;} }
+  /* min-width:0 no item do grid: sem isso, o grid usa o min-content do texto
+     (nowrap) de dentro pra calcular a largura da coluna, e ela "estoura"
+     a tela mesmo com 1 coluna só */
+  .metrics-grid-2col .form-card{margin-bottom:0;min-width:0;}
 
   /* ---- form ---- */
   .form-card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:18px;}
@@ -779,18 +816,35 @@
     return d.toISOString();
   }
 
+  // Janela atual + janela anterior de mesmo tamanho, pra comparação "vs
+  // período anterior". Sem comparação em "all" (não há um "antes" simétrico).
+  function metricsRanges(period){
+    const now = new Date();
+    if (period === "all") return { curSince: metricsSinceIso("all"), curUntil: now.toISOString(), prev: null };
+    const days = parseInt(period, 10);
+    const curSince = new Date(now); curSince.setDate(curSince.getDate() - days);
+    const prevSince = new Date(curSince); prevSince.setDate(prevSince.getDate() - days);
+    return {
+      curSince: curSince.toISOString(), curUntil: now.toISOString(),
+      prev: { since: prevSince.toISOString(), until: curSince.toISOString() }
+    };
+  }
+
   function renderMetrics(){
     let html = '<div class="toolbar"><h1>Métricas do blog</h1>' +
       '<button class="btn btn-sm" id="btn-metrics-back">← Voltar</button></div>';
-    html += '<div class="hint" style="margin:-10px 0 16px;">Dado real, gravado no momento em que acontece — sem estimativa. "Mais lidas" cobre toda matéria (com ou sem mentoria); os rankings de clique só valem pra quem tem CTA de mentoria vinculado. "Lead" aqui é um clique num CTA de mentoria (ainda não temos formulário de captura no blog).</div>';
+    html += '<div class="hint" style="margin:-10px 0 16px;">Dado real, gravado no momento em que acontece — sem estimativa. "Mais lidas" cobre toda matéria (com ou sem mentoria); os rankings de clique só valem pra quem tem CTA de mentoria vinculado. "Lead" aqui é um clique num CTA de mentoria (ainda não temos formulário de captura no blog). As comparações são sempre contra o período anterior de mesmo tamanho.</div>';
     html += '<div class="metric-tabs">' + ["7","30","all"].map(p =>
       '<button class="metric-tab'+(metricsPeriod===p?" active":"")+'" data-period="'+p+'" type="button">'+METRICS_PERIOD_LABEL[p]+'</button>'
     ).join("") + '</div>';
-    html += '<div class="form-card"><h3>Leads por dia (cliques em mentoria)</h3><div id="metrics-leads-total" class="leads-total">—</div><div id="metrics-leads-chart">Carregando…</div></div>';
+    html += '<div id="metrics-summary" class="stat-grid"></div>';
+    html += '<div class="form-card"><h3>Leads por dia (cliques em mentoria)</h3><div id="metrics-leads-total" class="leads-total">—</div><div id="metrics-leads-total-sub" class="leads-total-sub"></div><div id="metrics-leads-chart">Carregando…</div></div>';
+    html += '<div class="metrics-grid-2col">';
     html += '<div class="form-card"><h3>Matérias mais lidas</h3><div id="metrics-by-views">Carregando…</div></div>';
     html += '<div class="form-card"><h3>Matérias que mais geram interesse comercial (clique em mentoria)</h3><div id="metrics-by-post">Carregando…</div></div>';
     html += '<div class="form-card"><h3>O que mais tem interesse, por carreira/categoria</h3><div id="metrics-by-categoria">Carregando…</div></div>';
     html += '<div class="form-card"><h3>Mentorias com mais cliques (soma matéria + vitrine)</h3><div id="metrics-by-mentoria">Carregando…</div></div>';
+    html += '</div>';
 
     $("#main-app").innerHTML = html;
     $("#btn-metrics-back").addEventListener("click", () => { showMetrics = false; render(); });
@@ -802,46 +856,89 @@
 
   async function loadMetrics(){
     const since = metricsSinceIso(metricsPeriod);
+    const ranges = metricsRanges(metricsPeriod);
+    const fetches = [
+      authFetch("/rest/v1/rpc/get_top_viewed_posts", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ since: since, limit_n: 15 })
+      }),
+      authFetch("/rest/v1/rpc/get_top_product_clicks", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ since: since, limit_n: 15 })
+      }),
+      authFetch("/rest/v1/rpc/get_top_product_clicks_by_mentoria", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ since: since, limit_n: 15 })
+      }),
+      authFetch("/rest/v1/rpc/get_leads_by_day", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ since: since, limit_n: 400 })
+      }),
+      authFetch("/rest/v1/rpc/get_top_categoria_clicks", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ since: since, limit_n: 10 })
+      }),
+      authFetch("/rest/v1/rpc/get_metrics_summary", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ since: ranges.curSince, until: ranges.curUntil })
+      }),
+      ranges.prev ? authFetch("/rest/v1/rpc/get_metrics_summary", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ since: ranges.prev.since, until: ranges.prev.until })
+      }) : Promise.resolve(null)
+    ];
     try {
-      const [resViews, resPost, resMentoria, resDay, resCategoria] = await Promise.all([
-        authFetch("/rest/v1/rpc/get_top_viewed_posts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ since: since, limit_n: 15 })
-        }),
-        authFetch("/rest/v1/rpc/get_top_product_clicks", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ since: since, limit_n: 15 })
-        }),
-        authFetch("/rest/v1/rpc/get_top_product_clicks_by_mentoria", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ since: since, limit_n: 15 })
-        }),
-        authFetch("/rest/v1/rpc/get_leads_by_day", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ since: since, limit_n: 400 })
-        }),
-        authFetch("/rest/v1/rpc/get_top_categoria_clicks", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ since: since, limit_n: 10 })
-        })
-      ]);
+      const [resViews, resPost, resMentoria, resDay, resCategoria, resSummary, resSummaryPrev] = await Promise.all(fetches);
       paintMetricsByViews(resViews.ok ? await resViews.json() : []);
       paintMetricsByPost(resPost.ok ? await resPost.json() : []);
       paintMetricsByMentoria(resMentoria.ok ? await resMentoria.json() : []);
       paintMetricsLeadsByDay(resDay.ok ? await resDay.json() : []);
       paintMetricsByCategoria(resCategoria.ok ? await resCategoria.json() : []);
+      const summaryCur = (resSummary && resSummary.ok) ? (await resSummary.json())[0] : null;
+      const summaryPrev = (resSummaryPrev && resSummaryPrev.ok) ? (await resSummaryPrev.json())[0] : null;
+      paintMetricsSummary(summaryCur, summaryPrev);
     } catch (e){
       const elV = $("#metrics-by-views"); if (elV) elV.innerHTML = '<div class="empty">Não foi possível carregar agora. Tente de novo em instantes.</div>';
       const elP = $("#metrics-by-post"); if (elP) elP.innerHTML = "";
       const elM = $("#metrics-by-mentoria"); if (elM) elM.innerHTML = "";
       const elD = $("#metrics-leads-chart"); if (elD) elD.innerHTML = "";
       const elC = $("#metrics-by-categoria"); if (elC) elC.innerHTML = "";
+      const elS = $("#metrics-summary"); if (elS) elS.innerHTML = "";
     }
+  }
+
+  // Chip "▲ 12% vs período anterior" — trata os casos de borda (sem base
+  // pra comparar, ou foi de 0 pra algo) sem gerar % absurda (ex: ∞).
+  function trendChip(cur, prev){
+    if (prev === null || prev === undefined) return "";
+    if (prev === 0){
+      if (cur === 0) return '<span class="stat-trend flat">sem mudança</span>';
+      return '<span class="stat-trend up">▲ novidade no período</span>';
+    }
+    const pct = Math.round(((cur - prev) / prev) * 100);
+    if (pct === 0) return '<span class="stat-trend flat">= período anterior</span>';
+    const cls = pct > 0 ? "up" : "down";
+    const arrow = pct > 0 ? "▲" : "▼";
+    return '<span class="stat-trend '+cls+'">'+arrow+' '+Math.abs(pct)+'% vs. anterior</span>';
+  }
+
+  function paintMetricsSummary(cur, prev){
+    const el = $("#metrics-summary");
+    if (!el) return;
+    const views = cur ? Number(cur.views) : 0;
+    const clicks = cur ? Number(cur.clicks) : 0;
+    const postsWithViews = cur ? Number(cur.posts_with_views) : 0;
+    const totalPosts = POSTS.length || 0;
+    const conv = views > 0 ? (clicks / views * 100) : 0;
+    const prevViews = prev ? Number(prev.views) : null;
+    const prevClicks = prev ? Number(prev.clicks) : null;
+    const prevConv = (prev && Number(prev.views) > 0) ? (Number(prev.clicks) / Number(prev.views) * 100) : (prev ? 0 : null);
+
+    el.innerHTML =
+      '<div class="stat-tile"><div class="stat-lbl">Visualizações</div><div class="stat-num mono">'+views+'</div>' + trendChip(views, prevViews) + '</div>' +
+      '<div class="stat-tile"><div class="stat-lbl">Leads (cliques em mentoria)</div><div class="stat-num mono">'+clicks+'</div>' + trendChip(clicks, prevClicks) + '</div>' +
+      '<div class="stat-tile"><div class="stat-lbl">Taxa de conversão</div><div class="stat-num mono">'+conv.toFixed(1)+'%</div><div class="stat-sub">visualização → clique em mentoria</div>' + (prevConv !== null ? trendChip(Math.round(conv*10), Math.round(prevConv*10)) : "") + '</div>' +
+      '<div class="stat-tile"><div class="stat-lbl">Matérias com leitura</div><div class="stat-num mono">'+postsWithViews+'<span style="font-size:15px;color:var(--ink-soft);font-weight:700;"> / '+totalPosts+'</span></div><div class="stat-sub">tiveram pelo menos 1 leitura no período</div></div>';
   }
 
   // Preenche os dias sem clique com 0, pra o gráfico mostrar o período
@@ -864,24 +961,68 @@
     return out;
   }
 
+  // Rótulo de data no eixo X só em alguns pontos (nunca em todos — com 30
+  // barras ficaria ilegível). Mostra no máximo ~8 rótulos espalhados.
+  function leadsAxisInterval(n){
+    return Math.max(1, Math.ceil(n / 8));
+  }
+
   function paintMetricsLeadsByDay(rows){
     const elTotal = $("#metrics-leads-total");
+    const elSub = $("#metrics-leads-total-sub");
     const elChart = $("#metrics-leads-chart");
     if (!elChart) return;
     const totalLeads = rows.reduce((s, r) => s + r.clicks, 0);
     if (elTotal) elTotal.textContent = totalLeads + (totalLeads === 1 ? " lead" : " leads") + " no período";
-    if (!rows.length){
+    const days = buildLeadsDayRange(metricsPeriod, rows);
+    if (elSub) {
+      const diasComLead = days.filter(d => d.clicks > 0).length;
+      elSub.textContent = metricsPeriod === "all"
+        ? (diasComLead + (diasComLead === 1 ? " dia com lead registrado" : " dias com lead registrado"))
+        : (diasComLead + " de " + days.length + " dias no período tiveram pelo menos 1 lead");
+    }
+    if (!days.length){
       elChart.innerHTML = '<div class="empty">Nenhum lead registrado nesse período ainda.</div>';
       return;
     }
-    const days = buildLeadsDayRange(metricsPeriod, rows);
     const max = Math.max.apply(null, days.map(d => d.clicks), 1);
-    elChart.innerHTML = '<div class="leads-chart">' + days.map(d => {
-      const h = Math.max(Math.round((d.clicks / max) * 100), d.clicks > 0 ? 6 : 2);
+    const interval = leadsAxisInterval(days.length);
+    const cols = "repeat(" + days.length + ",1fr)";
+
+    const bars = days.map(d => {
+      const isZero = d.clicks <= 0;
+      const h = isZero ? 3 : Math.max(Math.round((d.clicks / max) * 100), 6);
       const dt = new Date(d.dia + "T12:00:00");
       const label = dt.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
-      return '<div class="leads-bar" style="height:' + h + '%;"><span class="tip">' + label + ': ' + d.clicks + (d.clicks === 1 ? ' lead' : ' leads') + '</span></div>';
-    }).join("") + '</div>';
+      return '<div class="leads-bar-col"><div class="leads-bar' + (isZero ? " zero" : "") + '" style="height:' + h + '%;">' +
+        '<span class="tip">' + label + ': ' + d.clicks + (d.clicks === 1 ? ' lead' : ' leads') + '</span></div></div>';
+    }).join("");
+
+    // Rótulos em índices igualmente espaçados (0, interval, 2*interval...);
+    // nunca força o último dia também — quando cai perto de um rótulo já
+    // mostrado, os dois colam e viram um emaranhado ilegível.
+    const axis = days.map((d, i) => {
+      if (i % interval !== 0) return '<span></span>';
+      const dt = new Date(d.dia + "T12:00:00");
+      return '<span>' + dt.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) + '</span>';
+    }).join("");
+
+    elChart.innerHTML =
+      '<div class="leads-chart-wrap">' +
+        '<div class="leads-chart" style="grid-template-columns:' + cols + ';">' + bars + '</div>' +
+        '<div class="leads-axis" style="grid-template-columns:' + cols + ';">' + axis + '</div>' +
+      '</div>';
+  }
+
+  function metricRowHtml(i, titulo, sub, count, lbl, max){
+    const pct = max > 0 ? Math.max(Math.round((count / max) * 100), count > 0 ? 4 : 0) : 0;
+    return '<div class="metric-row">' +
+      '<div class="metric-rank">'+(i+1)+'</div>' +
+      '<div class="metric-body"><div class="metric-title">'+titulo+'</div>' +
+      (sub ? '<div class="metric-sub">'+sub+'</div>' : '') +
+      '<div class="metric-bar-track"><div class="metric-bar-fill" style="width:'+pct+'%;"></div></div></div>' +
+      '<div class="metric-count"><div class="num mono">'+count+'</div><div class="lbl">'+lbl+'</div></div>' +
+    '</div>';
   }
 
   function paintMetricsByCategoria(rows){
@@ -891,12 +1032,9 @@
       el.innerHTML = '<div class="empty">Nenhum clique registrado nesse período ainda.</div>';
       return;
     }
+    const max = Math.max.apply(null, rows.map(r => r.clicks), 1);
     el.innerHTML = rows.map((r, i) =>
-      '<div class="metric-row">' +
-        '<div class="metric-rank">'+(i+1)+'</div>' +
-        '<div class="metric-body"><div class="metric-title">'+esc(r.categoria || "Sem categoria")+'</div></div>' +
-        '<div class="metric-count"><div class="num mono">'+r.clicks+'</div><div class="lbl">cliques</div></div>' +
-      '</div>'
+      metricRowHtml(i, esc(r.categoria || "Sem categoria"), "", r.clicks, "cliques", max)
     ).join("");
   }
 
@@ -907,15 +1045,12 @@
       el.innerHTML = '<div class="empty">Nenhuma leitura registrada nesse período ainda.</div>';
       return;
     }
+    const max = Math.max.apply(null, rows.map(r => r.views), 1);
     el.innerHTML = rows.map((r, i) => {
       const p = POSTS.find(x => x.id === r.post_id);
       const titulo = p ? p.titulo : r.post_id;
       const sub = p ? (esc(p.categoria) + (p.uf ? " · " + esc(UF_NAMES[p.uf] || p.uf) : "")) : "matéria não encontrada (pode ter sido excluída)";
-      return '<div class="metric-row">' +
-        '<div class="metric-rank">'+(i+1)+'</div>' +
-        '<div class="metric-body"><div class="metric-title">'+esc(titulo)+'</div><div class="metric-sub">'+sub+'</div></div>' +
-        '<div class="metric-count"><div class="num mono">'+r.views+'</div><div class="lbl">leituras</div></div>' +
-      '</div>';
+      return metricRowHtml(i, esc(titulo), sub, r.views, "leituras", max);
     }).join("");
   }
 
@@ -926,15 +1061,12 @@
       el.innerHTML = '<div class="empty">Nenhum clique registrado nesse período ainda.</div>';
       return;
     }
+    const max = Math.max.apply(null, rows.map(r => r.clicks), 1);
     el.innerHTML = rows.map((r, i) => {
       const p = POSTS.find(x => x.id === r.post_id);
       const titulo = p ? p.titulo : r.post_id;
       const sub = p ? (esc(p.categoria) + (p.uf ? " · " + esc(UF_NAMES[p.uf] || p.uf) : "")) : "matéria não encontrada (pode ter sido excluída)";
-      return '<div class="metric-row">' +
-        '<div class="metric-rank">'+(i+1)+'</div>' +
-        '<div class="metric-body"><div class="metric-title">'+esc(titulo)+'</div><div class="metric-sub">'+sub+'</div></div>' +
-        '<div class="metric-count"><div class="num mono">'+r.clicks+'</div><div class="lbl">cliques</div></div>' +
-      '</div>';
+      return metricRowHtml(i, esc(titulo), sub, r.clicks, "cliques", max);
     }).join("");
   }
 
@@ -945,12 +1077,9 @@
       el.innerHTML = '<div class="empty">Nenhum clique registrado nesse período ainda.</div>';
       return;
     }
+    const max = Math.max.apply(null, rows.map(r => r.clicks), 1);
     el.innerHTML = rows.map((r, i) =>
-      '<div class="metric-row">' +
-        '<div class="metric-rank">'+(i+1)+'</div>' +
-        '<div class="metric-body"><div class="metric-title">'+esc(r.mentoria_nome)+'</div></div>' +
-        '<div class="metric-count"><div class="num mono">'+r.clicks+'</div><div class="lbl">cliques</div></div>' +
-      '</div>'
+      metricRowHtml(i, esc(r.mentoria_nome), "", r.clicks, "cliques", max)
     ).join("");
   }
 
