@@ -102,6 +102,13 @@
   .metric-count .num{font-size:20px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;}
   .metric-count .lbl{font-size:10.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;}
 
+  .leads-total{font-size:26px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;margin-bottom:14px;}
+  .leads-chart{display:flex;align-items:flex-end;gap:3px;height:120px;padding-top:8px;border-bottom:1px solid var(--line);overflow-x:auto;}
+  .leads-bar{flex:1 1 0;min-width:4px;max-width:26px;background:var(--accent);border-radius:4px 4px 0 0;position:relative;cursor:default;opacity:.85;transition:opacity .15s;}
+  .leads-bar:hover{opacity:1;}
+  .leads-bar .tip{position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);font-size:11px;font-weight:700;padding:4px 9px;border-radius:7px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .1s;z-index:5;}
+  .leads-bar:hover .tip{opacity:1;}
+
   /* ---- form ---- */
   .form-card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:18px;}
   .form-card h3{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--line);}
@@ -466,7 +473,9 @@
       relacionados: [], data_publicacao: new Date().toISOString().slice(0,10),
       hora_publicacao:"", status:"rascunho", tipo_conteudo:"concurso", meta_descricao:"",
       fontes: [], info_nao_oficial:false, nota_nao_oficial:"",
-      classificacao:"recente", ordem_destaque:"", metadados: [], mentoria_nome:"" };
+      classificacao:"recente", ordem_destaque:"", metadados: [], mentoria_nome:"",
+      status_concurso:"", previsao_edital:"", data_edital:"", data_inscricao_inicio:"",
+      data_inscricao_fim:"", data_prova:"", data_resultado:"" };
   }
   function normMetadados(m){
     if (!Array.isArray(m)) return [];
@@ -523,6 +532,35 @@
       (manchCount >= 5 || destCount >= 5 ? ' <span style="color:var(--danger)">No limite — marcar tira outra da lista.</span>' : '') +
       ' Sem nenhuma marcada, o site usa as mais recentes automaticamente.' +
     '</div>';
+    html += '</div>';
+
+    html += '<div class="form-card"><h3>Calendário do concurso</h3>';
+    html += field_select("status_concurso", "Status atual do concurso", post.status_concurso || "", [
+      ["", "Não informado"],
+      ["previsto", "Previsto (sem autorização ainda)"],
+      ["autorizado", "Autorizado"],
+      ["comissao-formada", "Comissão formada"],
+      ["edital-publicado", "Edital publicado"],
+      ["inscricoes-abertas", "Inscrições abertas"],
+      ["inscricoes-encerradas", "Inscrições encerradas"],
+      ["prova-realizada", "Prova realizada"],
+      ["resultado-divulgado", "Resultado divulgado"]
+    ]);
+    html += '<div class="hint">Alimenta o selo de status na página da matéria e a organização da página de Calendário de Concursos.</div>';
+    html += '<div class="row2" style="margin-top:14px;">';
+    html += field_text("previsao_edital", "Previsão de edital (texto livre, opcional)", post.previsao_edital, "", "ex: 1º semestre de 2026");
+    html += field_date("data_edital", "Data do edital (quando já publicado)", post.data_edital);
+    html += '</div>';
+    html += '<div class="hint" style="margin-top:6px;">Preencha "Previsão de edital" enquanto o edital ainda não saiu (texto livre); troque pela "Data do edital" exata assim que for publicado.</div>';
+    html += '<div class="row3" style="margin-top:14px;">';
+    html += field_date("data_inscricao_inicio", "Início das inscrições", post.data_inscricao_inicio);
+    html += field_date("data_inscricao_fim", "Fim das inscrições", post.data_inscricao_fim);
+    html += field_date("data_prova", "Data da prova", post.data_prova);
+    html += '</div>';
+    html += '<div class="row2" style="margin-top:14px;">';
+    html += field_date("data_resultado", "Data do resultado", post.data_resultado);
+    html += '</div>';
+    html += '<div class="hint" style="margin-top:6px;">Deixe em branco qualquer data que ainda não existe — a matéria e o Calendário de Concursos só mostram o que estiver preenchido.</div>';
     html += '</div>';
 
     html += '<div class="form-card"><h3>Mentoria Elite (banner na matéria)</h3>';
@@ -744,12 +782,14 @@
   function renderMetrics(){
     let html = '<div class="toolbar"><h1>Métricas do blog</h1>' +
       '<button class="btn btn-sm" id="btn-metrics-back">← Voltar</button></div>';
-    html += '<div class="hint" style="margin:-10px 0 16px;">Dado real, gravado no momento em que acontece — sem estimativa. "Mais lidas" cobre toda matéria (com ou sem mentoria); os rankings de clique só valem pra quem tem CTA de mentoria vinculado.</div>';
+    html += '<div class="hint" style="margin:-10px 0 16px;">Dado real, gravado no momento em que acontece — sem estimativa. "Mais lidas" cobre toda matéria (com ou sem mentoria); os rankings de clique só valem pra quem tem CTA de mentoria vinculado. "Lead" aqui é um clique num CTA de mentoria (ainda não temos formulário de captura no blog).</div>';
     html += '<div class="metric-tabs">' + ["7","30","all"].map(p =>
       '<button class="metric-tab'+(metricsPeriod===p?" active":"")+'" data-period="'+p+'" type="button">'+METRICS_PERIOD_LABEL[p]+'</button>'
     ).join("") + '</div>';
+    html += '<div class="form-card"><h3>Leads por dia (cliques em mentoria)</h3><div id="metrics-leads-total" class="leads-total">—</div><div id="metrics-leads-chart">Carregando…</div></div>';
     html += '<div class="form-card"><h3>Matérias mais lidas</h3><div id="metrics-by-views">Carregando…</div></div>';
     html += '<div class="form-card"><h3>Matérias que mais geram interesse comercial (clique em mentoria)</h3><div id="metrics-by-post">Carregando…</div></div>';
+    html += '<div class="form-card"><h3>O que mais tem interesse, por carreira/categoria</h3><div id="metrics-by-categoria">Carregando…</div></div>';
     html += '<div class="form-card"><h3>Mentorias com mais cliques (soma matéria + vitrine)</h3><div id="metrics-by-mentoria">Carregando…</div></div>';
 
     $("#main-app").innerHTML = html;
@@ -763,7 +803,7 @@
   async function loadMetrics(){
     const since = metricsSinceIso(metricsPeriod);
     try {
-      const [resViews, resPost, resMentoria] = await Promise.all([
+      const [resViews, resPost, resMentoria, resDay, resCategoria] = await Promise.all([
         authFetch("/rest/v1/rpc/get_top_viewed_posts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -778,16 +818,86 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ since: since, limit_n: 15 })
+        }),
+        authFetch("/rest/v1/rpc/get_leads_by_day", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ since: since, limit_n: 400 })
+        }),
+        authFetch("/rest/v1/rpc/get_top_categoria_clicks", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ since: since, limit_n: 10 })
         })
       ]);
       paintMetricsByViews(resViews.ok ? await resViews.json() : []);
       paintMetricsByPost(resPost.ok ? await resPost.json() : []);
       paintMetricsByMentoria(resMentoria.ok ? await resMentoria.json() : []);
+      paintMetricsLeadsByDay(resDay.ok ? await resDay.json() : []);
+      paintMetricsByCategoria(resCategoria.ok ? await resCategoria.json() : []);
     } catch (e){
       const elV = $("#metrics-by-views"); if (elV) elV.innerHTML = '<div class="empty">Não foi possível carregar agora. Tente de novo em instantes.</div>';
       const elP = $("#metrics-by-post"); if (elP) elP.innerHTML = "";
       const elM = $("#metrics-by-mentoria"); if (elM) elM.innerHTML = "";
+      const elD = $("#metrics-leads-chart"); if (elD) elD.innerHTML = "";
+      const elC = $("#metrics-by-categoria"); if (elC) elC.innerHTML = "";
     }
+  }
+
+  // Preenche os dias sem clique com 0, pra o gráfico mostrar o período
+  // inteiro (não só os dias que tiveram dado) — exceto em "all", onde
+  // preencher cada dia desde 2000 não faz sentido; aí mostra só os dias
+  // que realmente têm clique registrado.
+  function buildLeadsDayRange(period, rows){
+    if (period === "all") return rows.map(r => ({ dia: r.dia, clicks: r.clicks }));
+    const map = {};
+    rows.forEach(r => { map[r.dia] = r.clicks; });
+    const days = parseInt(period, 10);
+    const out = [];
+    const today = new Date();
+    for (let i = days - 1; i >= 0; i--){
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const iso = d.toISOString().slice(0, 10);
+      out.push({ dia: iso, clicks: map[iso] || 0 });
+    }
+    return out;
+  }
+
+  function paintMetricsLeadsByDay(rows){
+    const elTotal = $("#metrics-leads-total");
+    const elChart = $("#metrics-leads-chart");
+    if (!elChart) return;
+    const totalLeads = rows.reduce((s, r) => s + r.clicks, 0);
+    if (elTotal) elTotal.textContent = totalLeads + (totalLeads === 1 ? " lead" : " leads") + " no período";
+    if (!rows.length){
+      elChart.innerHTML = '<div class="empty">Nenhum lead registrado nesse período ainda.</div>';
+      return;
+    }
+    const days = buildLeadsDayRange(metricsPeriod, rows);
+    const max = Math.max.apply(null, days.map(d => d.clicks), 1);
+    elChart.innerHTML = '<div class="leads-chart">' + days.map(d => {
+      const h = Math.max(Math.round((d.clicks / max) * 100), d.clicks > 0 ? 6 : 2);
+      const dt = new Date(d.dia + "T12:00:00");
+      const label = dt.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+      return '<div class="leads-bar" style="height:' + h + '%;"><span class="tip">' + label + ': ' + d.clicks + (d.clicks === 1 ? ' lead' : ' leads') + '</span></div>';
+    }).join("") + '</div>';
+  }
+
+  function paintMetricsByCategoria(rows){
+    const el = $("#metrics-by-categoria");
+    if (!el) return;
+    if (!rows.length){
+      el.innerHTML = '<div class="empty">Nenhum clique registrado nesse período ainda.</div>';
+      return;
+    }
+    el.innerHTML = rows.map((r, i) =>
+      '<div class="metric-row">' +
+        '<div class="metric-rank">'+(i+1)+'</div>' +
+        '<div class="metric-body"><div class="metric-title">'+esc(r.categoria || "Sem categoria")+'</div></div>' +
+        '<div class="metric-count"><div class="num mono">'+r.clicks+'</div><div class="lbl">cliques</div></div>' +
+      '</div>'
+    ).join("");
   }
 
   function paintMetricsByViews(rows){
@@ -1250,6 +1360,13 @@
       classificacao: $("#classificacao").value,
       ordem_destaque: $("#ordem_destaque").value.trim() ? parseInt($("#ordem_destaque").value.trim(), 10) : null,
       mentoria_nome: $("#mentoria_nome").value,
+      status_concurso: $("#status_concurso").value,
+      previsao_edital: $("#previsao_edital").value.trim(),
+      data_edital: $("#data_edital").value || null,
+      data_inscricao_inicio: $("#data_inscricao_inicio").value || null,
+      data_inscricao_fim: $("#data_inscricao_fim").value || null,
+      data_prova: $("#data_prova").value || null,
+      data_resultado: $("#data_resultado").value || null,
       meta_descricao: $("#meta_descricao").value.trim(),
       metadados: collectMetadados(),
       fontes: collectFontes(),
