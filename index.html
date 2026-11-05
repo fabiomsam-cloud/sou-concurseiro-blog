@@ -1557,7 +1557,7 @@
 
   function wireRegiaoNav(){
     document.querySelectorAll(".region-pill").forEach(el => {
-      el.addEventListener("click", () => { homeRegiao = el.dataset.regiao; paintRegiaoNav(); });
+      el.addEventListener("click", () => { homeRegiao = el.dataset.regiao; paintRegiaoNav(); paintAmDestaque(); });
     });
     document.querySelectorAll(".uf-chip").forEach(el => {
       el.addEventListener("click", () => {
@@ -1577,6 +1577,56 @@
     if (!el) return;
     el.outerHTML = regiaoNavHtml();
     wireRegiaoNav();
+  }
+
+  // Concursos no Amazonas: mercado principal da SCVP, então ganha destaque
+  // próprio na home. Mas só faz sentido continuar aparecendo enquanto a
+  // navegação por região (acima) está em "Todas as regiões" ou "Norte" (que
+  // inclui o AM) e nenhum outro estado específico está filtrado — senão a
+  // pessoa clica em "Nordeste" ou "SP", por exemplo, e continua vendo um
+  // bloco de Amazonas logo abaixo sem nenhuma relação com o que escolheu,
+  // o que é confuso (ela sinalizou isso). Função isolada (não só inline no
+  // renderHome) pra poder ser repintada sozinha quando só a região muda,
+  // sem precisar re-renderizar a home inteira (mesmo motivo do
+  // paintRegiaoNav acima: evita perder a posição de rolagem).
+  function amDestaqueHtml(){
+    const hasActiveFilterNow = !!(query || filterCat || filterUf);
+    const amRelevante = !hasActiveFilterNow && (homeRegiao === "" || homeRegiao === "norte");
+    let inner = "";
+    if (amRelevante){
+      const sortedAll = POSTS.slice().sort((a,b) => (b.data_publicacao > a.data_publicacao ? 1 : -1));
+      const amPosts = sortedAll.filter(p => p.uf === "AM").slice(0, 4);
+      if (amPosts.length){
+        const amTotal = sortedAll.filter(p => p.uf === "AM").length;
+        inner += '<div class="am-destaque-head">';
+        inner += '<div class="am-destaque-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"></path></svg>Concursos no Amazonas</div>';
+        inner += '</div>';
+        inner += '<div class="grid">' + amPosts.map(cardHtml).join("") + '</div>';
+        if (amTotal > amPosts.length){
+          inner += '<div class="am-destaque-more"><button class="am-destaque-all" id="am-ver-todos" type="button">Ver todas as oportunidades no Amazonas →</button></div>';
+        }
+      }
+    }
+    return '<div class="wrap am-destaque-wrap" id="am-destaque-wrap">' + inner + '</div>';
+  }
+
+  function wireAmDestaque(){
+    const amVerTodos = $("#am-ver-todos");
+    if (amVerTodos){
+      amVerTodos.addEventListener("click", () => {
+        filterUf = "AM";
+        renderHome();
+        const results = $("#pub-recentes");
+        if (results) results.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  }
+
+  function paintAmDestaque(){
+    const el = document.querySelector("#am-destaque-wrap");
+    if (!el) return;
+    el.outerHTML = amDestaqueHtml();
+    wireAmDestaque();
   }
 
   function renderHome(){
@@ -1635,23 +1685,11 @@
       html += regiaoNavHtml();
     }
 
-    // Concursos no Amazonas: mercado principal da SCVP, então ganha destaque
-    // próprio na home (some quando há busca/filtro ativo, igual à manchete).
-    const amPosts = hasActiveFilter ? [] : sorted.filter(p => p.uf === "AM").slice(0, 4);
-    if (amPosts.length){
-      const amTotal = sorted.filter(p => p.uf === "AM").length;
-      html += '<div class="wrap">';
-      html += '<div class="am-destaque-head">';
-      html += '<div class="am-destaque-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"></path></svg>Concursos no Amazonas</div>';
-      html += '</div>';
-      html += '<div class="grid">' + amPosts.map(cardHtml).join("") + '</div>';
-      // Some o botão só se houver mais matérias do AM além das 4 em destaque
-      // (evita um botão "Ver todas" que levaria pra uma lista idêntica à que já está na tela).
-      if (amTotal > amPosts.length){
-        html += '<div class="am-destaque-more"><button class="am-destaque-all" id="am-ver-todos" type="button">Ver todas as oportunidades no Amazonas →</button></div>';
-      }
-      html += '</div>';
-    }
+    // Concursos no Amazonas: agora gerado por amDestaqueHtml() (ver acima),
+    // que já considera a região/estado selecionados na navegação por região
+    // pra não continuar mostrando Amazonas quando a pessoa escolheu outra
+    // região/estado ali em cima.
+    html += amDestaqueHtml();
 
     // Concursos por Carreira: grade de ícones que filtra a mesma grade de
     // publicações abaixo (mesmo campo "categoria" que os pills usavam — os
@@ -1776,15 +1814,7 @@
     });
     const sideCal = $("#side-cal");
     if (sideCal) sideCal.addEventListener("click", () => { location.hash = "#/calendario"; });
-    const amVerTodos = $("#am-ver-todos");
-    if (amVerTodos){
-      amVerTodos.addEventListener("click", () => {
-        filterUf = "AM";
-        renderHome();
-        const results = $("#pub-recentes");
-        if (results) results.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-    }
+    wireAmDestaque();
     const homeMentoriasVerTodas = $("#home-mentorias-ver-todas");
     if (homeMentoriasVerTodas){ homeMentoriasVerTodas.addEventListener("click", () => { location.hash = "#/mentorias"; }); }
     document.querySelectorAll(".carreira-tile, .editoria-item").forEach(el => {
