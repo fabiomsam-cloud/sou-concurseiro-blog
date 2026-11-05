@@ -1717,11 +1717,29 @@
   });
   $("#login-password").addEventListener("keydown", (e) => { if (e.key === "Enter") $("#btn-login").click(); });
   $("#btn-logout").addEventListener("click", logout);
-  $("#btn-config").addEventListener("click", () => { showConfig = true; editingId = null; render(); });
-  $("#btn-metrics").addEventListener("click", () => { showMetrics = true; editingId = null; render(); });
-  $("#btn-leads").addEventListener("click", () => { showLeads = true; editingId = null; render(); });
+
+  // Só uma tela de topo (Identidade visual / Métricas / Leads / Depoimentos /
+  // lista) fica ativa por vez. Antes cada botão do menu só ligava a SUA
+  // própria flag sem desligar as outras — então, se você já tivesse entrado
+  // em "Métricas comerciais" e clicasse em outro botão do menu sem passar
+  // pelo "← Voltar" primeiro, a tela de Métricas continuava presa na tela
+  // (ela tem prioridade mais alta no render()), mesmo com o botão certo
+  // destacado como ativo no menu. Esse helper garante que trocar de tela
+  // sempre desliga todas as outras.
+  function goToScreen(which){
+    showConfig = which === "config";
+    showMetrics = which === "metrics";
+    showLeads = which === "leads";
+    showDepoimentos = which === "depoimentos";
+    editingId = null;
+    if (which !== "depoimentos") depoEditingId = null;
+  }
+
+  $("#btn-config").addEventListener("click", () => { goToScreen("config"); render(); });
+  $("#btn-metrics").addEventListener("click", () => { goToScreen("metrics"); render(); });
+  $("#btn-leads").addEventListener("click", () => { goToScreen("leads"); render(); });
   $("#btn-depoimentos").addEventListener("click", () => {
-    showDepoimentos = true; editingId = null; depoEditingId = null;
+    goToScreen("depoimentos");
     render();
     loadDepoimentos().then(() => { if (showDepoimentos) renderDepoimentos(); }).catch(e => toast(e.message, true));
   });
