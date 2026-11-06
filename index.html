@@ -217,6 +217,8 @@
   .pill:hover{border-color:var(--accent);color:var(--accent);}
   .pill.active{background:var(--accent);border-color:var(--accent);color:var(--paper);}
   .uf-select{margin-left:auto;font-size:12px;font-weight:600;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;}
+  .filter-clear-btn{font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);border:1px solid transparent;border-radius:8px;padding:8px 10px;cursor:pointer;white-space:nowrap;}
+  .filter-clear-btn:hover{border-color:var(--accent);}
 
   /* ---- home layout: main content + sidebar ---- */
   .home-main{display:grid;grid-template-columns:1fr 300px;gap:32px;align-items:start;}
@@ -1310,7 +1312,7 @@
     const heroImg = p.imagem_manchete || p.imagem_capa;
     return '<div class="hero-slide" data-id="'+p.id+'">' +
       (heroImg ? '<div class="hero-img"><img src="'+heroImg+'" alt="" draggable="false" decoding="async"'+(eager?' fetchpriority="high"':' loading="lazy"')+'></div>' : '') +
-      '<div class="hero-eyebrow">'+p.categoria+' · '+(UF_NAMES[p.uf]||p.uf)+' · manchete</div>' +
+      '<div class="hero-eyebrow">'+p.categoria+(p.uf ? ' · '+(UF_NAMES[p.uf]||p.uf) : '')+' · manchete</div>' +
       '<h1>'+p.titulo+'</h1>' +
       '<p class="lede">'+p.resumo+'</p>' +
       '<div class="hero-meta">' +
@@ -1548,7 +1550,7 @@
     return '<article class="card" data-id="'+p.id+'">' +
       thumb +
       '<div class="card-body">' +
-        '<div class="card-kicker">'+(tipoLabel ? tipoLabel+' · ' : '')+p.categoria+' · '+(UF_NAMES[p.uf]||p.uf)+'</div>' +
+        '<div class="card-kicker">'+(tipoLabel ? tipoLabel+' · ' : '')+p.categoria+(p.uf ? ' · '+(UF_NAMES[p.uf]||p.uf) : '')+'</div>' +
         '<h3>'+p.titulo+'</h3>' +
         '<p class="excerpt">'+p.resumo+'</p>' +
         '<div class="card-meta"><span class="mono">'+fmtDate(p.data_publicacao)+(p.hora_publicacao ? ' às '+p.hora_publicacao : '')+'</span>' +
@@ -1707,7 +1709,13 @@
 
   function renderHome(){
     setPageMeta();
-    const ufs = Array.from(new Set(POSTS.map(p => p.uf))).sort();
+    // .filter(Boolean) é essencial aqui: matérias de "Dicas de Estudo" não têm
+    // estado (campo uf vazio de propósito, não faz sentido pra esse tipo de
+    // conteúdo) — sem o filtro, isso criava uma opção fantasma no <select>
+    // (value="" igual ao de "Todos os estados", mas com rótulo em branco),
+    // que aparecia como um espaço vazio e clicável logo abaixo de "Todos os
+    // estados" no dropdown (bug real, reportado por ela em 11/2026).
+    const ufs = Array.from(new Set(POSTS.map(p => p.uf).filter(Boolean))).sort();
     const sorted = POSTS.slice().sort((a,b) => (b.data_publicacao > a.data_publicacao ? 1 : -1));
     // Manchete vira um carrossel com os 5 concursos/notícias mais recentes
     // (sempre os mais novos do dia, sem número fixo inventado), arrastável.
@@ -1798,6 +1806,13 @@
 
     html += '<div class="wrap">';
     html += '<div class="filterbar">';
+    // Botão de limpar só aparece com um estado escolhido — ela relatou que
+    // reabrir o <select> pra voltar em "Todos os estados" não era óbvio
+    // (11/2026), então agora tem um jeito direto e visível de sair do
+    // filtro sem precisar voltar pro menu "Início".
+    if (filterUf){
+      html += '<button class="filter-clear-btn" id="uf-clear" type="button">✕ '+(UF_NAMES[filterUf]||filterUf)+'</button>';
+    }
     html += '<select class="uf-select" id="uf-select"><option value="">Todos os estados</option>';
     ufs.forEach(u => { html += '<option value="'+u+'"'+(filterUf===u?" selected":"")+'>'+(UF_NAMES[u]||u)+'</option>'; });
     html += '</select>';
@@ -1806,7 +1821,9 @@
     html += '<div class="home-main" id="pub-recentes"><div>';
     html += '<div class="section-label">'+(hasActiveFilter ? 'Resultados · '+rest.length+(rest.length===1?' matéria':' matérias') : 'Publicações recentes')+'</div>';
     if (!rest.length){
-      html += '<div class="empty">Nada encontrado com esse filtro.</div>';
+      html += '<div class="empty">Nada encontrado com esse filtro.' +
+        (hasActiveFilter ? '<div class="am-destaque-more"><button class="am-destaque-all" id="empty-clear-filter" type="button">Ver todos os concursos</button></div>' : '') +
+      '</div>';
     } else {
       html += '<div class="grid">' + rest.map(cardHtml).join("") + '</div>';
     }
@@ -1884,6 +1901,10 @@
     });
     const ufSel = $("#uf-select");
     if (ufSel) ufSel.addEventListener("change", () => { filterUf = ufSel.value; renderHome(); });
+    const ufClearBtn = $("#uf-clear");
+    if (ufClearBtn) ufClearBtn.addEventListener("click", () => { filterUf = ""; renderHome(); });
+    const emptyClearBtn = $("#empty-clear-filter");
+    if (emptyClearBtn) emptyClearBtn.addEventListener("click", goHomeFresh);
     wireRegiaoNav();
     document.querySelectorAll(".side-item").forEach(el => {
       el.addEventListener("click", () => { location.hash = "#/materia/" + el.dataset.id; });
@@ -1992,7 +2013,7 @@
     let html = '<div class="wrap article">';
     html += '<a class="back-link" id="back-link">← Voltar pro blog</a>';
     const articleTipoLabel = TIPO_LABEL[p.tipo_conteudo];
-    html += '<div class="article-eyebrow">'+(articleTipoLabel ? articleTipoLabel+' · ' : '')+p.categoria+' · '+(UF_NAMES[p.uf]||p.uf)+'</div>';
+    html += '<div class="article-eyebrow">'+(articleTipoLabel ? articleTipoLabel+' · ' : '')+p.categoria+(p.uf ? ' · '+(UF_NAMES[p.uf]||p.uf) : '')+'</div>';
     html += '<h1>'+p.titulo+'</h1>';
     // "Atualizado em" só aparece quando a matéria foi de fato revisada depois
     // da publicação (updated_at > data_publicacao) — post novo e nunca
