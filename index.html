@@ -347,8 +347,15 @@
   .regiao-item.active .regiao-nome{color:var(--accent);}
   .regiao-clear{margin-top:10px;font-family:"Inter",sans-serif;font-weight:700;font-size:12px;color:var(--ink-soft);background:none;border:none;cursor:pointer;padding:4px 0;}
   .regiao-clear:hover{color:var(--accent);}
+  .regiao-hint-mobile{display:none;font-size:13px;color:var(--ink-soft);margin-top:2px;font-family:"Inter",sans-serif;}
   .uf-grid{flex:1;min-width:240px;display:grid;grid-template-columns:repeat(9,1fr);gap:7px;}
-  @media (max-width:760px){ .uf-grid{grid-template-columns:repeat(6,1fr);} }
+  @media (max-width:760px){
+    .uf-grid{grid-template-columns:repeat(6,1fr);}
+    /* Só esconde a grade quando nenhuma região foi escolhida ainda — depois
+       de tocar num círculo ela aparece normalmente, já filtrada. */
+    .uf-grid.collapsed-mobile{display:none;}
+    .regiao-hint-mobile{display:block;}
+  }
   @media (max-width:420px){ .uf-grid{grid-template-columns:repeat(5,1fr);} }
   .uf-chip{font-family:"Inter",sans-serif;font-variant-numeric:tabular-nums;font-weight:700;font-size:12px;color:var(--ink-soft);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 0;text-align:center;cursor:pointer;transition:border-color .15s,color .15s,background .15s;}
   .uf-chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
@@ -1670,11 +1677,20 @@
       '</div>';
     });
     html += '</div>';
-    html += '<div class="uf-grid">';
+    // No celular, a grade de estados começa escondida (só os 5 círculos
+    // aparecem) pra não empurrar o resto da página pra baixo com os 27
+    // estados sempre visíveis — só aparece (já filtrada pra só os estados
+    // da região) depois que a pessoa toca num círculo. No desktop a classe
+    // "collapsed-mobile" não tem efeito nenhum (grade sempre visível, como
+    // já era antes). Ver media query de ".uf-grid.collapsed-mobile".
+    html += '<div class="uf-grid'+(regiaoAtual?"":" collapsed-mobile")+'">';
     ufsToShow.forEach(uf => {
       html += '<button class="uf-chip'+(filterUf===uf?" active":"")+'" data-uf="'+uf+'" type="button">'+uf+'</button>';
     });
     html += '</div>';
+    if (!regiaoAtual){
+      html += '<div class="regiao-hint-mobile">Toque numa região acima pra ver os estados</div>';
+    }
     html += '</div>';
     if (homeRegiao){
       html += '<button class="regiao-clear" type="button">✕ Todas as regiões</button>';
