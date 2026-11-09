@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sou-concurseiro.vercel.app/sitemap.xml
