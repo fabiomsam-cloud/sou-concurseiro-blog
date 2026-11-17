@@ -853,6 +853,29 @@
 <button id="back-to-top" class="back-to-top" type="button" aria-label="Voltar ao topo" title="Voltar ao topo">↑</button>
 
 <script>
+  // Trava de zoom por JS: o <meta viewport> (maximum-scale=1,
+  // user-scalable=no) e o touch-action:manipulation não bastam no iOS —
+  // desde o iOS 10 a Apple ignora esses dois de propósito (acessibilidade),
+  // mesmo dentro de navegadores embutidos de app (WebView do WhatsApp,
+  // Instagram etc. usa o mesmo motor do Safari). O jeito que ainda funciona
+  // é interceptar os gestos direto: "gesturestart/gesturechange" (evento
+  // não-padrão do WebKit, disparado só no pinça) e um touchmove com 2+
+  // dedos, além do padrão de "ignorar o 2º toque rápido" pro duplo-toque.
+  (function(){
+    "use strict";
+    document.addEventListener("gesturestart", function(e){ e.preventDefault(); });
+    document.addEventListener("gesturechange", function(e){ e.preventDefault(); });
+    document.addEventListener("touchmove", function(e){
+      if (e.touches && e.touches.length > 1) e.preventDefault();
+    }, { passive:false });
+    let ultimoToque = 0;
+    document.addEventListener("touchend", function(e){
+      const agora = Date.now();
+      if (agora - ultimoToque <= 300) e.preventDefault();
+      ultimoToque = agora;
+    }, { passive:false });
+  })();
+
 (function(){
   "use strict";
   const SUPABASE_URL = "https://dqpxugdhlgafvddavzzp.supabase.co";
