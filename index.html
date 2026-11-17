@@ -303,8 +303,18 @@
   .card-kicker{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;}
   .card h3{font-size:17px;font-weight:700;line-height:1.3;margin:0 0 8px;letter-spacing:-.005em;}
   .card .excerpt{font-size:13.5px;color:var(--ink-soft);margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:400;}
-  .card-meta{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--ink-soft);}
-  .card-meta .num{color:var(--amber);font-weight:700;}
+  /* Rodapé do card: antes era uma linha só (data + destaque), sem limite
+     nenhum — quando highlight_label era um texto longo ("233 vagas no
+     último edital (17 imediatas + 216 CR)"), a própria linha quebrava em
+     2-3 linhas e esse card ficava bem mais alto que os vizinhos na grade,
+     desalinhando tudo. Agora é sempre: data numa linha, destaque (se
+     tiver) numa segunda linha fixa, cortado com reticências se não
+     couber — todo card no mesmo padrão de altura, com o texto completo
+     disponível no title (tooltip) de quem passar o mouse. */
+  .card-meta{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--ink-soft);}
+  .card-meta .num{color:var(--amber);font-weight:700;flex:0 0 auto;}
+  .card-meta-stat{display:flex;align-items:center;gap:5px;min-width:0;}
+  .card-meta-stat .lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
 
   /* ---- gancho de marca (faixa fixa acima do masthead) ---- */
 
@@ -1592,7 +1602,7 @@
         '<h3>'+p.titulo+'</h3>' +
         '<p class="excerpt">'+p.resumo+'</p>' +
         '<div class="card-meta"><span class="mono">'+fmtDate(p.data_publicacao)+(p.hora_publicacao ? ' às '+p.hora_publicacao : '')+'</span>' +
-        (p.highlight_num && p.highlight_num !== "—" ? '<span>·</span><span class="num mono">'+p.highlight_num+'</span> <span>'+p.highlight_label+'</span>' : '') +
+        (p.highlight_num && p.highlight_num !== "—" ? '<span class="card-meta-stat"><span class="num mono">'+p.highlight_num+'</span><span class="lbl" title="'+p.highlight_label.replace(/"/g,'&quot;')+'">'+p.highlight_label+'</span></span>' : '') +
         '</div>' +
       '</div>' +
     '</article>';
