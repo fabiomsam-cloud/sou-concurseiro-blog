@@ -426,6 +426,7 @@
        estreita (cada palavra do título cai numa linha). Com flex-wrap,
        o selo desce pra linha de baixo e o título usa a largura toda. */
     .article-calendario-head{flex-wrap:wrap;}
+    .article-calendario-item{flex-wrap:wrap;}
   }
 
   /* ---- depoimentos em vídeo (home, antes do rodapé) ---- */
@@ -475,6 +476,19 @@
   .article-calendario-item .mono{color:var(--ink-soft);font-size:12.5px;}
   .article-calendario-link{display:inline-block;margin-top:12px;font-size:12.5px;font-weight:700;color:var(--accent);text-decoration:none;}
   .article-calendario-link:hover{text-decoration:underline;}
+  /* Datas de calendário que já ficaram no passado (inscrição encerrada,
+     prova já feita etc.) precisam ficar visualmente diferentes das que
+     ainda vão acontecer — "há 82 dias" sozinho não deixa claro pra todo
+     mundo que já passou. .passado esmaece a linha inteira; o selo .feito
+     (verde, mesma cor já usada pra "resultado divulgado") cola a palavra
+     certa (encerradas/realizada/divulgado...) do lado da data. O próximo
+     evento que ainda vai acontecer ganha o selo .proximo (âmbar, mesma cor
+     já usada pra "inscrições abertas"/"urgente" no calendário geral) pra
+     saltar aos olhos como o que importa agora. */
+  .article-calendario-item.passado,.timeline-item.passado{opacity:.6;}
+  .evento-tag{display:inline-block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;padding:2px 7px;border-radius:999px;margin-left:8px;vertical-align:middle;white-space:nowrap;}
+  .evento-tag.feito{background:rgba(46,158,91,.15);color:#2E9E5B;}
+  .evento-tag.proximo{background:rgba(242,184,74,.18);color:var(--amber);}
   /* Lista de fontes no fim do corpo — selo azul (mesma cor de confiança do
      resto do site) marca as fontes oficiais entre as demais. */
   .article-fontes{margin:32px 0 0;padding-top:20px;border-top:1px solid var(--line);}
@@ -1239,6 +1253,37 @@
     if (n > 1) return "em " + n + " dias";
     if (n === -1) return "ontem";
     return "há " + Math.abs(n) + " dias";
+  }
+  // Verbo certo pra marcar um evento de calendário que já ficou no passado
+  // (cada tipo de evento tem uma forma mais natural de dizer "já aconteceu"
+  // do que só "há X dias", que nem todo mundo lê como "atrás no tempo").
+  const EVENTO_VERBO_PASSADO = {
+    "Edital": "publicado",
+    "Início das inscrições": "iniciadas",
+    "Fim das inscrições": "encerradas",
+    "Prova": "realizada",
+    "Resultado": "divulgado"
+  };
+  // Dentre os eventos com data (ignora os só-texto tipo "previsão de
+  // edital"), acha o tipo do próximo que ainda vai acontecer — usado pra
+  // destacar com o selo "próximo" nos widgets de calendário.
+  function proximoTipoDe(eventos){
+    const futuros = eventos.filter(ev => ev.data && diasAte(ev.data) >= 0);
+    if (!futuros.length) return null;
+    futuros.sort((a,b) => diasAte(a.data) - diasAte(b.data));
+    return futuros[0].tipo;
+  }
+  // Texto final (data + relativo + selo) de um evento de calendário, já
+  // deixando explícito se é passado ou o próximo — ver comentário do CSS
+  // ".passado"/".evento-tag" pra entender por que isso existe.
+  function eventoInfo(ev, proximoTipo){
+    if (!ev.data) return { texto: ev.dataTexto, passado:false };
+    const n = diasAte(ev.data);
+    const passado = n < 0;
+    let selo = "";
+    if (passado) selo = ' <span class="evento-tag feito">✓ '+(EVENTO_VERBO_PASSADO[ev.tipo] || "concluído")+'</span>';
+    else if (proximoTipo && ev.tipo === proximoTipo) selo = ' <span class="evento-tag proximo">próximo</span>';
+    return { texto: fmtDate(ev.data) + ' · ' + diasLabel(n) + selo, passado };
   }
   function statusBadgeHtml(p){
     if (!p.status_concurso || !STATUS_CONCURSO_LABEL[p.status_concurso]) return "";
@@ -2061,9 +2106,10 @@
       html += '<div class="article-calendario">';
       html += '<div class="article-calendario-head"><h3>Calendário do concurso</h3>' + statusBadgeHtml(p) + '</div>';
       if (eventosConcurso.length){
+        const proximoTipo = proximoTipoDe(eventosConcurso);
         html += '<div class="article-calendario-list">' + eventosConcurso.map(ev => {
-          const quando = ev.data ? fmtDate(ev.data) + ' · ' + diasLabel(diasAte(ev.data)) : ev.dataTexto;
-          return '<div class="article-calendario-item"><span>'+ev.icone+' '+ev.tipo+'</span><span class="mono">'+quando+'</span></div>';
+          const info = eventoInfo(ev, proximoTipo);
+          return '<div class="article-calendario-item'+(info.passado?' passado':'')+'"><span>'+ev.icone+' '+ev.tipo+'</span><span class="mono">'+info.texto+'</span></div>';
         }).join("") + '</div>';
       }
       html += '<a class="article-calendario-link" href="#/datas">Ver calendário completo de concursos →</a>';
@@ -2319,11 +2365,17 @@
 
     if (eventos.length){
       html += '<h2 class="article-h2">Linha do tempo</h2>';
+      // Aqui NÃO usa o texto com selo do eventoInfo() (só o "passado" pra
+      // classe) — .timeline-concurso é nowrap+ellipsis, feito pra uma linha
+      // curta tipo "27 ago 2026 · há 82 dias"; colar um selo dentro dela
+      // arrisca ficar cortado na própria elipse em telas estreitas. O
+      // esmaecimento do item inteiro (.passado) já dá o sinal visual aqui.
       html += '<div class="timeline">' + eventos.map(ev => {
-        const quando = ev.data ? fmtDate(ev.data) + ' · ' + diasLabel(diasAte(ev.data)) : ev.dataTexto;
-        return '<div class="timeline-item" style="cursor:default;">' +
+        const passado = ev.data && diasAte(ev.data) < 0;
+        const textoSimples = ev.data ? fmtDate(ev.data) + ' · ' + diasLabel(diasAte(ev.data)) : ev.dataTexto;
+        return '<div class="timeline-item'+(passado?' passado':'')+'" style="cursor:default;">' +
           '<div class="timeline-date mono">'+ev.icone+'</div>' +
-          '<div class="timeline-body"><div class="timeline-tipo">'+ev.tipo+'</div><div class="timeline-concurso">'+quando+'</div></div>' +
+          '<div class="timeline-body"><div class="timeline-tipo">'+ev.tipo+'</div><div class="timeline-concurso">'+textoSimples+'</div></div>' +
         '</div>';
       }).join("") + '</div>';
     }
