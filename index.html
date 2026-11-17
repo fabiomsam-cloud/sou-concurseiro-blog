@@ -187,7 +187,7 @@
      arraste — é a causa mais comum de "não consigo arrastar" em
      carrosséis no touch (o arraste começa quase sempre em cima de texto,
      não da imagem, e o navegador interpreta como seleção). */
-  .hero-track{display:flex;cursor:grab;touch-action:pan-y;padding:0 0 32px;transition:transform .4s cubic-bezier(.22,.61,.36,1);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
+  .hero-track{display:flex;cursor:grab;touch-action:none;padding:0 0 32px;transition:transform .4s cubic-bezier(.22,.61,.36,1);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
   .hero-track.dragging{cursor:grabbing;transition:none;}
   .hero-slide{flex:0 0 100%;min-width:0;cursor:pointer;}
   .hero-nav{position:absolute;width:40px;height:40px;border-radius:999px;background:var(--paper);border:1px solid var(--line);color:var(--ink);font-size:19px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);z-index:2;}
@@ -416,6 +416,13 @@
     .timeline-item{flex-wrap:wrap;}
     .timeline-date{width:auto;flex-direction:row;align-items:baseline;gap:8px;}
     .status-badge{order:3;width:100%;text-align:center;}
+    /* .status-badge vira width:100% nessa largura (regra acima, vale pro
+       selo em qualquer lugar do site). Sem flex-wrap no container do
+       widget "Calendário do concurso" dentro da matéria, esse 100% não
+       quebra linha, só espreme o <h3> ao lado até sobrar uma coluna
+       estreita (cada palavra do título cai numa linha). Com flex-wrap,
+       o selo desce pra linha de baixo e o título usa a largura toda. */
+    .article-calendario-head{flex-wrap:wrap;}
   }
 
   /* ---- depoimentos em vídeo (home, antes do rodapé) ---- */
@@ -1509,12 +1516,26 @@
     // vertical se o movimento vertical for claramente maior que o
     // horizontal (e não só "um pouco maior") — dá o benefício da dúvida
     // pro arraste horizontal.
-    let touchStartY = 0, touchAxis = null, touchStartedAt = 0; // touchAxis: null (ainda não decidido) | "x" | "y"
+    // touch-action:none no CSS do .hero-track desliga TODO o pan nativo
+    // (vertical e horizontal) nesse elemento — era "pan-y" antes, pra
+    // deixar o scroll vertical nativo livre e só travar o horizontal via
+    // preventDefault. Na prática, com "pan-y" o celular às vezes já
+    // "decide" sozinho que o gesto é um scroll vertical (qualquer deriva
+    // inicial do dedo) e assume o controle do toque antes do JS conseguir
+    // classificar o eixo — depois disso nenhum preventDefault no touchmove
+    // segura mais nada, e o resultado é exatamente o relato: não dá pra
+    // arrastar de lado, só o avanço automático continua rolando sozinho.
+    // Com "none" o navegador nunca toma esse controle: o JS decide o eixo
+    // sempre, e quando o eixo é vertical ("y"), repassa o gesto na mão via
+    // window.scrollBy — sem isso a página travaria ao tentar rolar por
+    // cima do carrossel.
+    let touchStartY = 0, touchAxis = null, touchStartedAt = 0, lastTouchY = 0; // touchAxis: null (ainda não decidido) | "x" | "y"
     track.addEventListener("touchstart", (e) => {
       if (e.touches.length !== 1) return;
       isDown = true; moved = false; touchAxis = null;
       startX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
+      lastTouchY = touchStartY;
       touchStartedAt = Date.now();
       dragDx = 0;
     }, {passive:true});
@@ -1528,6 +1549,7 @@
       if (Date.now() - touchStartedAt > 8000){
         isDown = true; touchAxis = null; moved = false;
         startX = e.touches[0].clientX; touchStartY = e.touches[0].clientY;
+        lastTouchY = touchStartY;
         touchStartedAt = Date.now();
         dragDx = 0;
       }
@@ -1543,15 +1565,20 @@
         }
       }
       if (touchAxis === "x"){
-        // É arraste horizontal de verdade: impede a página de rolar
-        // verticalmente enquanto o dedo move o banner.
+        // É arraste horizontal de verdade: move o banner com o dedo.
         if (e.cancelable) e.preventDefault();
         dragDx = dx;
         moved = true;
         setTransform(dragDx);
+      } else if (touchAxis === "y"){
+        // Rolagem vertical "de verdade", mas o touch-action:none desligou
+        // o scroll nativo aqui — repassa pro window manualmente, passo a
+        // passo (delta desde o último touchmove, não desde o início do
+        // toque), pra seguir o dedo 1:1 como um scroll normal faria.
+        if (e.cancelable) e.preventDefault();
+        window.scrollBy(0, -(t.clientY - lastTouchY));
       }
-      // touchAxis === "y": não faz nada — deixa o navegador rolar a
-      // página normalmente, sem interferir.
+      lastTouchY = t.clientY;
     }, {passive:false});
 
     function onTouchEnd(){
