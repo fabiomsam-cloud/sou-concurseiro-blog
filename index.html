@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Sou Concurseiro</title>
 <meta name="description" id="meta-description" content="Sou Concurseiro e Vou Passar: notícias, editais e guias completos de concursos públicos no Brasil.">
 <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAAAIAC3AgAAFgAAAIlQTkcNChoKAAAADUlIRFIAAAAQAAAAEAgGAAAAH/P/YQAAAn5JREFUeJylk2tIk2EUx8/zvO+2t6nzsinzlrAtI8NyQaao28oghcCSCCK7UCB+kC5QUGHQvS+FQgkF3SDLLpOQ8oNmMi8ZaOmsVVrbHKhrNEc61+bm63v6tGjuW55P58Pz//F//uccklnxEGEZRZcjBgBg/5IIEQREGisVzZ3cmze8WatUSUSUAwIYCAqBFtO4/abRoidAUECkUQABkWoy4u0P6gxi85iLO9XY7/o24U2nlKA2WzGVkighYXG8lPXM+nl5BEAu4zzGy1uTbjwzm++22Qz/2mwfcKaF+4rizL6hMXdaFODsoQ2jrd3fMSyurljTbdAqE0K8wHcMTPkfd1hLqsqye9apZExr34QqKsRKg6oICSvk56R8PLI715Snlkkv3X/PNhotTJpcIuzUZfVdqcnXLQqAIpaGwjoSHmPVNnV3wdoUTpMRr1AkcIllx9qCz6+Wz38Z/+Wqvd5bcKBM0+P9HaQ/PH7u3WfPxqgQm9pt+qZ2GwAAPDq3ZThGKkny+YMhl3uG35STPLKrVK2c8/MB57Tfl5Xq7n3SaS2J+ALLEJ5l6AIlRHjzwem9WJ3vrrs9uNA59DO2vHClt/ZaD1PfbMa4FYykZsdqVZQDfhFZlgFeQKT3Xo7q53zzvYe3r+IFAeH14CTjcAU0DlcATh+Msdx6YbECQHpEBoQANp8vHWkxOXzPu2zFSzcOAKDheNHbrGRxcuWZLjUCYSIcAAA0PP2E9UcL1Tptar+xyy6xTs4qxSK6sF4jd+4vz5Yt8qGkfRdMCiCEAi6ZAiGAiEAS48TTJ/bkftVpU9WcmOEQETwzAW+Lye6488qqByAk/DYC8L+17Gv8A186FANgwhPYAAAAAElFTkSuQmCC">
@@ -81,7 +81,13 @@
     --shadow: 0 1px 2px rgba(0,0,0,.35), 0 10px 26px -14px rgba(0,0,0,.6);
   }
   *{box-sizing:border-box;}
-  body{margin:0;background:var(--paper);color:var(--ink);font-family:"Inter",system-ui,-apple-system,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  /* touch-action:manipulation reforça o travamento de zoom do <meta
+     viewport> (maximum-scale=1, user-scalable=no): alguns navegadores in-app
+     (ex: o do WhatsApp) ainda liberam o zoom por "duplo toque" mesmo com o
+     viewport travado — isso aqui também desliga esse gesto, sem afetar o
+     scroll normal da página. */
+  html{touch-action:manipulation;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:"Inter",system-ui,-apple-system,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;touch-action:manipulation;}
   a{color:inherit;}
   .u{font-family:"Inter",system-ui,sans-serif;}
   .mono{font-variant-numeric:tabular-nums;}
