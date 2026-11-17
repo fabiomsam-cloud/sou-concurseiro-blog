@@ -187,9 +187,12 @@
      arraste — é a causa mais comum de "não consigo arrastar" em
      carrosséis no touch (o arraste começa quase sempre em cima de texto,
      não da imagem, e o navegador interpreta como seleção). */
-  .hero-track{display:flex;cursor:grab;touch-action:none;padding:0 0 32px;transition:transform .4s cubic-bezier(.22,.61,.36,1);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
-  .hero-track.dragging{cursor:grabbing;transition:none;}
-  .hero-slide{flex:0 0 100%;min-width:0;cursor:pointer;}
+  /* Rolagem NATIVA (overflow-x + scroll-snap) em vez de JS calculando o
+     arraste via transform — ver comentário na função wireHeroCarousel
+     (JS) pra entender por que essa troca aconteceu. */
+  .hero-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 0 32px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
+  .hero-track::-webkit-scrollbar{display:none;}
+  .hero-slide{flex:0 0 100%;min-width:0;cursor:pointer;scroll-snap-align:start;}
   .hero-nav{position:absolute;width:40px;height:40px;border-radius:999px;background:var(--paper);border:1px solid var(--line);color:var(--ink);font-size:19px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);z-index:2;}
   .hero-nav:hover{border-color:var(--accent);color:var(--accent);}
   .hero-nav.prev{left:14px;}
@@ -1391,28 +1394,36 @@
     if (heroResizeHandler){ window.removeEventListener("resize", heroResizeHandler); heroResizeHandler = null; }
   }
 
-  // Carrossel de manchetes: arrastável (mouse/touch), com setas e bolinhas.
-  // Em vez de rolagem nativa, o track inteiro é posicionado por
-  // translateX — isso evita o vazamento visual do slide seguinte na
-  // lateral (ver comentário na CSS) e deixa o avanço automático e o
-  // "snap" do arraste mais previsíveis.
-  // Um clique só navega se não houve arraste (distância mínima de 5px).
+  // Carrossel de manchetes: rolagem NATIVA (overflow-x + scroll-snap) em
+  // vez de JS calculando o arraste via transform. A versão anterior (toda
+  // em JS) já passou por duas reescritas diferentes — Pointer Events
+  // primeiro, depois Touch Events puro com heurística de eixo — e as duas
+  // falhavam de formas diferentes em celular real depois do 1º/2º slide:
+  // sintoma clássico de reimplementar na mão algo que o navegador já faz
+  // sozinho há décadas. Rolagem nativa elimina essa categoria inteira de
+  // bug, porque quem arrasta é o próprio navegador (mesma engine que rola
+  // qualquer lista), em todos os slides igual, sem JS tentando adivinhar
+  // eixo/velocidade/momentum do dedo. A única razão de ter evitado isso
+  // antes (ver comentário antigo, ainda na CSS) era um vazamento visual do
+  // slide seguinte — causado por padding lateral no track brigando com o
+  // cálculo em "100%". Sem padding lateral (só o padding-bottom, pras
+  // bolinhas) esse bug não existe mais.
   function wireHeroCarousel(slideCount){
     clearHeroAutoTimer();
     const track = $("#hero-track");
     const carousel = $(".hero-carousel");
     if (!track || !carousel) return;
-    let isDown = false, startX = 0, dragDx = 0, moved = false, idx = 0;
+    let idx = 0, userActive = false, scrollSettleTimer = null, scrollSyncTimer = null;
 
-    function setTransform(px){
-      track.style.transform = "translateX(calc(-" + (idx * 100) + "% + " + px + "px))";
-    }
-    function goTo(i){
+    function goTo(i, behavior){
       idx = ((i % slideCount) + slideCount) % slideCount;
-      track.classList.remove("dragging");
-      track.style.transform = "translateX(-" + (idx * 100) + "%)";
+      track.scrollTo({ left: idx * track.clientWidth, behavior: behavior || "smooth" });
       updateDots();
+      // A rolagem suave leva alguns ms pra chegar: reposiciona a seta já
+      // (fica levemente atrás durante a animação) e de novo ao assentar.
       positionNav();
+      clearTimeout(scrollSettleTimer);
+      scrollSettleTimer = setTimeout(positionNav, 420);
     }
     function updateDots(){
       document.querySelectorAll(".hero-dot").forEach((d, i) => d.classList.toggle("active", i === idx));
@@ -1452,156 +1463,39 @@
     function resetAutoTimer(){
       clearHeroAutoTimer();
       if (slideCount > 1){
-        heroAutoTimer = setInterval(() => { if (!isDown) goTo(idx + 1); }, 5000);
+        heroAutoTimer = setInterval(() => { if (!userActive) goTo(idx + 1); }, 5000);
       }
     }
 
-    // Duas tentativas anteriores usando Pointer Events (unificando
-    // mouse/touch num só código) travaram em celular real depois de 1-2
-    // arrastes — Pointer Events + touch-action têm comportamento
-    // inconsistente entre navegadores de celular nesse tipo de gesto.
-    // Trocado por dois caminhos SEPARADOS e bem estabelecidos: toque usa
-    // Touch Events "cru" (o que praticamente todo carrossel usa há anos,
-    // suporte universal e previsível) com trava de eixo manual (só
-    // assume que é arraste horizontal depois de ver a direção real do
-    // dedo — se for vertical, solta o gesto pro scroll nativo da página
-    // sem nunca chamar preventDefault); mouse usa o fluxo separado de
-    // sempre (mousedown/mousemove/mouseup na window).
-    function endDrag(commit){
-      track.classList.remove("dragging");
-      if (commit){
-        const threshold = track.clientWidth * 0.15;
-        if (dragDx <= -threshold) goTo(idx + 1);
-        else if (dragDx >= threshold) goTo(idx - 1);
-        else goTo(idx);
-      } else {
-        goTo(idx);
-      }
-      resetAutoTimer();
-    }
+    // Só precisa saber se tem dedo na tela agora, pra não disputar com o
+    // avanço automático — quem rola de fato é 100% o navegador.
+    track.addEventListener("touchstart", () => { userActive = true; }, {passive:true});
+    track.addEventListener("touchend", () => { userActive = false; }, {passive:true});
+    track.addEventListener("touchcancel", () => { userActive = false; }, {passive:true});
 
-    // ---- Mouse (desktop) ----
-    function onMouseMove(e){
-      if (!isDown) return;
-      dragDx = e.clientX - startX;
-      if (Math.abs(dragDx) > 5) moved = true;
-      setTransform(dragDx);
+    // Enquanto o dedo rola livremente (sem passar por goTo), ninguém
+    // atualiza idx/bolinhas/seta sozinho — este listener sincroniza os
+    // três assim que a rolagem para: "scrollend" quando o navegador tem
+    // (Chrome/Firefox recentes), com um debounce por timeout como
+    // fallback universal (cobre Safari, que ainda não tem "scrollend" em
+    // todas as versões em uso).
+    function syncFromScroll(){
+      idx = Math.round(track.scrollLeft / track.clientWidth);
+      updateDots();
+      positionNav();
     }
-    function onMouseUp(){
-      if (!isDown) return;
-      isDown = false;
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-      endDrag(true);
-    }
-    track.addEventListener("mousedown", (e) => {
-      isDown = true; moved = false; startX = e.clientX; dragDx = 0;
-      track.classList.add("dragging");
-      window.addEventListener("mousemove", onMouseMove);
-      window.addEventListener("mouseup", onMouseUp);
-    });
-
-    // ---- Touch (celular) ----
-    // Relato real (celular, Chrome): conseguia arrastar só nos 1-2
-    // primeiros banners, depois "travava" (parava de responder ao
-    // arraste) mas o avanço automático continuava rolando sozinho. Isso
-    // bate com o gesto sendo classificado como rolagem vertical (eixo
-    // "y") por engano — no toque real o dedo raramente entra 100% reto,
-    // sempre tem um pouco de deriva vertical, e quanto mais rápido o
-    // gesto, maior essa deriva inicial. Duas mudanças pra tornar a
-    // detecção de eixo mais tolerante a isso: (1) espera um pouco mais
-    // de movimento antes de decidir (10px em vez de 6, filtra o
-    // "chacoalho" inicial do dedo); (2) dentro do carrossel a intenção
-    // mais comum É arrastar de lado, então só classifica como rolagem
-    // vertical se o movimento vertical for claramente maior que o
-    // horizontal (e não só "um pouco maior") — dá o benefício da dúvida
-    // pro arraste horizontal.
-    // touch-action:none no CSS do .hero-track desliga TODO o pan nativo
-    // (vertical e horizontal) nesse elemento — era "pan-y" antes, pra
-    // deixar o scroll vertical nativo livre e só travar o horizontal via
-    // preventDefault. Na prática, com "pan-y" o celular às vezes já
-    // "decide" sozinho que o gesto é um scroll vertical (qualquer deriva
-    // inicial do dedo) e assume o controle do toque antes do JS conseguir
-    // classificar o eixo — depois disso nenhum preventDefault no touchmove
-    // segura mais nada, e o resultado é exatamente o relato: não dá pra
-    // arrastar de lado, só o avanço automático continua rolando sozinho.
-    // Com "none" o navegador nunca toma esse controle: o JS decide o eixo
-    // sempre, e quando o eixo é vertical ("y"), repassa o gesto na mão via
-    // window.scrollBy — sem isso a página travaria ao tentar rolar por
-    // cima do carrossel.
-    let touchStartY = 0, touchAxis = null, touchStartedAt = 0, lastTouchY = 0; // touchAxis: null (ainda não decidido) | "x" | "y"
-    track.addEventListener("touchstart", (e) => {
-      if (e.touches.length !== 1) return;
-      isDown = true; moved = false; touchAxis = null;
-      startX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-      lastTouchY = touchStartY;
-      touchStartedAt = Date.now();
-      dragDx = 0;
-      // Mata qualquer transição ainda em andamento (do avanço automático
-      // ou do "snap" do arraste anterior) assim que o dedo toca de novo —
-      // antes disso, se esse novo toque chegasse nos ~400ms da transição
-      // anterior ainda rodando, ela podia competir com o próximo arraste e
-      // deixar o 2º/3º slide "preso". Tirar o "dragging" sempre acontecia
-      // só depois de confirmado o eixo horizontal; colocar aqui, assim que
-      // o dedo encosta, garante que não sobra transição de corrida nenhuma
-      // antes do próximo cálculo de posição.
-      track.classList.add("dragging");
+    track.addEventListener("scroll", () => {
+      clearTimeout(scrollSyncTimer);
+      scrollSyncTimer = setTimeout(syncFromScroll, 120);
     }, {passive:true});
+    if ("onscrollend" in track) track.addEventListener("scrollend", syncFromScroll);
 
-    track.addEventListener("touchmove", (e) => {
-      if (!isDown) return;
-      // Trava de segurança: se por algum motivo touchend/touchcancel
-      // nunca chegou de um gesto anterior (visto em navegadores mobile
-      // específicos), um toque "preso" há mais de 8s é claramente lixo
-      // de um gesto antigo — solta e recomeça limpo neste.
-      if (Date.now() - touchStartedAt > 8000){
-        isDown = true; touchAxis = null; moved = false;
-        startX = e.touches[0].clientX; touchStartY = e.touches[0].clientY;
-        lastTouchY = touchStartY;
-        touchStartedAt = Date.now();
-        dragDx = 0;
-      }
-      const t = e.touches[0];
-      const dx = t.clientX - startX;
-      const dy = t.clientY - touchStartY;
-      if (touchAxis === null){
-        // Só decide a direção depois de um mínimo de movimento — um
-        // toque quase parado não deve "travar" o gesto num eixo ainda.
-        if (Math.abs(dx) > 10 || Math.abs(dy) > 10){
-          touchAxis = Math.abs(dy) > Math.abs(dx) * 1.2 ? "y" : "x";
-          if (touchAxis === "x") track.classList.add("dragging");
-        }
-      }
-      if (touchAxis === "x"){
-        // É arraste horizontal de verdade: move o banner com o dedo.
-        if (e.cancelable) e.preventDefault();
-        dragDx = dx;
-        moved = true;
-        setTransform(dragDx);
-      } else if (touchAxis === "y"){
-        // Rolagem vertical "de verdade", mas o touch-action:none desligou
-        // o scroll nativo aqui — repassa pro window manualmente, passo a
-        // passo (delta desde o último touchmove, não desde o início do
-        // toque), pra seguir o dedo 1:1 como um scroll normal faria.
-        if (e.cancelable) e.preventDefault();
-        window.scrollBy(0, -(t.clientY - lastTouchY));
-      }
-      lastTouchY = t.clientY;
-    }, {passive:false});
-
-    function onTouchEnd(){
-      if (!isDown) return;
-      isDown = false;
-      if (touchAxis === "x") endDrag(true);
-      touchAxis = null;
-    }
-    track.addEventListener("touchend", onTouchEnd);
-    track.addEventListener("touchcancel", onTouchEnd);
-
+    // Um toque/clique só navega pra matéria se não tiver sido um arraste —
+    // rolagem nativa já suprime o "click" sozinha quando o gesto moveu a
+    // tela (comportamento padrão do navegador), então não precisa de
+    // nenhum controle manual de "moved" aqui.
     track.querySelectorAll(".hero-slide").forEach(slide => {
       slide.addEventListener("click", () => {
-        if (moved){ moved = false; return; }
         location.hash = "#/materia/" + slide.dataset.id;
       });
     });
@@ -1619,8 +1513,11 @@
       dot.addEventListener("click", () => { goTo(parseInt(dot.dataset.i, 10)); resetAutoTimer(); });
     });
 
-    goTo(0);
-    heroResizeHandler = positionNav;
+    goTo(0, "instant");
+    // Recalcula a posição da rolagem (não só a seta) no resize — a
+    // largura do slide muda, e o scrollLeft antigo não bate mais com o
+    // limite de nenhum slide.
+    heroResizeHandler = () => goTo(idx, "instant");
     window.addEventListener("resize", heroResizeHandler);
     resetAutoTimer();
   }
