@@ -675,7 +675,11 @@
     .nav-links::-webkit-scrollbar{display:none;}
     .navrow a.home-link{flex:0 0 auto;padding:11px 16px;}
     .searchbox{width:100%;min-width:0;}
-    .searchbox input{font-size:14px;}
+    /* 16px é o piso que o Safari/Chrome do iPhone aceita sem dar zoom
+       automático ao focar o campo — abaixo disso (os 14px de antes), o
+       teclado abre e a página inteira "pula" de tamanho pra caber o texto,
+       cortando o resto da tela até o campo perder o foco de novo. */
+    .searchbox input{font-size:16px;}
 
     /* Pills de categoria/estado: mesma lógica — rolam na horizontal em vez
        de quebrar em várias linhas (chegava a 4 linhas de pills no filtro
@@ -718,11 +722,13 @@
        celular, com a tela mais perto do olho e sem mouse pra "confirmar"
        o que é o quê, ficavam apertadas demais pra ler. Sobe todas pra um
        piso confortável (~12.5-13px), sem mudar o desktop. */
-    .dateline{font-size:12.5px;}
-    /* Com a edição numa linha própria abaixo (fora do masthead flex),
-       sobra bem mais espaço aqui: volta ao respiro original, sem precisar
-       espremer logo/padding só pra caber tudo numa linha. */
-    .masthead{padding:16px 0;}
+    .dateline{font-size:12.5px;padding:2px 0 9px;}
+    /* Cabeçalho (faixa azul + linha de navegação) reduzido no celular a
+       pedido dela (11/2026) — ficava ocupando espaço de mais antes de
+       qualquer conteúdo aparecer na tela. Logo menor + menos respiro
+       vertical em cada parte, sem remover nada, só mais compacto. */
+    .masthead{padding:10px 0;}
+    .brand-logo{height:34px;}
     .destaques-label{font-size:12.5px;}
     .hero-eyebrow{font-size:12.5px;}
     .stat-pill .lbl{font-size:12.5px;}
