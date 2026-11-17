@@ -2262,8 +2262,14 @@
   function renderConcursosPorEstado(scrollTop){
     clearHeroAutoTimer();
     setPageMeta("Concursos por Estado | Sou Concurseiro", "Filtre concursos públicos abertos por estado e encontre oportunidades na sua região.");
+    // Só entram aqui matérias que têm estado — "Concursos por Estado" é uma
+    // navegação geográfica, e 2 matérias de Dicas de Estudo (plano de
+    // estudos, técnicas de memorização) não são de nenhum concurso/estado
+    // específico, então ficavam sobrando como um chip "2" sem rótulo
+    // nenhum (UF vazia não bate com nada em UF_NAMES).
+    const postsComUf = POSTS.filter(p => p.uf);
     const byUf = {};
-    POSTS.forEach(p => { (byUf[p.uf] = byUf[p.uf] || []).push(p); });
+    postsComUf.forEach(p => { (byUf[p.uf] = byUf[p.uf] || []).push(p); });
     // Ordena por volume de concursos (mais ativos primeiro) — mais dinâmico
     // do que a ordem alfabética, e mostra de cara onde a coisa está pegando.
     const ufsSorted = Object.keys(byUf).sort((a,b) => {
@@ -2275,14 +2281,14 @@
     html += '<div class="hero-eyebrow">Organização geográfica</div>';
     html += '<h1 style="font-size:clamp(24px,3.6vw,34px);margin:0 0 10px;">Concursos por Estado</h1>';
     html += '<div class="hero-meta" style="margin-bottom:4px;"><p class="lede cal-intro" style="margin:0;">Filtre por estado pra ver rapidinho os concursos que estão rolando na sua região.</p>' +
-      '<div class="stat-pill"><span class="num">'+POSTS.length+'</span><span class="lbl">concursos em '+ufsSorted.length+' estados</span></div></div>';
+      '<div class="stat-pill"><span class="num">'+postsComUf.length+'</span><span class="lbl">concursos em '+ufsSorted.length+' estados</span></div></div>';
 
     html += '<div class="cal-toolbar">';
     html += '<div class="searchbox" style="max-width:360px;margin:0 0 18px;"><span class="u" style="font-size:12px;color:var(--ink-soft)">🔍</span><input type="text" id="cal-search" placeholder="Buscar concurso, órgão, banca, estado, assunto..." value="'+calQuery.replace(/"/g,"&quot;")+'"></div>';
 
     html += '<div class="filterbar">';
     html += '<div class="pill-scroll">';
-    html += '<button class="pill'+(calUf===""?" active":"")+'" data-uf="">Todos os estados<span class="pill-count">'+POSTS.length+'</span></button>';
+    html += '<button class="pill'+(calUf===""?" active":"")+'" data-uf="">Todos os estados<span class="pill-count">'+postsComUf.length+'</span></button>';
     ufsSorted.forEach(uf => {
       html += '<button class="pill'+(calUf===uf?" active":"")+'" data-uf="'+uf+'">'+(UF_NAMES[uf]||uf)+'<span class="pill-count">'+byUf[uf].length+'</span></button>';
     });
@@ -2290,7 +2296,7 @@
     html += '</div>';
     html += '</div>';
 
-    let filtered = POSTS.filter(p => !calUf || p.uf === calUf);
+    let filtered = postsComUf.filter(p => !calUf || p.uf === calUf);
     filtered = filtered.filter(p => matchesQuery(p, calQuery));
     filtered = filtered.slice().sort((a,b) => (b.data_publicacao > a.data_publicacao ? 1 : -1));
 
