@@ -1538,6 +1538,15 @@
       lastTouchY = touchStartY;
       touchStartedAt = Date.now();
       dragDx = 0;
+      // Mata qualquer transição ainda em andamento (do avanço automático
+      // ou do "snap" do arraste anterior) assim que o dedo toca de novo —
+      // antes disso, se esse novo toque chegasse nos ~400ms da transição
+      // anterior ainda rodando, ela podia competir com o próximo arraste e
+      // deixar o 2º/3º slide "preso". Tirar o "dragging" sempre acontecia
+      // só depois de confirmado o eixo horizontal; colocar aqui, assim que
+      // o dedo encosta, garante que não sobra transição de corrida nenhuma
+      // antes do próximo cálculo de posição.
+      track.classList.add("dragging");
     }, {passive:true});
 
     track.addEventListener("touchmove", (e) => {
