@@ -1280,9 +1280,13 @@
     if (!ev.data) return { texto: ev.dataTexto, passado:false };
     const n = diasAte(ev.data);
     const passado = n < 0;
-    let selo = "";
-    if (passado) selo = ' <span class="evento-tag feito">✓ '+(EVENTO_VERBO_PASSADO[ev.tipo] || "concluído")+'</span>';
-    else if (proximoTipo && ev.tipo === proximoTipo) selo = ' <span class="evento-tag proximo">próximo</span>';
+    if (passado){
+      // Já passou: tira o "há X dias" (ela achou redundante/confuso do lado
+      // do selo verde) — só data + selo, sem relativo nenhum.
+      const selo = ' <span class="evento-tag feito">✓ '+(EVENTO_VERBO_PASSADO[ev.tipo] || "concluído")+'</span>';
+      return { texto: fmtDate(ev.data) + selo, passado };
+    }
+    const selo = (proximoTipo && ev.tipo === proximoTipo) ? ' <span class="evento-tag proximo">próximo</span>' : "";
     return { texto: fmtDate(ev.data) + ' · ' + diasLabel(n) + selo, passado };
   }
   function statusBadgeHtml(p){
