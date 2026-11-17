@@ -86,8 +86,17 @@
      (ex: o do WhatsApp) ainda liberam o zoom por "duplo toque" mesmo com o
      viewport travado — isso aqui também desliga esse gesto, sem afetar o
      scroll normal da página. */
-  html{touch-action:manipulation;}
-  body{margin:0;background:var(--paper);color:var(--ink);font-family:"Inter",system-ui,-apple-system,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;touch-action:manipulation;}
+  /* overflow-x:hidden no html/body é a trava definitiva contra a tela
+     "andar" pro lado no iPhone: qualquer elemento que vaze 1px que seja pra
+     fora da largura da tela faz o Safari do iPhone esticar a área visível
+     da página (o "viewport de layout") pra além da tela de verdade — e é
+     esse estique que aparece como uma faixa em branco sobrando de um lado,
+     com o conteúdo todo empurrado pro outro, mesmo sem ninguém tocando na
+     tela. Isso NÃO é o zoom de aumentar/diminuir (pinça) — é a página
+     ficando mais larga do que a tela, então travar o overflow aqui resolve
+     na raiz, não só sintoma. */
+  html{touch-action:manipulation;overflow-x:hidden;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:"Inter",system-ui,-apple-system,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;touch-action:manipulation;overflow-x:hidden;max-width:100vw;}
   a{color:inherit;}
   .u{font-family:"Inter",system-ui,sans-serif;}
   .mono{font-variant-numeric:tabular-nums;}
@@ -697,7 +706,15 @@
        posição pro gradiente de "tem mais coisa pro lado" (::after), que
        fica fixo na borda da tela mesmo enquanto .nav-links (de verdade)
        rola por dentro dele. */
-    .nav-links-wrap{position:relative;margin:0 -16px;padding-left:16px;padding-right:16px;max-width:100vw;}
+    /* max-width aqui tem que ser 100% (relativo ao espaço real disponível),
+       nunca 100vw: 100vw no Safari do iPhone é a largura do "viewport de
+       layout", que o próprio Safari pode esticar pra além da tela quando
+       algo vaza. Usar 100vw aqui travava essa largura esticada igual a um
+       carimbo, empurrando esse menu (e com ele a leitura de "página toda")
+       pra fora da tela — exatamente o bug do gutter em branco do lado
+       direito reportado no WhatsApp. 100% nunca ultrapassa o que o próprio
+       .wrap já reserva, então não tem como vazar por aqui. */
+    .nav-links-wrap{position:relative;margin:0 -16px;padding-left:16px;padding-right:16px;max-width:100%;}
     /* O degradê sozinho é sutil demais pra avisar que dá pra arrastar —
        o "›" deixa o convite explícito, sem precisar de texto/legenda. */
     .nav-links-wrap::after{content:"›";position:absolute;top:0;right:0;bottom:2px;width:34px;background:linear-gradient(to right, transparent, var(--paper) 55%);pointer-events:none;display:flex;align-items:center;justify-content:flex-end;padding-right:4px;color:var(--ink-soft);font-size:17px;font-weight:700;}
