@@ -513,7 +513,7 @@
       highlight_num:"", highlight_label:"", imagem_capa:"", imagem_miniatura:"", imagem_manchete:"", link_original:"",
       relacionados: [], data_publicacao: new Date().toISOString().slice(0,10),
       hora_publicacao:"", status:"rascunho", tipo_conteudo:"concurso", meta_descricao:"",
-      fontes: [], info_nao_oficial:false, nota_nao_oficial:"",
+      info_nao_oficial:false, nota_nao_oficial:"",
       classificacao:"recente", ordem_destaque:"", metadados: [], mentoria_nome:"",
       status_concurso:"", previsao_edital:"", data_edital:"", data_inscricao_inicio:"",
       data_inscricao_fim:"", data_prova:"", data_resultado:"" };
@@ -522,19 +522,11 @@
     if (!Array.isArray(m)) return [];
     return m.map(x => ({ property: x.property || "", content: x.content || "" }));
   }
-  function normFontes(f){
-    if (!Array.isArray(f)) return [];
-    return f.map(x => typeof x === "string" ? { label: x, url:"", tipo:"secundaria" } : {
-      label: x.label || "", url: x.url || "", tipo: x.tipo === "oficial" ? "oficial" : "secundaria"
-    });
-  }
-
   function renderForm(id){
     const isNew = id === "__new__";
     const post = isNew ? blankPost() : Object.assign({}, POSTS.find(x => x.id === id));
     if (!post){ editingId = null; render(); return; }
     post.relacionados = normRelacionados(post.relacionados);
-    post.fontes = normFontes(post.fontes);
     post.metadados = normMetadados(post.metadados);
     post.mentoria_nome = post.mentoria_nome || "";
 
@@ -627,10 +619,7 @@
       '<div><label for="info_nao_oficial">Contém informação ainda não oficial</label>' +
       '<div class="hint">Marque se a matéria traz previsão/estimativa (ex: pré-edital). Mostra um aviso no topo da matéria, no site.</div></div></div>';
     html += field_textarea("nota_nao_oficial", "Texto do aviso (opcional)", post.nota_nao_oficial, 2);
-    html += '<div class="hint" style="margin-top:-8px;margin-bottom:16px;">Em branco, usa texto padrão. Só aparece com a caixa acima marcada.</div>';
-    html += '<div class="fonte-editor" id="fonte-editor">' + fonteRowsHtml(post.fontes) + '</div>';
-    html += '<button class="btn btn-sm" id="fonte-add" type="button">+ Adicionar fonte</button>';
-    html += '<div class="hint" style="margin-top:10px;">Liste de onde tirou a informação. Marque como "Oficial" (Diário Oficial, site do órgão) sempre que der — essas aparecem primeiro, com selo "Fonte oficial" no site.</div>';
+    html += '<div class="hint" style="margin-top:-8px;">Em branco, usa texto padrão. Só aparece com a caixa acima marcada.</div>';
     html += '</div>';
 
     html += '<div class="form-card"><h3>SEO (metadados)</h3>';
@@ -718,8 +707,6 @@
     document.addEventListener("click", (e) => {
       if (relSearchResults && !relSearchResults.contains(e.target) && e.target !== relSearchInput) relSearchResults.classList.remove("show");
     });
-    $("#fonte-add").addEventListener("click", () => { addFonteRow(); });
-    document.querySelectorAll("#fonte-editor .fonte-remove").forEach(bindFonteRemove);
     $("#meta-add").addEventListener("click", () => { addMetaRow(); });
     document.querySelectorAll("#meta-editor .meta-remove").forEach(bindMetaRemove);
     $("#imagem_capa").addEventListener("input", () => {
@@ -1437,48 +1424,6 @@
     ).join("");
   }
 
-  function fonteFieldsHtml(f){
-    f = f || { label:"", url:"", tipo:"secundaria" };
-    return '<div class="fonte-fields">' +
-      '<input type="text" class="fonte-label" value="'+esc(f.label)+'" placeholder="Nome da fonte (ex: Diário Oficial do Amazonas)">' +
-      '<input type="text" class="fonte-url" value="'+esc(f.url)+'" placeholder="Link (opcional)">' +
-      '<select class="fonte-tipo">' +
-        '<option value="oficial"'+(f.tipo==="oficial"?" selected":"")+'>Oficial</option>' +
-        '<option value="secundaria"'+(f.tipo!=="oficial"?" selected":"")+'>Secundária</option>' +
-      '</select>' +
-    '</div>';
-  }
-  function fonteRowsHtml(rows){
-    if (!rows.length) return '<p class="hint" style="margin:0 0 10px;">Nenhuma fonte ainda. Use "+ Adicionar fonte" abaixo.</p>';
-    return rows.map((f,i) =>
-      '<div class="fonte-row" data-idx="'+i+'">' + fonteFieldsHtml(f) + '<button class="rel-remove fonte-remove" type="button" title="Remover">×</button></div>'
-    ).join("");
-  }
-  function addFonteRow(){
-    const wrap = $("#fonte-editor");
-    const empty = wrap.querySelector(".hint");
-    if (empty) empty.remove();
-    const div = document.createElement("div");
-    div.className = "fonte-row";
-    div.innerHTML = fonteFieldsHtml(null) + '<button class="rel-remove fonte-remove" type="button" title="Remover">×</button>';
-    wrap.appendChild(div);
-    bindFonteRemove(div.querySelector(".fonte-remove"));
-  }
-  function bindFonteRemove(btn){
-    btn.addEventListener("click", () => {
-      const row = btn.closest(".fonte-row");
-      row.remove();
-      if (!$("#fonte-editor").querySelector(".fonte-row")) $("#fonte-editor").innerHTML = '<p class="hint" style="margin:0 0 10px;">Nenhuma fonte ainda. Use "+ Adicionar fonte" abaixo.</p>';
-    });
-  }
-  function collectFontes(){
-    return Array.from(document.querySelectorAll("#fonte-editor .fonte-row")).map(row => ({
-      label: row.querySelector(".fonte-label").value.trim(),
-      url: row.querySelector(".fonte-url").value.trim(),
-      tipo: row.querySelector(".fonte-tipo").value
-    })).filter(f => f.label || f.url);
-  }
-
   function metaFieldsHtml(m){
     m = m || { property:"", content:"" };
     return '<div class="meta-fields">' +
@@ -1582,7 +1527,6 @@
       data_resultado: $("#data_resultado").value || null,
       meta_descricao: $("#meta_descricao").value.trim(),
       metadados: collectMetadados(),
-      fontes: collectFontes(),
       info_nao_oficial: $("#info_nao_oficial").checked,
       nota_nao_oficial: $("#nota_nao_oficial").value.trim()
     };
