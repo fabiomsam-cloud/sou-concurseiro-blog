@@ -1852,7 +1852,17 @@
     // que aparecia como um espaço vazio e clicável logo abaixo de "Todos os
     // estados" no dropdown (bug real, reportado por ela em 11/2026).
     const ufs = Array.from(new Set(POSTS.map(p => p.uf).filter(Boolean))).sort();
-    const sorted = POSTS.slice().sort((a,b) => (b.data_publicacao > a.data_publicacao ? 1 : -1));
+    // Dica de Estudo é outro tipo de conteúdo (técnica/método, não
+    // notícia/matéria de concurso) e já tem página própria (#/dicas) — por
+    // isso fica de fora da manchete e da grade "Publicações recentes" por
+    // padrão (ela relatou isso como bug: "a dica de estudo aparecendo no
+    // meio das matérias"). A EXCEÇÃO é quando a pessoa clica no card "Dicas
+    // de Estudo" dentro de "Concursos por Carreira" (mesma categoria usada
+    // nesse filtro) — aí sim a grade tem que mostrar as dicas, senão esse
+    // card vira um beco sem saída (filtra e não aparece nada).
+    const sorted = POSTS.slice()
+      .filter(p => filterCat === "Dicas de Estudo" || p.tipo_conteudo !== "dica-de-estudo")
+      .sort((a,b) => (b.data_publicacao > a.data_publicacao ? 1 : -1));
     // Manchete vira um carrossel com os 5 concursos/notícias mais recentes
     // (sempre os mais novos do dia, sem número fixo inventado), arrastável.
     // Com busca/filtro ativo, some com a manchete e mostra só resultados —
