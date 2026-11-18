@@ -2227,22 +2227,12 @@
     } else {
       html += '<div class="no-body">'+p.resumo+'</div>';
     }
-    // Fontes da matéria: oficiais (Diário Oficial, site do órgão, banca,
-    // governo, tribunal) sempre primeiro e com selo, depois as demais — dá
-    // pro leitor conferir de onde vieram os dados.
-    if (p.fontes && p.fontes.length){
-      const oficiais = p.fontes.filter(f => f.tipo === "oficial");
-      const outras = p.fontes.filter(f => f.tipo !== "oficial");
-      const ordered = oficiais.concat(outras);
-      html += '<div class="article-fontes"><h3>Fontes</h3><ul>' +
-        ordered.map(f => {
-          const nome = f.label || f.url || "";
-          const linkOrText = f.url ? '<a href="'+f.url+'" target="_blank" rel="noopener">'+nome+'</a>' : '<span>'+nome+'</span>';
-          const tag = f.tipo === "oficial" ? '<span class="fonte-tag">Fonte oficial</span>' : '';
-          return '<li>'+linkOrText+tag+'</li>';
-        }).join("") +
-      '</ul></div>';
-    }
+    // Secao "Fontes" REMOVIDA por pedido explicito (round 53): nunca
+    // renderizar links/nomes de fontes no post publicado, pois normalmente
+    // sao concorrentes (Estrategia Concursos, Gran Cursos, etc.) e nao
+    // podem aparecer linkados nem citados na pagina. O campo `fontes`
+    // continua existindo na apuracao/DB para uso interno, mas NUNCA deve
+    // ser impresso no HTML do post. Não reintroduzir este bloco.
     // Banner do produto/mentoria dentro da matéria: só aparece quando a
     // matéria tem mentoria vinculada (manual, pelo painel, ou automática
     // por POST_PRODUCT_MAP — ver productForPost). Essa é a segunda
