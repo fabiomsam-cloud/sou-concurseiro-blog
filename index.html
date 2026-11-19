@@ -1924,17 +1924,24 @@
     // Concursos por Carreira: grade de ícones que filtra a mesma grade de
     // publicações abaixo (mesmo campo "categoria" que os pills usavam — os
     // pills de categoria em cima foram removidos porque duplicavam
-    // exatamente essa grade). Ela fica visível mesmo com filtro ativo, pra
-    // continuar sendo o jeito de trocar de carreira sem rolar até o
-    // rodapé. Pra sair do filtro, o principal caminho é o botão "Ver todas
-    // as carreiras" abaixo da grade (bem visível, igual ao do Amazonas) —
-    // clicar de novo na carreira já selecionada também limpa, como atalho
-    // extra, mas não é a única forma (isso já se mostrou pouco óbvio,
-    // principalmente no celular).
+    // exatamente essa grade). Ela fica visível mesmo com o filtro de
+    // carreira ativo (filterCat), pra continuar sendo o jeito de trocar de
+    // carreira sem rolar até o rodapé — pra sair do filtro, o principal
+    // caminho é o botão "Ver todas as carreiras" abaixo da grade (bem
+    // visível, igual ao do Amazonas), e clicar de novo na carreira já
+    // selecionada também limpa, como atalho extra.
+    // MAS ela some quando o filtro ativo é busca por texto (query) ou
+    // estado (filterUf) — nesses dois casos a grade não é a navegação que a
+    // pessoa está usando, só empurra o resultado pra baixo da dobra sem
+    // nenhum ganho (ela reportou isso buscando "inss" e só via a grade de
+    // 22 carreiras antes do resultado, 11/2026). Continua some também com
+    // filterCat sozinho? Não — ali ela é útil, então só query/filterUf
+    // escondem.
+    const hideCarreiraGrid = !!(query || filterUf);
     const catCountsHome = {};
     POSTS.forEach(p => { catCountsHome[p.categoria] = (catCountsHome[p.categoria]||0) + 1; });
     const catsSortedHome = Object.keys(catCountsHome).sort((a,b) => catCountsHome[b]-catCountsHome[a]);
-    if (catsSortedHome.length){
+    if (catsSortedHome.length && !hideCarreiraGrid){
       html += '<div class="wrap carreira-section">';
       html += '<div class="section-label">Concursos por Carreira</div>';
       html += '<div class="carreira-grid">' + catsSortedHome.map(c =>
